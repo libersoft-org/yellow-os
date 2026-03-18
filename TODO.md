@@ -10,11 +10,12 @@
 
 ## New features
 
+- Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
+- Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
 - Wallpaper change in settings
 - More desktops - switching
 - When too many items in taskbar, add some movement
 - When right click on icon in Window component - show context menu - maximize / minimize / restore / close
-- Add favicon
 - Edit README (maybe done) and INSTALL.md
 - Make GitHub repo
 - Cleanup code
