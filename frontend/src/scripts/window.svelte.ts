@@ -20,6 +20,7 @@ export interface WindowState {
 }
 const TASKBAR_HEIGHT = 48;
 const SNAP_RATIO = 0.05;
+const Z_INDEX_COMPACT_THRESHOLD = 1000;
 let nextZIndex = $state(1);
 export const windows: WindowState[] = $state([]);
 const windowMap = new Map<string, WindowState>();
@@ -28,6 +29,17 @@ export const snapPreview: { zone: SnapZone | null } = $state({ zone: null });
 
 export function getWindow(id: string): WindowState | undefined {
 	return windowMap.get(id);
+}
+
+function compactZIndexes(): void {
+	const sorted = [...windows].sort((a, b) => a.zIndex - b.zIndex);
+	for (let i = 0; i < sorted.length; i++) sorted[i]!.zIndex = i + 1;
+	nextZIndex = sorted.length + 1;
+}
+
+function assignZIndex(win: WindowState): void {
+	win.zIndex = nextZIndex++;
+	if (nextZIndex > Z_INDEX_COMPACT_THRESHOLD) compactZIndexes();
 }
 
 export function openWindow(opts: { title: string; icon: string; component: Component; width?: number; height?: number; x?: number; y?: number }): string {
@@ -62,20 +74,19 @@ export function closeWindow(id: string): void {
 		windows.splice(idx, 1);
 		windowMap.delete(id);
 		if (focus.id === id) focus.id = null;
+		compactZIndexes();
 	}
 }
 
 export function focusWindow(id: string): void {
 	const win = getWindow(id);
 	if (!win) return;
-	win.zIndex = nextZIndex++;
+	assignZIndex(win);
 	if (win.minimized) {
 		win.restoring = true;
 		win.minimized = false;
 		requestAnimationFrame(() => {
-			requestAnimationFrame(() => {
-				win.restoring = false;
-			});
+			requestAnimationFrame(() => (win.restoring = false));
 		});
 	}
 	focus.id = id;
@@ -111,7 +122,7 @@ export function toggleMaximize(id: string): void {
 		win.height = globalThis.innerHeight - TASKBAR_HEIGHT;
 		win.maximized = true;
 	}
-	win.zIndex = nextZIndex++;
+	assignZIndex(win);
 	focus.id = id;
 }
 
@@ -193,6 +204,6 @@ export function snapWindow(id: string, zone: SnapZone): void {
 	win.width = bounds.width;
 	win.height = bounds.height;
 	win.maximized = zone === 'top';
-	win.zIndex = nextZIndex++;
+	assignZIndex(win);
 	focus.id = id;
 }
