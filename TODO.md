@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Drag and drop window doesnt work on touch screens
 - All <button> element replace with div. If it's clickable, create component "Clickable.svelte" with slot / Snippet.
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme

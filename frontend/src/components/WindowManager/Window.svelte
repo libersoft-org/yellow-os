@@ -94,6 +94,10 @@
 		border-top: none;
 		border-radius: 0 0 var(--border-radius) var(--border-radius);
 	}
+
+	.maximized .content {
+		border-radius: 0;
+	}
 </style>
 
 <div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
