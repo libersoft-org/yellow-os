@@ -11,7 +11,6 @@
 
 ## New features
 
-- When too many items in taskbar, add some movement
 - Cleanup code
 - Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
