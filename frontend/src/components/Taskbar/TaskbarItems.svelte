@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { windows, focusWindow, minimizeWindow, isTopWindow, focus } from '../../scripts/window.svelte';
+	import { windows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow } from '../../scripts/window.svelte';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
 	const DRAG_THRESHOLD = 4;
 	let dragging = $state(false);
@@ -81,9 +81,8 @@
 		const wasDragging = dragging;
 		dragging = false;
 		dragTranslateX = 0;
-
 		if (!wasDragging && dragId) {
-			const win = windows.find(w => w.id === dragId);
+			const win = getWindow(dragId);
 			if (win) onWindowButtonClick(win.id, win.minimized);
 		}
 		dragId = null;

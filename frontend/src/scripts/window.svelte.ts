@@ -22,12 +22,17 @@ const TASKBAR_HEIGHT = 48;
 const SNAP_RATIO = 0.05;
 let nextZIndex = $state(1);
 export const windows: WindowState[] = $state([]);
+const windowMap = new Map<string, WindowState>();
 export const focus: { id: string | null } = $state({ id: null });
 export const snapPreview: { zone: SnapZone | null } = $state({ zone: null });
 
+export function getWindow(id: string): WindowState | undefined {
+	return windowMap.get(id);
+}
+
 export function openWindow(opts: { title: string; icon: string; component: Component; width?: number; height?: number; x?: number; y?: number }): string {
 	const id = crypto.randomUUID();
-	windows.push({
+	const win: WindowState = {
 		id,
 		title: opts.title,
 		icon: opts.icon,
@@ -44,7 +49,9 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 		restoring: false,
 		preMaximize: null,
 		component: opts.component,
-	});
+	};
+	windows.push(win);
+	windowMap.set(id, windows[windows.length - 1]!);
 	focus.id = id;
 	return id;
 }
@@ -53,12 +60,13 @@ export function closeWindow(id: string): void {
 	const idx = windows.findIndex(w => w.id === id);
 	if (idx !== -1) {
 		windows.splice(idx, 1);
+		windowMap.delete(id);
 		if (focus.id === id) focus.id = null;
 	}
 }
 
 export function focusWindow(id: string): void {
-	const win = windows.find(w => w.id === id);
+	const win = getWindow(id);
 	if (!win) return;
 	win.zIndex = nextZIndex++;
 	if (win.minimized) {
@@ -74,7 +82,7 @@ export function focusWindow(id: string): void {
 }
 
 export function minimizeWindow(id: string): void {
-	const win = windows.find(w => w.id === id);
+	const win = getWindow(id);
 	if (!win || win.minimized || win.minimizing) return;
 	win.minimizing = true;
 	setTimeout(() => {
@@ -84,7 +92,7 @@ export function minimizeWindow(id: string): void {
 }
 
 export function toggleMaximize(id: string): void {
-	const win = windows.find(w => w.id === id);
+	const win = getWindow(id);
 	if (!win) return;
 	if (win.maximized) {
 		if (win.preMaximize) {
@@ -108,7 +116,7 @@ export function toggleMaximize(id: string): void {
 }
 
 export function moveWindow(id: string, x: number, y: number): void {
-	const win = windows.find(w => w.id === id);
+	const win = getWindow(id);
 	if (win) {
 		win.x = x;
 		win.y = y;
@@ -116,7 +124,7 @@ export function moveWindow(id: string, x: number, y: number): void {
 }
 
 export function resizeWindow(id: string, width: number, height: number, x?: number, y?: number): void {
-	const win = windows.find(w => w.id === id);
+	const win = getWindow(id);
 	if (!win) return;
 	win.width = width;
 	win.height = height;
@@ -132,7 +140,7 @@ export function isTopWindow(id: string): boolean {
 	const visible = windows.filter(w => !w.minimized);
 	if (visible.length === 0) return false;
 	const topZ = Math.max(...visible.map(w => w.zIndex));
-	const win = windows.find(w => w.id === id);
+	const win = getWindow(id);
 	return win !== undefined && win.zIndex === topZ;
 }
 
@@ -178,7 +186,7 @@ export function getSnapBounds(zone: SnapZone): { x: number; y: number; width: nu
 }
 
 export function snapWindow(id: string, zone: SnapZone): void {
-	const win = windows.find(w => w.id === id);
+	const win = getWindow(id);
 	if (!win) return;
 	const bounds = getSnapBounds(zone);
 	if (!win.preMaximize) {

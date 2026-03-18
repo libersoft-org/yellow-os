@@ -2,11 +2,9 @@
 	import type { WindowState } from '../../scripts/window.svelte';
 	import { focusWindow, closeWindow, minimizeWindow, toggleMaximize, moveWindow, resizeWindow, focus, snapPreview, getSnapZone, snapWindow } from '../../scripts/window.svelte';
 	import Icon from '../Icon/Icon.svelte';
-
 	interface Props {
 		win: WindowState;
 	}
-
 	const { win }: Props = $props();
 	const RESIZE_DIRS = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'] as const;
 	type ResizeDir = (typeof RESIZE_DIRS)[number];
@@ -19,6 +17,7 @@
 	let dragStartY = 0;
 	let dragWinStartX = 0;
 	let dragWinStartY = 0;
+	let dragStartedMaximized = false;
 	// --- Resize state ---
 	let resizing = $state(false);
 	let resizeDir: ResizeDir = 'se';
@@ -46,7 +45,16 @@
 		dragging = true;
 		dragStartX = e.clientX;
 		dragStartY = e.clientY;
-		if (win.maximized || win.preMaximize) {
+		dragStartedMaximized = !!(win.maximized || win.preMaximize);
+		dragWinStartX = win.x;
+		dragWinStartY = win.y;
+		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+		e.preventDefault();
+	}
+
+	function onTitlebarPointerMove(e: PointerEvent) {
+		if (!dragging) return;
+		if (dragStartedMaximized) {
 			const prevW = win.preMaximize?.width ?? win.width;
 			const prevH = win.preMaximize?.height ?? win.height;
 			const relativeX = e.clientX / globalThis.innerWidth;
@@ -56,15 +64,12 @@
 			win.height = prevH;
 			win.maximized = false;
 			win.preMaximize = null;
+			dragStartedMaximized = false;
+			dragStartX = e.clientX;
+			dragStartY = e.clientY;
+			dragWinStartX = win.x;
+			dragWinStartY = win.y;
 		}
-		dragWinStartX = win.x;
-		dragWinStartY = win.y;
-		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-		e.preventDefault();
-	}
-
-	function onTitlebarPointerMove(e: PointerEvent) {
-		if (!dragging) return;
 		moveWindow(win.id, dragWinStartX + e.clientX - dragStartX, dragWinStartY + e.clientY - dragStartY);
 		snapPreview.zone = getSnapZone(e.clientX, e.clientY);
 	}
@@ -72,6 +77,7 @@
 	function onTitlebarPointerUp() {
 		if (dragging && snapPreview.zone) snapWindow(win.id, snapPreview.zone);
 		dragging = false;
+		dragStartedMaximized = false;
 		snapPreview.zone = null;
 	}
 
