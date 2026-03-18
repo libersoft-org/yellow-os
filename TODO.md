@@ -8,6 +8,7 @@
 
 ## New features
 
+- Add favicon
 - Edit README (maybe done) and INSTALL.md
 - Make GitHub repo
 - Cleanup code
