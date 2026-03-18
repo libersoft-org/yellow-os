@@ -262,9 +262,15 @@ export function createResizeHandler(winId: string) {
 		let w = winStartW;
 		let h = winStartH;
 		if (dir.includes('e')) w += dx;
-		if (dir.includes('w')) { w -= dx; x += dx; }
+		if (dir.includes('w')) {
+			w -= dx;
+			x += dx;
+		}
 		if (dir.includes('s')) h += dy;
-		if (dir.includes('n')) { h -= dy; y += dy; }
+		if (dir.includes('n')) {
+			h -= dy;
+			y += dy;
+		}
 		if (w < win.minWidth) {
 			if (dir.includes('w')) x -= win.minWidth - w;
 			w = win.minWidth;
@@ -281,7 +287,9 @@ export function createResizeHandler(winId: string) {
 	}
 
 	return {
-		get resizing() { return resizing; },
+		get resizing() {
+			return resizing;
+		},
 		start,
 		move,
 		up,
