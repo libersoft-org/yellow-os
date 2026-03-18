@@ -2,16 +2,14 @@
 	import type { WindowState } from '../../scripts/window.svelte';
 	import { closeWindow, minimizeWindow, toggleMaximize, moveWindow, focus, snapPreview, getSnapZone, snapWindow } from '../../scripts/window.svelte';
 	import Icon from '../Icon/Icon.svelte';
-
 	interface Props {
 		win: WindowState;
 		onmaximizeanimate: () => void;
 	}
-
 	const { win, onmaximizeanimate }: Props = $props();
 	const focused = $derived(focus.id === win.id);
-
 	let dragging = false;
+	let hasDragged = false;
 	let dragStartX = 0;
 	let dragStartY = 0;
 	let dragWinStartX = 0;
@@ -19,6 +17,7 @@
 	let dragStartedMaximized = false;
 
 	function handleMaximize() {
+		if (hasDragged) return;
 		onmaximizeanimate();
 		toggleMaximize(win.id);
 	}
@@ -31,12 +30,14 @@
 		dragStartedMaximized = !!(win.maximized || win.preMaximize);
 		dragWinStartX = win.x;
 		dragWinStartY = win.y;
+		hasDragged = false;
 		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 		e.preventDefault();
 	}
 
 	function onPointerMove(e: PointerEvent) {
 		if (!dragging) return;
+		hasDragged = true;
 		if (dragStartedMaximized) {
 			const prevW = win.preMaximize?.width ?? win.width;
 			const prevH = win.preMaximize?.height ?? win.height;

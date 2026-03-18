@@ -3,6 +3,7 @@
 ## Bugs / changes
 
 - All <button> element replace with div. If it's clickable, create component "Clickable.svelte" with slot / Snippet.
+- Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 - Cannot drag and drop windows on mobile and cannot click title bar buttons
 - Unify fonts for the whole OS (mono and non-mono)
