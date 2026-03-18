@@ -1,0 +1,16 @@
+**/node_modules/
+**/build/
+**/*.crt
+**/*.key
+frontend/.svelte-kit/
+backend/data
+.secret_git
+bun.lockb
+bun.lockb.txt
+package-lock.json
+**/settings.json
+vite.config.js.timestamp-*
+.dev_intention
+**/.idea/
+**/cert.pem
+**/key.pem

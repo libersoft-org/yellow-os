@@ -1,0 +1,39 @@
+:root {
+	--taskbar-height: 50px;
+	--titlebar-height: 32px;
+	--border-radius: 8px;
+
+	--color-bg: #333;
+	--color-surface: #222;
+	--color-surface-2: #444;
+	--color-border: #555;
+	--color-border-focus: #888;
+	--color-text: #fff;
+	--color-text-dim: #888;
+	--color-accent: #fd3;
+	--color-taskbar: #111;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html,
+body {
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+	font-family:
+		'Segoe UI',
+		system-ui,
+		-apple-system,
+		sans-serif;
+	color: var(--color-text);
+	background: var(--color-bg);
+	-webkit-user-select: none;
+	user-select: none;
+}
