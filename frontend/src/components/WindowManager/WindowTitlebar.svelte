@@ -9,6 +9,7 @@
 	const focused = $derived(focus.id === win.id);
 	let dragging = false;
 	let hasDragged = false;
+	let lastTapTime = 0;
 	let dragStartX = 0;
 	let dragStartY = 0;
 	let dragWinStartX = 0;
@@ -22,6 +23,13 @@
 
 	function onPointerDown(e: PointerEvent) {
 		if ((e.target as HTMLElement).closest('.window-controls')) return;
+		const now = Date.now();
+		if (now - lastTapTime < 300) {
+			lastTapTime = 0;
+			toggleMaximize(win.id);
+			return;
+		}
+		lastTapTime = now;
 		dragging = true;
 		dragStartX = e.clientX;
 		dragStartY = e.clientY;
@@ -33,9 +41,15 @@
 		e.preventDefault();
 	}
 
+	const DRAG_THRESHOLD = 5;
+
 	function onPointerMove(e: PointerEvent) {
 		if (!dragging) return;
+		const dx = e.clientX - dragStartX;
+		const dy = e.clientY - dragStartY;
+		if (!hasDragged && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
 		hasDragged = true;
+		lastTapTime = 0;
 		if (dragStartedMaximized) {
 			const prevW = win.preMaximize?.width ?? win.width;
 			const prevH = win.preMaximize?.height ?? win.height;
@@ -79,6 +93,7 @@
 		transition: background 0.15s;
 		border: 1px solid var(--color-border);
 		border-bottom: none;
+		touch-action: none;
 	}
 
 	.titlebar.focused {
@@ -157,7 +172,7 @@
 	}
 </style>
 
-<div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" onpointerdown={onPointerDown} onpointermove={onPointerMove} onpointerup={onPointerUp} ondblclick={handleMaximize}>
+<div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" onpointerdown={onPointerDown} onpointermove={onPointerMove} onpointerup={onPointerUp}>
 	<div class="titlebar-left">
 		<Icon img={win.icon} alt={win.title} size="16px" padding="0" colorVariable={focused ? undefined : '--color-text'} noColorFilter={focused} />
 		<span class="title">{win.title}</span>

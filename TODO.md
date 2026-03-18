@@ -11,6 +11,7 @@
 
 ## New features
 
+- Add commit date and commit ID to Welcome screen
 - Cleanup code
 - Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.

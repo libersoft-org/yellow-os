@@ -273,7 +273,7 @@ const HANDLE_STYLES: Record<ResizeDir, string> = {
 };
 
 export function getHandleStyle(dir: ResizeDir): string {
-	return `position:absolute;z-index:10;${HANDLE_STYLES[dir]}`;
+	return `position:absolute;z-index:10;touch-action:none;${HANDLE_STYLES[dir]}`;
 }
 
 export function createResizeHandler(getWinId: () => string) {
