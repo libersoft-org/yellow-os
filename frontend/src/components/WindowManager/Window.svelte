@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WindowState } from '../../scripts/window.svelte';
-	import { focusWindow, finishMinimize, focus, RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window.svelte';
+	import { focusWindow, finishMinimize, finishSnapAnimation, focus, snapAnimatingIds, RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window.svelte';
 	import WindowTitlebar from './WindowTitlebar.svelte';
 
 	interface Props {
@@ -10,14 +10,9 @@
 	const { win }: Props = $props();
 	const WindowContent = $derived(win.component);
 	const focused = $derived(focus.id === win.id);
-	let maximizeAnimating = $state(false);
+	const snapAnimating = $derived(!!snapAnimatingIds[win.id]);
 	const winId = $derived(win.id);
 	const resize = createResizeHandler(() => winId);
-
-	function onMaximizeAnimate() {
-		maximizeAnimating = true;
-		setTimeout(() => (maximizeAnimating = false), 250);
-	}
 
 	function onWindowPointerDown() {
 		focusWindow(win.id);
@@ -25,6 +20,7 @@
 
 	function onWindowTransitionEnd(e: TransitionEvent) {
 		if (e.propertyName === 'transform' && win.minimizing) finishMinimize(win.id);
+		if (e.propertyName === 'width' && snapAnimating) finishSnapAnimation(win.id);
 	}
 </script>
 
@@ -66,7 +62,6 @@
 		visibility: visible;
 	}
 
-	.window.max-animating,
 	.window.maximized {
 		border-radius: 0;
 		transition:
@@ -79,8 +74,16 @@
 			height 0.2s ease;
 	}
 
-	.window.max-animating:not(.maximized) {
-		border-radius: var(--border-radius);
+	.window.snap-animating {
+		transition:
+			box-shadow 0.15s,
+			transform 0.2s ease,
+			opacity 0.2s ease,
+			left 0.2s ease,
+			top 0.2s ease,
+			width 0.2s ease,
+			height 0.2s ease,
+			border-radius 0.2s ease;
 	}
 
 	.content {
@@ -93,8 +96,8 @@
 	}
 </style>
 
-<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:max-animating={maximizeAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
-	<WindowTitlebar {win} onmaximizeanimate={onMaximizeAnimate} />
+<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
+	<WindowTitlebar {win} />
 	<div class="content">
 		<WindowContent />
 	</div>

@@ -27,13 +27,14 @@
 - Add system settings app
 - Create file manager (2 panel Midnight Commander-like)
 - Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
+- Serverless data synchronization between devices
 - Recycle bin
 - Photo viewer
 - Drag and drop / upload form from main OS to web OS
 - Terminal (for interacting with file system)
 - Media player
 - Web browser (iframe-based)
-- Notes, stickers
+- Sticky notes
 - Desktop widgets (weather, news etc.)
 - Taskbar position in settings + add more panels
 - Notification system - toast

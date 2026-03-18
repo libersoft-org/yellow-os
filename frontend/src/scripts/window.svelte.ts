@@ -1,4 +1,5 @@
 import type { Component } from 'svelte';
+import { flushSync } from 'svelte';
 export type SnapZone = 'left' | 'right' | 'top' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export interface WindowState {
 	id: string;
@@ -29,6 +30,16 @@ export const windows: WindowState[] = $state([]);
 const windowMap = new Map<string, WindowState>();
 export const focus: { id: string | null } = $state({ id: null });
 export const snapPreview: { zone: SnapZone | null } = $state({ zone: null });
+export const snapAnimatingIds: Record<string, boolean> = $state({});
+
+function triggerSnapAnimation(id: string): void {
+	snapAnimatingIds[id] = true;
+	flushSync();
+}
+
+export function finishSnapAnimation(id: string): void {
+	delete snapAnimatingIds[id];
+}
 
 export function getWindow(id: string): WindowState | undefined {
 	return windowMap.get(id);
@@ -112,6 +123,7 @@ export function finishMinimize(id: string): void {
 export function restoreWindow(id: string): void {
 	const win = getWindow(id);
 	if (!win || !win.preMaximize) return;
+	triggerSnapAnimation(id);
 	win.x = win.preMaximize.x;
 	win.y = win.preMaximize.y;
 	win.width = win.preMaximize.width;
@@ -126,7 +138,7 @@ export function restoreWindow(id: string): void {
 export function toggleMaximize(id: string): void {
 	const win = getWindow(id);
 	if (!win) return;
-	if (win.maximized || win.preMaximize) restoreWindow(id);
+	if (win.maximized) restoreWindow(id);
 	else snapWindow(id, 'top');
 }
 
@@ -199,6 +211,7 @@ export function getSnapBounds(zone: SnapZone): { x: number; y: number; width: nu
 export function snapWindow(id: string, zone: SnapZone): void {
 	const win = getWindow(id);
 	if (!win) return;
+	triggerSnapAnimation(id);
 	const bounds = getSnapBounds(zone);
 	if (!win.preMaximize) win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
 	win.x = bounds.x;

@@ -4,9 +4,8 @@
 	import Icon from '../Icon/Icon.svelte';
 	interface Props {
 		win: WindowState;
-		onmaximizeanimate: () => void;
 	}
-	const { win, onmaximizeanimate }: Props = $props();
+	const { win }: Props = $props();
 	const focused = $derived(focus.id === win.id);
 	let dragging = false;
 	let hasDragged = false;
@@ -18,7 +17,6 @@
 
 	function handleMaximize() {
 		if (hasDragged) return;
-		onmaximizeanimate();
 		toggleMaximize(win.id);
 	}
 
@@ -61,6 +59,7 @@
 	function onPointerUp() {
 		if (dragging && snapPreview.zone) snapWindow(win.id, snapPreview.zone);
 		dragging = false;
+		hasDragged = false;
 		dragStartedMaximized = false;
 		snapPreview.zone = null;
 	}
