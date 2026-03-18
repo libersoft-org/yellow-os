@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WindowState } from '../../scripts/window.svelte';
-	import { focusWindow, closeWindow, minimizeWindow, toggleMaximize, moveWindow, resizeWindow, focus, snapPreview, getSnapZone, snapWindow } from '../../scripts/window.svelte';
+	import { focusWindow, closeWindow, minimizeWindow, finishMinimize, toggleMaximize, moveWindow, resizeWindow, focus, snapPreview, getSnapZone, snapWindow } from '../../scripts/window.svelte';
 	import Icon from '../Icon/Icon.svelte';
 	interface Props {
 		win: WindowState;
@@ -129,6 +129,10 @@
 
 	function onResizeUp() {
 		resizing = false;
+	}
+
+	function onWindowTransitionEnd(e: TransitionEvent) {
+		if (e.propertyName === 'transform' && win.minimizing) finishMinimize(win.id);
 	}
 </script>
 
@@ -350,7 +354,7 @@
 	}
 </style>
 
-<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:max-animating={maximizeAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown}>
+<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:max-animating={maximizeAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
 	<!-- Titlebar -->
 	<div class="titlebar" role="toolbar" tabindex="-1" onpointerdown={onTitlebarPointerDown} onpointermove={onTitlebarPointerMove} onpointerup={onTitlebarPointerUp} ondblclick={handleMaximize}>
 		<div class="titlebar-left">

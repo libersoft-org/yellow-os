@@ -96,34 +96,33 @@ export function minimizeWindow(id: string): void {
 	const win = getWindow(id);
 	if (!win || win.minimized || win.minimizing) return;
 	win.minimizing = true;
-	setTimeout(() => {
-		win.minimized = true;
-		win.minimizing = false;
-	}, 200);
+}
+
+export function finishMinimize(id: string): void {
+	const win = getWindow(id);
+	if (!win || !win.minimizing) return;
+	win.minimized = true;
+	win.minimizing = false;
+}
+
+export function restoreWindow(id: string): void {
+	const win = getWindow(id);
+	if (!win || !win.preMaximize) return;
+	win.x = win.preMaximize.x;
+	win.y = win.preMaximize.y;
+	win.width = win.preMaximize.width;
+	win.height = win.preMaximize.height;
+	win.maximized = false;
+	win.preMaximize = null;
+	assignZIndex(win);
+	focus.id = id;
 }
 
 export function toggleMaximize(id: string): void {
 	const win = getWindow(id);
 	if (!win) return;
-	if (win.maximized) {
-		if (win.preMaximize) {
-			win.x = win.preMaximize.x;
-			win.y = win.preMaximize.y;
-			win.width = win.preMaximize.width;
-			win.height = win.preMaximize.height;
-		}
-		win.maximized = false;
-		win.preMaximize = null;
-	} else {
-		win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
-		win.x = 0;
-		win.y = 0;
-		win.width = globalThis.innerWidth;
-		win.height = globalThis.innerHeight - TASKBAR_HEIGHT;
-		win.maximized = true;
-	}
-	assignZIndex(win);
-	focus.id = id;
+	if (win.maximized || win.preMaximize) restoreWindow(id);
+	else snapWindow(id, 'top');
 }
 
 export function moveWindow(id: string, x: number, y: number): void {
@@ -196,9 +195,7 @@ export function snapWindow(id: string, zone: SnapZone): void {
 	const win = getWindow(id);
 	if (!win) return;
 	const bounds = getSnapBounds(zone);
-	if (!win.preMaximize) {
-		win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
-	}
+	if (!win.preMaximize) win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
 	win.x = bounds.x;
 	win.y = bounds.y;
 	win.width = bounds.width;
