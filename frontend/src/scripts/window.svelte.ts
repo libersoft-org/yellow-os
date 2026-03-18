@@ -18,7 +18,9 @@ export interface WindowState {
 	preMaximize: { x: number; y: number; width: number; height: number } | null;
 	component: Component;
 }
-const TASKBAR_HEIGHT = 48;
+function getTaskbarHeight(): number {
+	return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--taskbar-height')) || 50;
+}
 const SNAP_RATIO = 0.05;
 const Z_INDEX_COMPACT_THRESHOLD = 1000;
 let nextZIndex = $state(1);
@@ -152,7 +154,7 @@ export function isTopWindow(id: string): boolean {
 
 export function getSnapZone(clientX: number, clientY: number): SnapZone | null {
 	const w = globalThis.innerWidth;
-	const h = globalThis.innerHeight - TASKBAR_HEIGHT;
+	const h = globalThis.innerHeight - getTaskbarHeight();
 	const snapThreshold = globalThis.innerHeight * SNAP_RATIO;
 	const nearLeft = clientX <= snapThreshold;
 	const nearRight = clientX >= w - snapThreshold;
@@ -170,7 +172,7 @@ export function getSnapZone(clientX: number, clientY: number): SnapZone | null {
 
 export function getSnapBounds(zone: SnapZone): { x: number; y: number; width: number; height: number } {
 	const w = globalThis.innerWidth;
-	const h = globalThis.innerHeight - TASKBAR_HEIGHT;
+	const h = globalThis.innerHeight - getTaskbarHeight();
 	const halfW = Math.floor(w / 2);
 	const halfH = Math.floor(h / 2);
 	switch (zone) {
