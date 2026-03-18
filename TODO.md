@@ -2,6 +2,7 @@
 
 ## Bugs / changes
 
+- Drag and drop window doesnt work on touch screens
 - All <button> element replace with div. If it's clickable, create component "Clickable.svelte" with slot / Snippet.
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
@@ -10,17 +11,16 @@
 
 ## New features
 
+- When too many items in taskbar, add some movement
+- Cleanup code
 - Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
 - Wallpaper change in settings
 - More desktops - switching
-- When too many items in taskbar, add some movement
 - When right click on icon in Window component - show context menu - maximize / minimize / restore / close
 - Edit README (maybe done) and INSTALL.md
-- Make GitHub repo
-- Cleanup code
 - Add menu bar and use it in apps (File, Edit, Help etc.)
-- Add exit screen + button in taskbar menu
+- Add logout screen + button in taskbar menu
 - Add categories in taskbar menu
 - Add window snaping to window manager - snap to edges - half screen (sides), quarter screen (edges), maximize (top)
 - Add desktop icons (+ grid align)
