@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WindowState } from '../../scripts/window.svelte';
-	import { focusWindow, closeWindow, minimizeWindow, toggleMaximize, moveWindow, resizeWindow, focus } from '../../scripts/window.svelte';
+	import { focusWindow, closeWindow, minimizeWindow, toggleMaximize, moveWindow, resizeWindow, focus, snapPreview, getSnapZone, snapWindow } from '../../scripts/window.svelte';
 	import Icon from '../Icon/Icon.svelte';
 
 	interface Props {
@@ -42,11 +42,21 @@
 
 	// --- Titlebar drag ---
 	function onTitlebarPointerDown(e: PointerEvent) {
-		if (win.maximized) return;
 		if ((e.target as HTMLElement).closest('.window-controls')) return;
 		dragging = true;
 		dragStartX = e.clientX;
 		dragStartY = e.clientY;
+		if (win.maximized || win.preMaximize) {
+			const prevW = win.preMaximize?.width ?? win.width;
+			const prevH = win.preMaximize?.height ?? win.height;
+			const relativeX = e.clientX / globalThis.innerWidth;
+			win.x = e.clientX - prevW * relativeX;
+			win.y = e.clientY - 16;
+			win.width = prevW;
+			win.height = prevH;
+			win.maximized = false;
+			win.preMaximize = null;
+		}
 		dragWinStartX = win.x;
 		dragWinStartY = win.y;
 		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
@@ -56,10 +66,13 @@
 	function onTitlebarPointerMove(e: PointerEvent) {
 		if (!dragging) return;
 		moveWindow(win.id, dragWinStartX + e.clientX - dragStartX, dragWinStartY + e.clientY - dragStartY);
+		snapPreview.zone = getSnapZone(e.clientX, e.clientY);
 	}
 
 	function onTitlebarPointerUp() {
+		if (dragging && snapPreview.zone) snapWindow(win.id, snapPreview.zone);
 		dragging = false;
+		snapPreview.zone = null;
 	}
 
 	// --- Resize ---

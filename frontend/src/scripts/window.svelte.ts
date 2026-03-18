@@ -1,5 +1,5 @@
 import type { Component } from 'svelte';
-
+export type SnapZone = 'left' | 'right' | 'top' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export interface WindowState {
 	id: string;
 	title: string;
@@ -18,12 +18,12 @@ export interface WindowState {
 	preMaximize: { x: number; y: number; width: number; height: number } | null;
 	component: Component;
 }
-
 const TASKBAR_HEIGHT = 48;
-
+const SNAP_RATIO = 0.05;
 let nextZIndex = $state(1);
 export const windows: WindowState[] = $state([]);
 export const focus: { id: string | null } = $state({ id: null });
+export const snapPreview: { zone: SnapZone | null } = $state({ zone: null });
 
 export function openWindow(opts: { title: string; icon: string; component: Component; width?: number; height?: number; x?: number; y?: number }): string {
 	const id = crypto.randomUUID();
@@ -86,7 +86,6 @@ export function minimizeWindow(id: string): void {
 export function toggleMaximize(id: string): void {
 	const win = windows.find(w => w.id === id);
 	if (!win) return;
-
 	if (win.maximized) {
 		if (win.preMaximize) {
 			win.x = win.preMaximize.x;
@@ -135,4 +134,61 @@ export function isTopWindow(id: string): boolean {
 	const topZ = Math.max(...visible.map(w => w.zIndex));
 	const win = windows.find(w => w.id === id);
 	return win !== undefined && win.zIndex === topZ;
+}
+
+export function getSnapZone(clientX: number, clientY: number): SnapZone | null {
+	const w = globalThis.innerWidth;
+	const h = globalThis.innerHeight - TASKBAR_HEIGHT;
+	const snapThreshold = globalThis.innerHeight * SNAP_RATIO;
+	const nearLeft = clientX <= snapThreshold;
+	const nearRight = clientX >= w - snapThreshold;
+	const nearTop = clientY <= snapThreshold;
+	const nearBottom = clientY >= h - snapThreshold;
+	if (nearLeft && nearTop) return 'top-left';
+	if (nearRight && nearTop) return 'top-right';
+	if (nearLeft && nearBottom) return 'bottom-left';
+	if (nearRight && nearBottom) return 'bottom-right';
+	if (nearTop) return 'top';
+	if (nearLeft) return 'left';
+	if (nearRight) return 'right';
+	return null;
+}
+
+export function getSnapBounds(zone: SnapZone): { x: number; y: number; width: number; height: number } {
+	const w = globalThis.innerWidth;
+	const h = globalThis.innerHeight - TASKBAR_HEIGHT;
+	const halfW = Math.floor(w / 2);
+	const halfH = Math.floor(h / 2);
+	switch (zone) {
+		case 'left':
+			return { x: 0, y: 0, width: halfW, height: h };
+		case 'right':
+			return { x: halfW, y: 0, width: w - halfW, height: h };
+		case 'top':
+			return { x: 0, y: 0, width: w, height: h };
+		case 'top-left':
+			return { x: 0, y: 0, width: halfW, height: halfH };
+		case 'top-right':
+			return { x: halfW, y: 0, width: w - halfW, height: halfH };
+		case 'bottom-left':
+			return { x: 0, y: halfH, width: halfW, height: h - halfH };
+		case 'bottom-right':
+			return { x: halfW, y: halfH, width: w - halfW, height: h - halfH };
+	}
+}
+
+export function snapWindow(id: string, zone: SnapZone): void {
+	const win = windows.find(w => w.id === id);
+	if (!win) return;
+	const bounds = getSnapBounds(zone);
+	if (!win.preMaximize) {
+		win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
+	}
+	win.x = bounds.x;
+	win.y = bounds.y;
+	win.width = bounds.width;
+	win.height = bounds.height;
+	win.maximized = zone === 'top';
+	win.zIndex = nextZIndex++;
+	focus.id = id;
 }
