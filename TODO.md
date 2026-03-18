@@ -10,6 +10,8 @@
 
 ## New features
 
+- Wallpaper change in settings
+- More desktops - switching
 - When too many items in taskbar, add some movement
 - When right click on icon in Window component - show context menu - maximize / minimize / restore / close
 - Add favicon

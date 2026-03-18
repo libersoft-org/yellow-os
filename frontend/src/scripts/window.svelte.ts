@@ -16,6 +16,7 @@ export interface WindowState {
 	maximized: boolean;
 	restoring: boolean;
 	preMaximize: { x: number; y: number; width: number; height: number } | null;
+	snappedZone: SnapZone | null;
 	component: Component;
 }
 function getTaskbarHeight(): number {
@@ -62,6 +63,7 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 		maximized: false,
 		restoring: false,
 		preMaximize: null,
+		snappedZone: null,
 		component: opts.component,
 	};
 	windows.push(win);
@@ -116,6 +118,7 @@ export function restoreWindow(id: string): void {
 	win.height = win.preMaximize.height;
 	win.maximized = false;
 	win.preMaximize = null;
+	win.snappedZone = null;
 	assignZIndex(win);
 	focus.id = id;
 }
@@ -203,8 +206,43 @@ export function snapWindow(id: string, zone: SnapZone): void {
 	win.width = bounds.width;
 	win.height = bounds.height;
 	win.maximized = zone === 'top';
+	win.snappedZone = zone;
 	assignZIndex(win);
 	focus.id = id;
+}
+
+const NUMPAD_SNAP: Record<string, SnapZone> = {
+	Numpad7: 'top-left',
+	Numpad8: 'top',
+	Numpad9: 'top-right',
+	Numpad4: 'left',
+	Numpad6: 'right',
+	Numpad1: 'bottom-left',
+	Numpad3: 'bottom-right',
+};
+
+export function handleKeyboardShortcut(e: KeyboardEvent): void {
+	if (!e.metaKey) return;
+	const id = focus.id;
+	if (!id) return;
+	const win = getWindow(id);
+	if (!win || win.minimized || win.minimizing) return;
+	const zone = NUMPAD_SNAP[e.code];
+	if (zone) {
+		e.preventDefault();
+		snapWindow(id, zone);
+		return;
+	}
+	if (e.code === 'Numpad2') {
+		e.preventDefault();
+		if (win.maximized || win.preMaximize) restoreWindow(id);
+		else minimizeWindow(id);
+		return;
+	}
+	if (e.code === 'Numpad5') {
+		e.preventDefault();
+		if (win.maximized || win.preMaximize) restoreWindow(id);
+	}
 }
 
 export type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
@@ -225,7 +263,7 @@ export function getHandleStyle(dir: ResizeDir): string {
 	return `position:absolute;z-index:10;${HANDLE_STYLES[dir]}`;
 }
 
-export function createResizeHandler(winId: string) {
+export function createResizeHandler(getWinId: () => string) {
 	let resizing = $state(false);
 	let dir: ResizeDir = 'se';
 	let startX = 0;
@@ -236,6 +274,7 @@ export function createResizeHandler(winId: string) {
 	let winStartH = 0;
 
 	function start(e: PointerEvent, d: ResizeDir) {
+		const winId = getWinId();
 		const win = getWindow(winId);
 		if (!win || win.maximized) return;
 		resizing = true;
@@ -253,6 +292,7 @@ export function createResizeHandler(winId: string) {
 
 	function move(e: PointerEvent) {
 		if (!resizing) return;
+		const winId = getWinId();
 		const win = getWindow(winId);
 		if (!win) return;
 		const dx = e.clientX - startX;

@@ -11,7 +11,8 @@
 	const WindowContent = $derived(win.component);
 	const focused = $derived(focus.id === win.id);
 	let maximizeAnimating = $state(false);
-	const resize = createResizeHandler(win.id);
+	const winId = $derived(win.id);
+	const resize = createResizeHandler(() => winId);
 
 	function onMaximizeAnimate() {
 		maximizeAnimating = true;
