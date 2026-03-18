@@ -137,11 +137,7 @@ export function defocusAll(): void {
 }
 
 export function isTopWindow(id: string): boolean {
-	const visible = windows.filter(w => !w.minimized);
-	if (visible.length === 0) return false;
-	const topZ = Math.max(...visible.map(w => w.zIndex));
-	const win = getWindow(id);
-	return win !== undefined && win.zIndex === topZ;
+	return focus.id === id;
 }
 
 export function getSnapZone(clientX: number, clientY: number): SnapZone | null {
