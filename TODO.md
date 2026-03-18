@@ -2,12 +2,15 @@
 
 ## Bugs / changes
 
+- All <button> element replace with div. If it's clickable, create component "Clickable.svelte" with slot / Snippet.
 - Rename colours in theme
 - Cannot drag and drop windows on mobile and cannot click title bar buttons
 - Unify fonts for the whole OS (mono and non-mono)
 
 ## New features
 
+- When too many items in taskbar, add some movement
+- When right click on icon in Window component - show context menu - maximize / minimize / restore / close
 - Add favicon
 - Edit README (maybe done) and INSTALL.md
 - Make GitHub repo
