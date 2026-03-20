@@ -17,7 +17,7 @@
 - File manager - connect with OPFS
 - File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
 - File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
-- Add commit date and commit ID to Welcome screen
+- Add commit date and commit ID to About screen
 - Cleanup code
 - Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.

@@ -3,7 +3,7 @@
 </script>
 
 <style>
-	.welcome {
+	.about {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -31,9 +31,8 @@
 	}
 </style>
 
-<div class="welcome">
+<div class="about">
 	<div class="title">Welcome to {PRODUCT_NAME}</div>
 	<div class="version">Version: {PRODUCT_VERSION}</div>
 	<div class="description">A web-based desktop operating system built from scratch.</div>
-	<div class="description">Open apps from the taskbar menu and start exploring.</div>
 </div>
