@@ -69,6 +69,7 @@
 	let dragMoveOffset = $state({ x: 0, y: 0 });
 	let dragGhostPos = $state({ x: 0, y: 0 });
 	let pendingDeselect = $state<string | null>(null);
+	let lastClickedItemId = $state<string | null>(null);
 
 	$effect(() => {
 		if (!containerEl) return;
@@ -97,9 +98,16 @@
 		}
 	}
 
+	function onContainerDblClick() {
+		if (!lastClickedItemId) return;
+		const item = items.find(i => i.id === lastClickedItemId);
+		if (item) ondblclick?.(item);
+	}
+
 	function onCellPointerDown(e: PointerEvent, id: string) {
 		e.preventDefault();
 		pendingDeselect = null;
+		lastClickedItemId = id;
 
 		if (selection.isSelected(id)) {
 			if (e.ctrlKey || e.metaKey) {
@@ -139,6 +147,7 @@
 
 	function onEmptyPointerDown(e: PointerEvent) {
 		pendingDeselect = null;
+		lastClickedItemId = null;
 		if (!(e.ctrlKey || e.metaKey)) selection.clear();
 
 		dragMode = 'select';
@@ -325,7 +334,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div class="icon-view" bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" onpointerdown={onContainerPointerDown} onpointermove={onContainerPointerMove} onpointerup={onContainerPointerUp} onkeydown={onKeydown} tabindex="0">
+<div class="icon-view" bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" onpointerdown={onContainerPointerDown} onpointermove={onContainerPointerMove} onpointerup={onContainerPointerUp} ondblclick={onContainerDblClick} onkeydown={onKeydown} tabindex="0">
 	{#if items.length === 0 && empty}
 		<div class="empty-state">{@render empty()}</div>
 	{/if}
@@ -333,7 +342,7 @@
 	{#each items as item (item.id)}
 		{@const pos = itemPositions.get(item.id)}
 		{#if pos}
-			<div class="icon-cell" class:selected={selection.isSelected(item.id)} class:is-dragging={dragMode === 'move' && selection.isSelected(item.id)} data-icon-id={item.id} style="left: {pos.gridX * cellWidth}px; top: {pos.gridY * cellHeight}px; width: {cellWidth}px; height: {cellHeight}px;" ondblclick={() => ondblclick?.(item)}>
+			<div class="icon-cell" class:selected={selection.isSelected(item.id)} class:is-dragging={dragMode === 'move' && selection.isSelected(item.id)} data-icon-id={item.id} style="left: {pos.gridX * cellWidth}px; top: {pos.gridY * cellHeight}px; width: {cellWidth}px; height: {cellHeight}px;">
 				<IconItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
 			</div>
 		{/if}
