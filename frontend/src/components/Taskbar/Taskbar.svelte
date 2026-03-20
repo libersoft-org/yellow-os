@@ -2,6 +2,7 @@
 	import TaskbarMenu from './TaskbarMenu.svelte';
 	import TaskbarItems from './TaskbarItems.svelte';
 	import TaskbarTime from './TaskbarTime.svelte';
+	import { defocusAll } from '../../scripts/window.svelte';
 </script>
 
 <style>
@@ -20,7 +21,8 @@
 	}
 </style>
 
-<div class="taskbar">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="taskbar" onpointerdown={defocusAll}>
 	<TaskbarMenu />
 	<TaskbarItems />
 	<TaskbarTime />

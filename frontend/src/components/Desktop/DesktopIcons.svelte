@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
-	import { openWindow } from '../../scripts/window.svelte';
+	import { openWindow, defocusAll } from '../../scripts/window.svelte';
 	import IconView, { type IconViewItem } from '../IconView/IconView.svelte';
 	import FileManager from '../../apps/FileManager/FileManager.svelte';
 
@@ -70,6 +70,7 @@
 	}
 </style>
 
-<div class="desktop-icons">
+<!-- svelte-ignore a11y_no_static_element_interactions -->
+<div class="desktop-icons" onpointerdown={defocusAll}>
 	<IconView bind:this={iconView} items={iconViewItems} ondblclick={onDblClick} onitemsmove={onItemsMove} />
 </div>
