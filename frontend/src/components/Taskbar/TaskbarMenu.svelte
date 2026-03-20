@@ -4,12 +4,14 @@
 	import Icon from '../Icon/Icon.svelte';
 	import TaskbarMenuItem from './TaskbarMenuItem.svelte';
 	import Calculator from '../../apps/Calculator/Calculator.svelte';
+	import FileManager from '../../apps/FileManager/FileManager.svelte';
 	import Notepad from '../../apps/Notepad/Notepad.svelte';
 	import Pong from '../../apps/Pong/Pong.svelte';
 	import Snake from '../../apps/Snake/Snake.svelte';
 	import Welcome from '../../apps/Welcome/Welcome.svelte';
 	const apps = [
 		{ name: 'Welcome', icon: '/img/apps/welcome.svg', component: Welcome, width: 480, height: 340 },
+		{ name: 'File Manager', icon: '/img/apps/file-manager.svg', component: FileManager, width: 700, height: 500 },
 		{ name: 'Calculator', icon: '/img/apps/calculator.svg', component: Calculator, width: 280, height: 420 },
 		{ name: 'Notepad', icon: '/img/apps/notepad.svg', component: Notepad, width: 600, height: 450 },
 		{ name: 'Pong', icon: '/img/apps/pong.svg', component: Pong, width: 600, height: 420 },

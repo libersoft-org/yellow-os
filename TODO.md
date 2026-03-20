@@ -2,14 +2,21 @@
 
 ## Bugs / changes
 
-- All <button> element replace with div. If it's clickable, create component "Clickable.svelte" with slot / Snippet.
+- Replace all <button> elements with div. If it's clickable, create component "Clickable.svelte" with slot / Snippet.
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
-- Cannot drag and drop windows on mobile and cannot click title bar buttons
 - Unify fonts for the whole OS (mono and non-mono)
 
 ## New features
 
+- Create a generic list items - use in File manager in left column, in System settings etc.
+- File manager - add file / directory info in right panel
+- File manager - create a new generic component - ContextMenu a ContextMenuItem - use it for right click (long tap on mobile) to bring up the menu with: copy, cut, paste, rename, delete, open, open in new window (directory only)
+- File manager - right click (long tap) on empty space in FileManagerGrid - menu with submenu - Sort by - Name, modification date, type, size (+ asc / desc), new file, new directory
+- File manager - in top toolbar add switch grid / list view (2 icons)
+- File manager - connect with OPFS
+- File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
+- File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
 - Add commit date and commit ID to Welcome screen
 - Cleanup code
 - Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
@@ -21,11 +28,10 @@
 - Add menu bar and use it in apps (File, Edit, Help etc.)
 - Add logout screen + button in taskbar menu
 - Add categories in taskbar menu
-- Add window snaping to window manager - snap to edges - half screen (sides), quarter screen (edges), maximize (top)
+- Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
 - Add desktop icons (+ grid align)
 - Add system settings app
-- Create file manager (2 panel Midnight Commander-like)
-- Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
+- Create file manager with 2 panels - like Midnight Commander
 - Serverless data synchronization between devices
 - Recycle bin
 - Photo viewer
