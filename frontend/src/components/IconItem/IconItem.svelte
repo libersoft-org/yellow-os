@@ -6,7 +6,7 @@
 		subtitle?: string;
 		layout?: 'vertical' | 'horizontal';
 		iconSize?: string;
-		iconColor?: string;
+		iconColor?: string | undefined;
 		color?: string | undefined;
 	}
 	const { icon, label, subtitle, layout = 'vertical', iconSize = '40px', iconColor, color }: Props = $props();

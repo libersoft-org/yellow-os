@@ -4,12 +4,13 @@
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';
 	import FileManagerSeparator from './FileManagerSeparator.svelte';
-	import FileManagerGrid from './FileManagerGrid.svelte';
+	import IconView, { type IconViewItem } from '../../components/IconView/IconView.svelte';
+
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);
 	let historyIndex = $state(0);
-	let selected = $state(new Set<string>());
 	let sidebarWidth = $state(180);
+
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
 	const canGoUp = $derived(currentPath !== '/');
@@ -19,6 +20,16 @@
 			return a.name.localeCompare(b.name);
 		})
 	);
+
+	const iconViewItems = $derived<IconViewItem[]>(
+		entries.map(e => ({
+			id: e.name,
+			icon: e.type === 'directory' ? '/img/directory.svg' : '/img/file.svg',
+			label: e.name,
+			iconColor: e.type === 'directory' ? '--color-accent' : '--color-text-dim',
+		}))
+	);
+
 	const breadcrumbSegments = $derived.by(() => {
 		if (currentPath === '/') return [{ name: 'Root', path: '/' }];
 		const parts = currentPath.split('/').filter(Boolean);
@@ -37,27 +48,29 @@
 		history.push(path);
 		historyIndex = history.length - 1;
 		currentPath = path;
-		selected = new Set();
 	}
 
 	function goBack() {
 		if (!canGoBack) return;
 		historyIndex--;
 		currentPath = history[historyIndex]!;
-		selected = new Set();
 	}
 
 	function goForward() {
 		if (!canGoForward) return;
 		historyIndex++;
 		currentPath = history[historyIndex]!;
-		selected = new Set();
 	}
 
 	function goUp() {
 		if (!canGoUp) return;
 		const parent = currentPath.substring(0, currentPath.lastIndexOf('/')) || '/';
 		navigateTo(parent);
+	}
+
+	function onIconDblClick(item: IconViewItem) {
+		const entry = entries.find(e => e.name === item.id);
+		if (entry) openEntry(entry);
 	}
 
 	function openEntry(entry: FileEntry) {
@@ -83,6 +96,12 @@
 		flex: 1;
 		overflow: hidden;
 	}
+
+	.grid-area {
+		flex: 1;
+		overflow: auto;
+		padding: 8px;
+	}
 </style>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -91,6 +110,12 @@
 	<div class="body">
 		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileManagerSeparator onresize={onSeparatorResize} />
-		<FileManagerGrid {entries} {selected} onselectionchange={s => (selected = s)} onopen={openEntry} />
+		<div class="grid-area">
+			<IconView items={iconViewItems} ondblclick={onIconDblClick}>
+				{#snippet empty()}
+					This directory is empty
+				{/snippet}
+			</IconView>
+		</div>
 	</div>
 </div>

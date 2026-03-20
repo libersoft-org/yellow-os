@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { FileEntry } from './filemanager';
+	import { computeClickSelection } from '../../scripts/selection.svelte';
 	import FileManagerGridItem from './FileManagerGridItem.svelte';
 	interface Props {
 		entries: FileEntry[];
@@ -17,26 +18,11 @@
 	let entryElements = new Map<string, HTMLElement>();
 
 	function selectEntry(name: string, e: MouseEvent | KeyboardEvent) {
-		const idx = entries.findIndex(en => en.name === name);
-		if (e.shiftKey && lastClickedIndex >= 0) {
-			const from = Math.min(lastClickedIndex, idx);
-			const to = Math.max(lastClickedIndex, idx);
-			const range = entries.slice(from, to + 1).map(en => en.name);
-			if (e.ctrlKey || e.metaKey) {
-				const next = new Set(selected);
-				for (const n of range) next.add(n);
-				onselectionchange(next);
-			} else onselectionchange(new Set(range));
-		} else if (e.ctrlKey || e.metaKey) {
-			const next = new Set(selected);
-			if (next.has(name)) next.delete(name);
-			else next.add(name);
-			onselectionchange(next);
-			lastClickedIndex = idx;
-		} else {
-			onselectionchange(selected.size === 1 && selected.has(name) ? new Set() : new Set([name]));
-			lastClickedIndex = idx;
-		}
+		const allIds = entries.map(en => en.name);
+		const idx = allIds.indexOf(name);
+		const result = computeClickSelection(selected, name, idx, allIds, lastClickedIndex, e);
+		lastClickedIndex = result.lastClickedIndex;
+		onselectionchange(result.selected);
 	}
 
 	function trackEntry(node: HTMLElement, name: string) {

@@ -1,10 +1,16 @@
 <script lang="ts">
 	import WindowManager from '../WindowManager/WindowManager.svelte';
 	import Taskbar from '../Taskbar/Taskbar.svelte';
+	import DesktopIcons from './DesktopIcons.svelte';
 	import { defocusAll, handleKeyboardShortcut } from '../../scripts/window.svelte';
 
+	let desktopIcons: ReturnType<typeof DesktopIcons> | undefined = $state();
+
 	function onDesktopPointerDown(e: PointerEvent) {
-		if (e.target === e.currentTarget) defocusAll();
+		if (e.target === e.currentTarget) {
+			defocusAll();
+			desktopIcons?.clearSelection();
+		}
 	}
 </script>
 
@@ -29,6 +35,7 @@
 
 <div class="desktop">
 	<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown}>
+		<DesktopIcons bind:this={desktopIcons} />
 		<WindowManager />
 	</div>
 	<Taskbar />
