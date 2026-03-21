@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product';
+	import Icon from '../../components/Icon/Icon.svelte';
 </script>
 
 <style>
@@ -32,7 +33,8 @@
 </style>
 
 <div class="about">
-	<div class="title">Welcome to {PRODUCT_NAME}</div>
+ 	<div class="title">Welcome to {PRODUCT_NAME}</div>
+		<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="64px" colorVariable="--color-accent" />
 	<div class="version">Version: {PRODUCT_VERSION}</div>
 	<div class="description">A web-based desktop operating system built from scratch.</div>
 </div>

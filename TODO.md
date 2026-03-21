@@ -19,10 +19,12 @@
 - File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
 - Add commit date and commit ID to About screen
 - Cleanup code
+- Tray icons
+- Quick launch
+- More desktops - switching
 - Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
 - Wallpaper change in settings
-- More desktops - switching
 - When right click on icon in Window component - show context menu - maximize / minimize / restore / close
 - Edit README (maybe done) and INSTALL.md
 - Add menu bar and use it in apps (File, Edit, Help etc.)

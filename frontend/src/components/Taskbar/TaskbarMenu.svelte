@@ -10,7 +10,7 @@
 	import Snake from '../../apps/Snake/Snake.svelte';
 	import About from '../../apps/About/About.svelte';
 	const apps = [
-		{ name: 'About Yellow OS', icon: '/img/apps/about.svg', component: About, width: 480, height: 340 },
+		{ name: 'About Yellow OS', icon: '/img/logo.svg', component: About, width: 480, height: 340 },
 		{ name: 'File Manager', icon: '/img/apps/file-manager.svg', component: FileManager, width: 700, height: 500 },
 		{ name: 'Calculator', icon: '/img/apps/calculator.svg', component: Calculator, width: 280, height: 420 },
 		{ name: 'Notepad', icon: '/img/apps/notepad.svg', component: Notepad, width: 600, height: 450 },
