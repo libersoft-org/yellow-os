@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product';
+	import { PRODUCT_NAME, PRODUCT_VERSION, COMMIT_HASH, BUILD_DATE } from '../../scripts/product';
 	import Icon from '../../components/Icon/Icon.svelte';
 </script>
 
@@ -22,9 +22,15 @@
 	}
 
 	.version {
+		display: flex;
+		gap: 6px;
 		color: var(--color-text);
 		font-size: 18px;
 		font-weight: bold;
+	}
+
+	.version .value {
+		color: var(--color-accent);
 	}
 
 	.description {
@@ -33,8 +39,19 @@
 </style>
 
 <div class="about">
- 	<div class="title">Welcome to {PRODUCT_NAME}</div>
-		<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="64px" colorVariable="--color-accent" />
-	<div class="version">Version: {PRODUCT_VERSION}</div>
-	<div class="description">A web-based desktop operating system built from scratch.</div>
+	<div class="title">Welcome to {PRODUCT_NAME}</div>
+	<div class="description">An open source web-based operating system.</div>
+	<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="64px" colorVariable="--color-accent" />
+	<div class="version">
+		<div>Version:</div>
+		<div class="value">{PRODUCT_VERSION}</div>
+	</div>
+	<div class="version">
+		<div>Commit:</div>
+		<div class="value">{COMMIT_HASH}</div>
+	</div>
+	<div class="version">
+		<div>Build:</div>
+		<div class="value">{BUILD_DATE}</div>
+	</div>
 </div>
