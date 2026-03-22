@@ -1,8 +1,12 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
 	import { openWindow, defocusAll } from '../../scripts/window.svelte';
+	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte';
 	import IconView, { type IconViewItem } from '../IconView/IconView.svelte';
 	import FileManager from '../../apps/FileManager/FileManager.svelte';
+
+	const { desktopId }: { desktopId?: number | undefined } = $props();
+	const activeId = $derived(desktopId ?? desktop.active);
 
 	interface DesktopShortcut {
 		id: string;
@@ -16,10 +20,18 @@
 		windowHeight?: number;
 	}
 
-	let shortcuts = $state<DesktopShortcut[]>([
-		{ id: 'file-manager', name: 'File Manager', icon: '/img/apps/file-manager.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, component: FileManager, windowWidth: 700, windowHeight: 500 },
-		{ id: 'recycle-bin', name: 'Recycle Bin', icon: '/img/apps/recycle-bin.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
-	]);
+	let perDesktopShortcuts = $state<DesktopShortcut[][]>(
+		Array.from({ length: DESKTOP_COUNT }, (_, i) =>
+			i === 0
+				? [
+						{ id: 'file-manager', name: 'File Manager', icon: '/img/apps/file-manager.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, component: FileManager, windowWidth: 700, windowHeight: 500 },
+						{ id: 'recycle-bin', name: 'Recycle Bin', icon: '/img/apps/recycle-bin.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
+					]
+				: []
+		)
+	);
+
+	const shortcuts = $derived(perDesktopShortcuts[activeId] ?? []);
 
 	let iconView: ReturnType<typeof IconView> | undefined = $state();
 

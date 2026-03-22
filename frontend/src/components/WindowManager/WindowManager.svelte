@@ -1,6 +1,10 @@
 <script lang="ts">
 	import { windows, snapPreview, getSnapBounds } from '../../scripts/window.svelte';
+	import { desktop } from '../../scripts/desktop.svelte';
 	import Window from './Window.svelte';
+	const { desktopId }: { desktopId?: number | undefined } = $props();
+	const activeId = $derived(desktopId ?? desktop.active);
+	const desktopWindows = $derived(windows.filter(w => w.desktopId === activeId));
 	const previewBounds = $derived(snapPreview.zone ? getSnapBounds(snapPreview.zone) : null);
 </script>
 
@@ -20,7 +24,7 @@
 	}
 </style>
 
-{#each windows as win (win.id)}
+{#each desktopWindows as win (win.id)}
 	<Window {win} />
 {/each}
 {#if previewBounds}

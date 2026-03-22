@@ -4,6 +4,7 @@
 
 - [**About**](#about)
 - [**Screenshots**](#screenshots)
+- [**Usage**](#usage)
 - [**Installation**](#installation)
 - [**License**](#license)
 - [**Contribution**](#contribution)
@@ -22,6 +23,10 @@ Official website: **https://yellow-os.com**
 ## Screenshots
 
 ![Yellow OS](./screenshot.webp)
+
+## Usage
+
+- For usage instructions follow [**this document**](./USAGE.md).
 
 ## Installation
 

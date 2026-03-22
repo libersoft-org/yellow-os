@@ -17,7 +17,6 @@
 - File manager - connect with OPFS
 - File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
 - File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
-- More desktops - switching
 - Cleanup code
 - Tray icons
 - Quick launch

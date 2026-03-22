@@ -1,5 +1,6 @@
 import type { Component } from 'svelte';
 import { flushSync } from 'svelte';
+import { desktop } from './desktop.svelte';
 export type SnapZone = 'left' | 'right' | 'top' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export interface WindowState {
 	id: string;
@@ -19,6 +20,7 @@ export interface WindowState {
 	preMaximize: { x: number; y: number; width: number; height: number } | null;
 	snappedZone: SnapZone | null;
 	component: Component;
+	desktopId: number;
 }
 function getTaskbarHeight(): number {
 	return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--taskbar-height')) || 50;
@@ -76,6 +78,7 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 		preMaximize: null,
 		snappedZone: null,
 		component: opts.component,
+		desktopId: desktop.active,
 	};
 	windows.push(win);
 	windowMap.set(id, windows[windows.length - 1]!);

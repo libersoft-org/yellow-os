@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { windows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow } from '../../scripts/window.svelte';
+	import { desktop } from '../../scripts/desktop.svelte';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
 	import Icon from '../Icon/Icon.svelte';
+	const { desktopId }: { desktopId?: number | undefined } = $props();
+	const activeId = $derived(desktopId ?? desktop.active);
+	const desktopWindows = $derived(windows.filter(w => w.desktopId === activeId));
 	const DRAG_THRESHOLD = 4;
 	const SCROLL_STEP = 150;
 	let dragging = $state(false);
@@ -192,7 +196,7 @@
 		</button>
 	{/if}
 	<div class="window-buttons" class:fade-left={canScrollLeft} class:fade-right={canScrollRight} bind:this={scrollContainer} use:observeOverflow use:scrollOnFocusChange={focus.id} onscroll={updateScrollState} onwheel={onWheel} onpointermove={onPointerMove} onpointerup={onPointerUp} role="tablist" tabindex="-1">
-		{#each windows as win (win.id)}
+		{#each desktopWindows as win (win.id)}
 			<div use:trackBtn={win.id}>
 				<TaskbarItemsItem icon={win.icon} title={win.title} active={focus.id === win.id && !win.minimized} dragging={dragging && dragId === win.id} translateX={dragging && dragId === win.id ? dragTranslateX : 0} onpointerdown={e => onPointerDown(e, win.id)} />
 			</div>
