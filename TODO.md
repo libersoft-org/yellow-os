@@ -33,7 +33,7 @@
 - Add system settings app
 - Create file manager with 2 panels - like Midnight Commander
 - Serverless data synchronization between devices
-- Recycle bin
+- Trash can
 - Photo viewer
 - Drag and drop / upload form from main OS to web OS
 - Terminal (for interacting with file system)

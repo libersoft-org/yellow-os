@@ -25,7 +25,7 @@
 			i === 0
 				? [
 						{ id: 'file-manager', name: 'File Manager', icon: '/img/apps/file-manager.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, component: FileManager, windowWidth: 700, windowHeight: 500 },
-						{ id: 'recycle-bin', name: 'Recycle Bin', icon: '/img/apps/recycle-bin.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
+						{ id: 'trash-can', name: 'Trash can', icon: '/img/apps/trash.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
 					]
 				: []
 		)
