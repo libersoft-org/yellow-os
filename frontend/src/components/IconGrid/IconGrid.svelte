@@ -29,19 +29,24 @@
 	const selection = createSelection();
 	let containerEl: HTMLElement | undefined = $state();
 	let containerWidth = $state(0);
-	let positionOverrides = $state(new Map<string, { gridX: number; gridY: number }>());
-	let prevItemSignature = '';
+	const itemSignature = $derived(items.map(i => i.id).join('\0'));
+	let _overrides = $state({ sig: '', map: new Map<string, { gridX: number; gridY: number }>() });
+	let _selSig = $state('');
+	const positionOverrides = $derived(_overrides.sig === itemSignature ? _overrides.map : new Map<string, { gridX: number; gridY: number }>());
 
-	const cols = $derived(Math.max(1, Math.floor((containerWidth || 400) / cellWidth)));
+	function isItemSelected(id: string): boolean {
+		return _selSig === itemSignature && selection.isSelected(id);
+	}
 
-	$effect(() => {
-		const sig = items.map(i => i.id).join('\0');
-		if (sig !== prevItemSignature) {
-			prevItemSignature = sig;
-			positionOverrides = new Map();
+	function resetIfItemsChanged() {
+		if (_selSig !== itemSignature) {
+			_selSig = itemSignature;
+			_overrides = { sig: itemSignature, map: new Map() };
 			selection.clear();
 		}
-	});
+	}
+
+	const cols = $derived(Math.max(1, Math.floor((containerWidth || 400) / cellWidth)));
 
 	function getPosition(item: IconGridItemData, index: number): { gridX: number; gridY: number } {
 		const override = positionOverrides.get(item.id);
@@ -71,15 +76,14 @@
 	let pendingDeselect = $state<string | null>(null);
 	let lastClickedItemId = $state<string | null>(null);
 
-	$effect(() => {
-		if (!containerEl) return;
-		containerWidth = containerEl.clientWidth;
+	function observeResize(node: HTMLElement) {
+		containerWidth = node.clientWidth;
 		const ro = new ResizeObserver(entries => {
 			containerWidth = entries[0]!.contentRect.width;
 		});
-		ro.observe(containerEl);
-		return () => ro.disconnect();
-	});
+		ro.observe(node);
+		return { destroy: () => ro.disconnect() };
+	}
 
 	function getContainerCoords(e: PointerEvent): { x: number; y: number } {
 		const rect = containerEl!.getBoundingClientRect();
@@ -90,6 +94,7 @@
 	}
 
 	function onContainerPointerDown(e: PointerEvent) {
+		resetIfItemsChanged();
 		const cell = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
 		if (cell) {
 			onCellPointerDown(e, cell.dataset['iconId']!);
@@ -241,7 +246,7 @@
 						nextOverrides.set(id, pos);
 						moves.push({ id, ...pos });
 					}
-					positionOverrides = nextOverrides;
+					_overrides = { sig: itemSignature, map: nextOverrides };
 					onitemsmove?.(moves);
 				}
 			}
@@ -265,6 +270,7 @@
 	function onKeydown(e: KeyboardEvent) {
 		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
 			e.preventDefault();
+			_selSig = itemSignature;
 			selection.selectAll(items.map(i => i.id));
 		}
 	}
@@ -334,7 +340,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div class="icon-grid" bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" onpointerdown={onContainerPointerDown} onpointermove={onContainerPointerMove} onpointerup={onContainerPointerUp} ondblclick={onContainerDblClick} onkeydown={onKeydown} tabindex="0">
+<div class="icon-grid" use:observeResize bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" onpointerdown={onContainerPointerDown} onpointermove={onContainerPointerMove} onpointerup={onContainerPointerUp} ondblclick={onContainerDblClick} onkeydown={onKeydown} tabindex="0">
 	{#if items.length === 0 && empty}
 		<div class="empty-state">{@render empty()}</div>
 	{/if}
@@ -342,7 +348,7 @@
 	{#each items as item (item.id)}
 		{@const pos = itemPositions.get(item.id)}
 		{#if pos}
-			<div class="icon-cell" class:selected={selection.isSelected(item.id)} class:is-dragging={dragMode === 'move' && selection.isSelected(item.id)} data-icon-id={item.id} style="left: {pos.gridX * cellWidth}px; top: {pos.gridY * cellHeight}px; width: {cellWidth}px; height: {cellHeight}px;">
+			<div class="icon-cell" class:selected={isItemSelected(item.id)} class:is-dragging={dragMode === 'move' && isItemSelected(item.id)} data-icon-id={item.id} style="left: {pos.gridX * cellWidth}px; top: {pos.gridY * cellHeight}px; width: {cellWidth}px; height: {cellHeight}px;">
 				<IconGridItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
 			</div>
 		{/if}
