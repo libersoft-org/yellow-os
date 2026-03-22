@@ -18,7 +18,7 @@
 		font-weight: bold;
 		color: var(--color-text-dim);
 		font-variant-numeric: tabular-nums;
-		padding: 0 5px;
+		padding: 0 10px;
 	}
 </style>
 

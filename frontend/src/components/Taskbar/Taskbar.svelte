@@ -9,17 +9,16 @@
 
 <style>
 	.taskbar {
-		height: var(--taskbar-height);
-		background: var(--color-surface);
-		border-top: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
-		backdrop-filter: blur(2px);
-		-webkit-backdrop-filter: blur(2px);
+		z-index: 99999;
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		padding: 0 5px;
+		gap: 5px;
+		height: var(--taskbar-height);
+		background: var(--color-surface);
+		border-top: 1px solid var(--color-border);
+		backdrop-filter: blur(2px);
+		-webkit-backdrop-filter: blur(2px);
 		flex-shrink: 0;
-		z-index: 99999;
 	}
 </style>
 
