@@ -174,18 +174,18 @@
 
 <div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" onpointerdown={onPointerDown} onpointermove={onPointerMove} onpointerup={onPointerUp}>
 	<div class="titlebar-left">
-		<Icon img={win.icon} alt={win.title} size="16px" padding="0" colorVariable={focused ? undefined : '--color-text'} noColorFilter={focused} />
+		<Icon img={win.icon} alt={win.title} size="16px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
 		<span class="title">{win.title}</span>
 	</div>
 	<div class="window-controls">
 		<button class="control minimize" onclick={() => minimizeWindow(win.id)}>
-			<Icon img="/img/window/minimize.svg" alt="Minimize" size="14px" padding="0" colorVariable={focused ? undefined : '--color-text'} noColorFilter={focused} />
+			<Icon img="/img/window/minimize.svg" alt="Minimize" size="14px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
 		</button>
 		<button class="control maximize" onclick={() => handleMaximize()}>
-			<Icon img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} size="14px" padding="0" colorVariable={focused ? undefined : '--color-text'} noColorFilter={focused} />
+			<Icon img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} size="14px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
 		</button>
 		<button class="control close" onclick={() => closeWindow(win.id)}>
-			<Icon img="/img/window/close.svg" alt="Close" size="14px" padding="0" colorVariable={focused ? undefined : '--color-text'} noColorFilter={focused} />
+			<Icon img="/img/window/close.svg" alt="Close" size="14px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
 		</button>
 	</div>
 </div>

@@ -9,7 +9,12 @@ export function getColorFromCSSToFilter(name: string): string {
 }
 
 export function convertFromShortHex(v: string): string {
-	if (v.length === 4) v = `#${v[1]}${v[1]}${v[2]}${v[2]}${v[3]}${v[3]}`;
+	if (v.length === 4) {
+		const r = v[1] ?? '0';
+		const g = v[2] ?? '0';
+		const b = v[3] ?? '0';
+		v = `#${r}${r}${g}${g}${b}${b}`;
+	}
 	return v;
 }
 

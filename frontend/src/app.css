@@ -11,6 +11,8 @@
 	--color-text: #fff;
 	--color-text-dim: #888;
 	--color-accent: #fd3;
+	--color-accent-fg: #000;
+	--color-success: #4caf50;
 	--color-taskbar: #111;
 }
 

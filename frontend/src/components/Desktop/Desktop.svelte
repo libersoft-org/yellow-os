@@ -37,8 +37,8 @@
 		handleKeyboardShortcut(e);
 	}
 
-	function onAnimationEnd() {
-		clearSlide();
+	function onAnimationEnd(e: AnimationEvent) {
+		if (e.animationName.startsWith('enter-') && e.currentTarget === e.target) clearSlide();
 	}
 </script>
 

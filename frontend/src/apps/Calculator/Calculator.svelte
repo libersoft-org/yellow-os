@@ -33,16 +33,20 @@
 		display = String(val / 100);
 	}
 
+	function round(n: number): number {
+		return Math.round(n * 1e12) / 1e12;
+	}
+
 	function calculate(left: number, right: number, op: string): number {
 		switch (op) {
 			case '+':
-				return left + right;
+				return round(left + right);
 			case '−':
-				return left - right;
+				return round(left - right);
 			case '×':
-				return left * right;
+				return round(left * right);
 			case '÷':
-				return right !== 0 ? left / right : NaN;
+				return right !== 0 ? round(left / right) : NaN;
 			default:
 				return right;
 		}
@@ -54,8 +58,14 @@
 		if (operator && !waitingForOperand) {
 			const result = calculate(previousValue!, current, operator);
 			lastExpression = `${previousValue} ${operator} ${current} =`;
-			display = String(result);
-			previousValue = result;
+			if (isNaN(result)) {
+				display = 'Error';
+				previousValue = null;
+				operator = null;
+			} else {
+				display = String(result);
+				previousValue = result;
+			}
 		} else {
 			previousValue = current;
 		}
@@ -69,7 +79,7 @@
 		const current = parseFloat(display);
 		const result = calculate(previousValue, current, operator);
 		lastExpression = `${previousValue} ${operator} ${current} =`;
-		display = String(result);
+		display = isNaN(result) ? 'Error' : String(result);
 		previousValue = null;
 		operator = null;
 		waitingForOperand = true;

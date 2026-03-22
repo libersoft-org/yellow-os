@@ -79,11 +79,16 @@
 	}
 
 	function spawnFood() {
-		let pos: Point;
-		do {
-			pos = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
-		} while (snake.some(s => s.x === pos.x && s.y === pos.y));
-		food = pos;
+		const total = cols * rows;
+		if (snake.length >= total) return;
+		const occupied = new Set(snake.map(s => s.y * cols + s.x));
+		const free: Point[] = [];
+		for (let y = 0; y < rows; y++) {
+			for (let x = 0; x < cols; x++) {
+				if (!occupied.has(y * cols + x)) free.push({ x, y });
+			}
+		}
+		food = free[Math.floor(Math.random() * free.length)]!;
 	}
 
 	function resetGame() {

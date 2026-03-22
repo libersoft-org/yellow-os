@@ -15,7 +15,7 @@
 		gap: 5px;
 		height: var(--taskbar-height);
 		background: var(--color-surface);
-		border-top: 1px solid var(--color-border);
+		box-shadow: inset 0 1px 0 0 var(--color-border);
 		backdrop-filter: blur(2px);
 		-webkit-backdrop-filter: blur(2px);
 		flex-shrink: 0;
