@@ -4,7 +4,7 @@
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';
 	import FileManagerSeparator from './FileManagerSeparator.svelte';
-	import IconView, { type IconViewItem } from '../../components/IconView/IconView.svelte';
+	import IconGrid, { type IconGridItemData } from '../../components/IconGrid/IconGrid.svelte';
 
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);
@@ -21,7 +21,7 @@
 		})
 	);
 
-	const iconViewItems = $derived<IconViewItem[]>(
+	const iconViewItems = $derived<IconGridItemData[]>(
 		entries.map(e => ({
 			id: e.name,
 			icon: e.type === 'directory' ? '/img/directory.svg' : '/img/file.svg',
@@ -68,7 +68,7 @@
 		navigateTo(parent);
 	}
 
-	function onIconDblClick(item: IconViewItem) {
+	function onIconDblClick(item: IconGridItemData) {
 		const entry = entries.find(e => e.name === item.id);
 		if (entry) openEntry(entry);
 	}
@@ -111,11 +111,11 @@
 		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileManagerSeparator onresize={onSeparatorResize} />
 		<div class="grid-area">
-			<IconView items={iconViewItems} ondblclick={onIconDblClick}>
+			<IconGrid items={iconViewItems} ondblclick={onIconDblClick}>
 				{#snippet empty()}
 					This directory is empty
 				{/snippet}
-			</IconView>
+			</IconGrid>
 		</div>
 	</div>
 </div>

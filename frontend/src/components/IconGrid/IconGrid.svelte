@@ -1,5 +1,5 @@
 <script lang="ts" module>
-	export interface IconViewItem {
+	export interface IconGridItemData {
 		id: string;
 		icon: string;
 		label: string;
@@ -12,14 +12,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { createSelection } from '../../scripts/selection.svelte';
-	import IconItem from '../IconItem/IconItem.svelte';
+	import IconGridItem from './IconGridItem.svelte';
 
 	interface Props {
-		items: IconViewItem[];
+		items: IconGridItemData[];
 		cellWidth?: number;
 		cellHeight?: number;
 		iconSize?: string;
-		ondblclick?: (item: IconViewItem) => void;
+		ondblclick?: (item: IconGridItemData) => void;
 		onitemsmove?: (moves: { id: string; gridX: number; gridY: number }[]) => void;
 		empty?: Snippet;
 	}
@@ -43,7 +43,7 @@
 		}
 	});
 
-	function getPosition(item: IconViewItem, index: number): { gridX: number; gridY: number } {
+	function getPosition(item: IconGridItemData, index: number): { gridX: number; gridY: number } {
 		const override = positionOverrides.get(item.id);
 		if (override) return override;
 		if (item.gridX != null && item.gridY != null) return { gridX: item.gridX, gridY: item.gridY };
@@ -275,7 +275,7 @@
 </script>
 
 <style>
-	.icon-view {
+	.icon-grid {
 		position: relative;
 		outline: none;
 	}
@@ -334,7 +334,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div class="icon-view" bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" onpointerdown={onContainerPointerDown} onpointermove={onContainerPointerMove} onpointerup={onContainerPointerUp} ondblclick={onContainerDblClick} onkeydown={onKeydown} tabindex="0">
+<div class="icon-grid" bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" onpointerdown={onContainerPointerDown} onpointermove={onContainerPointerMove} onpointerup={onContainerPointerUp} ondblclick={onContainerDblClick} onkeydown={onKeydown} tabindex="0">
 	{#if items.length === 0 && empty}
 		<div class="empty-state">{@render empty()}</div>
 	{/if}
@@ -343,7 +343,7 @@
 		{@const pos = itemPositions.get(item.id)}
 		{#if pos}
 			<div class="icon-cell" class:selected={selection.isSelected(item.id)} class:is-dragging={dragMode === 'move' && selection.isSelected(item.id)} data-icon-id={item.id} style="left: {pos.gridX * cellWidth}px; top: {pos.gridY * cellHeight}px; width: {cellWidth}px; height: {cellHeight}px;">
-				<IconItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
+				<IconGridItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
 			</div>
 		{/if}
 	{/each}
@@ -368,7 +368,7 @@
 						{@const offsetX = (itemPos.gridX - origPos.gridX) * cellWidth}
 						{@const offsetY = (itemPos.gridY - origPos.gridY) * cellHeight}
 						<div class="drag-ghost" style="left: {dragGhostPos.x + offsetX}px; top: {dragGhostPos.y + offsetY}px; width: {cellWidth}px; height: {cellHeight}px;">
-							<IconItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
+							<IconGridItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
 						</div>
 					{/if}
 				{/if}

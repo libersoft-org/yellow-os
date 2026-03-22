@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { DiskInfo } from './filemanager';
-	import IconItem from '../../components/IconItem/IconItem.svelte';
+	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	interface Props {
 		disks: DiskInfo[];
 		currentPath: string;
@@ -48,7 +48,7 @@
 	<div class="items">
 		{#each disks as disk}
 			<button class="item" class:active={currentPath === disk.path} onclick={() => onnavigate(disk.path)}>
-				<IconItem icon={disk.icon} label={disk.name} subtitle="{disk.free} free of {disk.total}" layout="horizontal" iconSize="20px" iconColor={currentPath === disk.path ? '--color-bg' : '--color-accent'} color={currentPath === disk.path ? 'var(--color-bg)' : undefined} />
+				<IconGridItem icon={disk.icon} label={disk.name} subtitle="{disk.free} free of {disk.total}" layout="horizontal" iconSize="20px" iconColor={currentPath === disk.path ? '--color-bg' : '--color-accent'} color={currentPath === disk.path ? 'var(--color-bg)' : undefined} />
 			</button>
 		{/each}
 	</div>

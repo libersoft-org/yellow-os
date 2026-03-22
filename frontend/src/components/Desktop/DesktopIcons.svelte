@@ -2,7 +2,7 @@
 	import type { Component } from 'svelte';
 	import { openWindow, defocusAll } from '../../scripts/window.svelte';
 	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte';
-	import IconView, { type IconViewItem } from '../IconView/IconView.svelte';
+	import IconGrid, { type IconGridItemData } from '../IconGrid/IconGrid.svelte';
 	import FileManager from '../../apps/FileManager/FileManager.svelte';
 
 	const { desktopId }: { desktopId?: number | undefined } = $props();
@@ -33,9 +33,9 @@
 
 	const shortcuts = $derived(perDesktopShortcuts[activeId] ?? []);
 
-	let iconView: ReturnType<typeof IconView> | undefined = $state();
+	let iconView: ReturnType<typeof IconGrid> | undefined = $state();
 
-	const iconViewItems = $derived<IconViewItem[]>(
+	const iconViewItems = $derived<IconGridItemData[]>(
 		shortcuts.map(s => ({
 			id: s.id,
 			icon: s.icon,
@@ -46,7 +46,7 @@
 		}))
 	);
 
-	function onDblClick(item: IconViewItem) {
+	function onDblClick(item: IconGridItemData) {
 		const shortcut = shortcuts.find(s => s.id === item.id);
 		if (shortcut?.component) {
 			openWindow({
@@ -84,5 +84,5 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="desktop-icons" onpointerdown={defocusAll}>
-	<IconView bind:this={iconView} items={iconViewItems} ondblclick={onDblClick} onitemsmove={onItemsMove} />
+	<IconGrid bind:this={iconView} items={iconViewItems} ondblclick={onDblClick} onitemsmove={onItemsMove} />
 </div>
