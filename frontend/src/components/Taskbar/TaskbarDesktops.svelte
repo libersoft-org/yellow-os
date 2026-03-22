@@ -7,7 +7,6 @@
 		display: flex;
 		gap: 4px;
 		align-items: center;
-		padding: 0 8px;
 	}
 
 	.desktop-btn {

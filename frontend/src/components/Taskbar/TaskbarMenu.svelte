@@ -96,7 +96,7 @@
 
 <div class="taskbar-menu-area">
 	<button class="menu-btn" onclick={() => (menuOpen = !menuOpen)}>
-		<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="24px" padding="10px" colorVariable="--color-accent" />
+		<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="24px" padding="5px" colorVariable="--color-accent" />
 	</button>
 	{#if menuOpen}
 		<div class="menu-popup">

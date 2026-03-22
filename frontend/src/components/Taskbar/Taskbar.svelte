@@ -16,8 +16,8 @@
 		-webkit-backdrop-filter: blur(2px);
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
-		/*padding: 0 12px;*/
+		gap: 10px;
+		padding: 0 5px;
 		flex-shrink: 0;
 		z-index: 99999;
 	}

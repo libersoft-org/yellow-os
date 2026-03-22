@@ -13,23 +13,13 @@
 </script>
 
 <style>
-	.system-tray {
-		display: flex;
-		align-items: center;
-		gap: 12px;
-		padding-left: 12px;
-	}
-
 	.clock {
 		font-size: 16px;
 		font-weight: bold;
 		color: var(--color-text-dim);
 		font-variant-numeric: tabular-nums;
-
-		padding: 10px;
+		padding: 0 5px;
 	}
 </style>
 
-<div class="system-tray">
-	<span class="clock">{formatTime(time)}</span>
-</div>
+<div class="clock">{formatTime(time)}</div>
