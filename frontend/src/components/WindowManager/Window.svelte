@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WindowState } from '../../scripts/window.svelte';
-	import { focusWindow, finishMinimize, finishSnapAnimation, focus, snapAnimatingIds, RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window.svelte';
+	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds, RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window.svelte';
 	import WindowTitlebar from './WindowTitlebar.svelte';
 
 	interface Props {
@@ -20,6 +20,7 @@
 
 	function onWindowTransitionEnd(e: TransitionEvent) {
 		if (e.propertyName === 'transform' && win.minimizing) finishMinimize(win.id);
+		if (e.propertyName === 'transform' && win.closing) finishClose(win.id);
 		if (e.propertyName === 'width' && snapAnimating) finishSnapAnimation(win.id);
 	}
 </script>
@@ -62,6 +63,17 @@
 		visibility: visible;
 	}
 
+	.window.opening {
+		transform: scale(0.85);
+		opacity: 0;
+	}
+
+	.window.closing {
+		transform: scale(0.85);
+		opacity: 0;
+		pointer-events: none;
+	}
+
 	.window.maximized {
 		border-radius: 0;
 		transition:
@@ -100,7 +112,7 @@
 	}
 </style>
 
-<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
+<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:opening={win.opening} class:closing={win.closing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
 	<WindowTitlebar {win} />
 	<div class="content">
 		<WindowContent />

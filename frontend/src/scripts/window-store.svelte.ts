@@ -18,6 +18,8 @@ export interface WindowState {
 	minimizing: boolean;
 	maximized: boolean;
 	restoring: boolean;
+	opening: boolean;
+	closing: boolean;
 	preMaximize: { x: number; y: number; width: number; height: number } | null;
 	snappedZone: SnapZone | null;
 	component: Component;
@@ -77,23 +79,35 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 		minimizing: false,
 		maximized: false,
 		restoring: false,
+		opening: true,
+		closing: false,
 		preMaximize: null,
 		snappedZone: null,
 		component: opts.component,
 		desktopId: desktop.active,
 	};
 	_windows.push(win);
-	_windowMap.set(id, _windows[_windows.length - 1]!);
+	const ref = _windows[_windows.length - 1]!;
+	_windowMap.set(id, ref);
 	focus.id = id;
+	requestAnimationFrame(() => {
+		requestAnimationFrame(() => (ref.opening = false));
+	});
 	return id;
 }
 
 export function closeWindow(id: string): void {
+	const win = _windowMap.get(id);
+	if (!win || win.closing) return;
+	win.closing = true;
+	if (focus.id === id) focus.id = null;
+}
+
+export function finishClose(id: string): void {
 	const idx = _windows.findIndex(w => w.id === id);
 	if (idx === -1) return;
 	_windows.splice(idx, 1);
 	_windowMap.delete(id);
-	if (focus.id === id) focus.id = null;
 	compactZIndexes();
 }
 
