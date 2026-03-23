@@ -1,9 +1,10 @@
 export const DESKTOP_COUNT = 4;
 
-export const desktop: { active: number; previous: number | null; slideDirection: 'left' | 'right' | null } = $state({
+export const desktop: { active: number; previous: number | null; slideDirection: 'left' | 'right' | null; slideId: number } = $state({
 	active: 0,
 	previous: null,
 	slideDirection: null,
+	slideId: 0,
 });
 
 export function switchDesktop(index: number): void {
@@ -11,6 +12,7 @@ export function switchDesktop(index: number): void {
 		desktop.slideDirection = index > desktop.active ? 'left' : 'right';
 		desktop.previous = desktop.active;
 		desktop.active = index;
+		desktop.slideId++;
 	}
 }
 

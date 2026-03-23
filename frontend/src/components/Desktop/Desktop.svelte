@@ -38,7 +38,7 @@
 	}
 
 	function onAnimationEnd(e: AnimationEvent) {
-		if (e.animationName.startsWith('enter-') && e.currentTarget === e.target) clearSlide();
+		if (e.currentTarget === e.target) clearSlide();
 	}
 </script>
 
@@ -121,15 +121,17 @@
 <svelte:window onkeydown={onKeyDown} />
 
 <div class="viewport">
-	{#if sliding}
-		<div class="desktop {desktop.slideDirection === 'left' ? 'leave-to-left' : 'leave-to-right'}">
-			<div class="window-area" role="presentation">
-				<DesktopIcons desktopId={desktop.previous!} />
-				<WindowManager desktopId={desktop.previous!} />
+	{#key desktop.slideId}
+		{#if sliding}
+			<div class="desktop {desktop.slideDirection === 'left' ? 'leave-to-left' : 'leave-to-right'}">
+				<div class="window-area" role="presentation">
+					<DesktopIcons desktopId={desktop.previous!} />
+					<WindowManager desktopId={desktop.previous!} />
+				</div>
+				<Taskbar desktopId={desktop.previous!} />
 			</div>
-			<Taskbar desktopId={desktop.previous!} />
-		</div>
-	{/if}
+		{/if}
+	{/key}
 	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" onanimationend={onAnimationEnd}>
 		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown}>
 			<DesktopIcons />
