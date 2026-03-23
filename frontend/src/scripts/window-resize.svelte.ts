@@ -17,7 +17,14 @@ export function getHandleStyle(dir: ResizeDir): string {
 	return `position:absolute;z-index:10;touch-action:none;${HANDLE_STYLES[dir]}`;
 }
 
-export function createResizeHandler(getWinId: () => string) {
+export interface ResizeHandler {
+	readonly resizing: boolean;
+	start(e: PointerEvent, d: ResizeDir): void;
+	move(e: PointerEvent): void;
+	up(): void;
+}
+
+export function createResizeHandler(getWinId: () => string): ResizeHandler {
 	let resizing = $state(false);
 	let dir: ResizeDir = 'se';
 	let startX = 0;
@@ -27,7 +34,7 @@ export function createResizeHandler(getWinId: () => string) {
 	let winStartW = 0;
 	let winStartH = 0;
 
-	function start(e: PointerEvent, d: ResizeDir) {
+	function start(e: PointerEvent, d: ResizeDir): void {
 		const winId = getWinId();
 		const win = getWindow(winId);
 		if (!win || win.maximized) return;
@@ -44,7 +51,7 @@ export function createResizeHandler(getWinId: () => string) {
 		focusWindow(winId);
 	}
 
-	function move(e: PointerEvent) {
+	function move(e: PointerEvent): void {
 		if (!resizing) return;
 		const winId = getWinId();
 		const win = getWindow(winId);
@@ -76,7 +83,7 @@ export function createResizeHandler(getWinId: () => string) {
 		resizeWindow(winId, w, h, x, y);
 	}
 
-	function up() {
+	function up(): void {
 		resizing = false;
 	}
 

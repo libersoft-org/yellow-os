@@ -38,11 +38,11 @@
 		return segments;
 	});
 
-	function onSeparatorResize(dx: number) {
+	function onSeparatorResize(dx: number): void {
 		sidebarWidth = Math.max(120, Math.min(400, sidebarWidth + dx));
 	}
 
-	function navigateTo(path: string) {
+	function navigateTo(path: string): void {
 		if (path === currentPath) return;
 		history = history.slice(0, historyIndex + 1);
 		history.push(path);
@@ -50,30 +50,30 @@
 		currentPath = path;
 	}
 
-	function goBack() {
+	function goBack(): void {
 		if (!canGoBack) return;
 		historyIndex--;
 		currentPath = history[historyIndex]!;
 	}
 
-	function goForward() {
+	function goForward(): void {
 		if (!canGoForward) return;
 		historyIndex++;
 		currentPath = history[historyIndex]!;
 	}
 
-	function goUp() {
+	function goUp(): void {
 		if (!canGoUp) return;
 		const parent = currentPath.substring(0, currentPath.lastIndexOf('/')) || '/';
 		navigateTo(parent);
 	}
 
-	function onIconDblClick(item: IconGridItemData) {
+	function onIconDblClick(item: IconGridItemData): void {
 		const entry = entries.find(e => e.name === item.id);
 		if (entry) openEntry(entry);
 	}
 
-	function openEntry(entry: FileEntry) {
+	function openEntry(entry: FileEntry): void {
 		if (entry.type === 'directory') {
 			const path = currentPath === '/' ? '/' + entry.name : currentPath + '/' + entry.name;
 			navigateTo(path);

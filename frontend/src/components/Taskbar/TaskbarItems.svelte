@@ -18,17 +18,17 @@
 	let canScrollLeft = $state(false);
 	let canScrollRight = $state(false);
 
-	function updateScrollState() {
+	function updateScrollState(): void {
 		if (!scrollContainer) return;
 		canScrollLeft = scrollContainer.scrollLeft > 0;
 		canScrollRight = scrollContainer.scrollLeft + scrollContainer.clientWidth < scrollContainer.scrollWidth - 1;
 	}
 
-	function scrollBy(delta: number) {
+	function scrollBy(delta: number): void {
 		scrollContainer?.scrollTo({ left: scrollContainer.scrollLeft + delta, behavior: 'smooth' });
 	}
 
-	function scrollToFocused() {
+	function scrollToFocused(): void {
 		if (!focus.id) return;
 		const el = btnElements.get(focus.id);
 		if (el && scrollContainer) {
@@ -39,7 +39,12 @@
 		}
 	}
 
-	function observeOverflow(node: HTMLElement) {
+	interface SvelteAction<T = void> {
+		update?: T extends void ? never : (value: T) => void;
+		destroy?: () => void;
+	}
+
+	function observeOverflow(node: HTMLElement): SvelteAction {
 		const ro = new ResizeObserver(() => updateScrollState());
 		ro.observe(node);
 		const mo = new MutationObserver(() => requestAnimationFrame(updateScrollState));
@@ -52,7 +57,7 @@
 		};
 	}
 
-	function scrollOnFocusChange(_node: HTMLElement, _focusId: string | null) {
+	function scrollOnFocusChange(_node: HTMLElement, _focusId: string | null): SvelteAction<string | null> {
 		return {
 			update() {
 				scrollToFocused();
@@ -60,7 +65,7 @@
 		};
 	}
 
-	function onWheel(e: WheelEvent) {
+	function onWheel(e: WheelEvent): void {
 		if (!scrollContainer) return;
 		if (scrollContainer.scrollWidth <= scrollContainer.clientWidth) return;
 		e.preventDefault();
@@ -68,7 +73,7 @@
 		updateScrollState();
 	}
 
-	function trackBtn(node: HTMLElement, id: string) {
+	function trackBtn(node: HTMLElement, id: string): SvelteAction<string> {
 		btnElements.set(id, node);
 		return {
 			update(newId: string) {
@@ -82,18 +87,18 @@
 		};
 	}
 
-	function onWindowButtonClick(id: string, minimized: boolean) {
+	function onWindowButtonClick(id: string, minimized: boolean): void {
 		if (!minimized && focus.id === id && isTopWindow(id)) minimizeWindow(id);
 		else focusWindow(id);
 	}
 
-	function onPointerDown(e: PointerEvent, id: string) {
+	function onPointerDown(e: PointerEvent, id: string): void {
 		pointerDown = true;
 		dragId = id;
 		dragStartX = e.clientX;
 	}
 
-	function onPointerMove(e: PointerEvent) {
+	function onPointerMove(e: PointerEvent): void {
 		if (!pointerDown || !dragId) return;
 		const dx = e.clientX - dragStartX;
 		if (!dragging && Math.abs(dx) < DRAG_THRESHOLD) return;
@@ -121,7 +126,7 @@
 		}
 	}
 
-	function onPointerUp() {
+	function onPointerUp(): void {
 		pointerDown = false;
 		const wasDragging = dragging;
 		dragging = false;

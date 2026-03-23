@@ -46,7 +46,7 @@
 		}))
 	);
 
-	function onDblClick(item: IconGridItemData) {
+	function onDblClick(item: IconGridItemData): void {
 		const shortcut = shortcuts.find(s => s.id === item.id);
 		if (shortcut?.component) {
 			openWindow({
@@ -59,7 +59,7 @@
 		}
 	}
 
-	function onItemsMove(moves: { id: string; gridX: number; gridY: number }[]) {
+	function onItemsMove(moves: { id: string; gridX: number; gridY: number }[]): void {
 		for (const move of moves) {
 			const s = shortcuts.find(s => s.id === move.id);
 			if (s) {
@@ -69,7 +69,7 @@
 		}
 	}
 
-	export function clearSelection() {
+	export function clearSelection(): void {
 		iconView?.clearSelection();
 	}
 </script>

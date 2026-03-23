@@ -5,19 +5,19 @@
 	const { onresize }: Props = $props();
 	let dragging = $state(false);
 
-	function onpointerdown(e: PointerEvent) {
+	function onpointerdown(e: PointerEvent): void {
 		e.preventDefault();
 		dragging = true;
 		const target = e.currentTarget as HTMLElement;
 		target.setPointerCapture(e.pointerId);
 	}
 
-	function onpointermove(e: PointerEvent) {
+	function onpointermove(e: PointerEvent): void {
 		if (!dragging) return;
 		onresize(e.movementX);
 	}
 
-	function onpointerup() {
+	function onpointerup(): void {
 		dragging = false;
 	}
 </script>

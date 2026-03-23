@@ -17,12 +17,12 @@
 	let dragWinStartY = 0;
 	let dragStartedMaximized = false;
 
-	function handleMaximize() {
+	function handleMaximize(): void {
 		if (hasDragged) return;
 		toggleMaximize(win.id);
 	}
 
-	function onPointerDown(e: PointerEvent) {
+	function onPointerDown(e: PointerEvent): void {
 		if ((e.target as HTMLElement).closest('.window-controls')) return;
 		const now = Date.now();
 		if (now - lastTapTime < 300) {
@@ -44,7 +44,7 @@
 
 	const DRAG_THRESHOLD = 5;
 
-	function onPointerMove(e: PointerEvent) {
+	function onPointerMove(e: PointerEvent): void {
 		if (!dragging) return;
 		const dx = e.clientX - dragStartX;
 		const dy = e.clientY - dragStartY;
@@ -71,7 +71,7 @@
 		snapPreview.zone = getSnapZone(e.clientX, e.clientY);
 	}
 
-	function onPointerUp() {
+	function onPointerUp(): void {
 		if (dragging && snapPreview.zone) snapWindow(win.id, snapPreview.zone);
 		dragging = false;
 		hasDragged = false;

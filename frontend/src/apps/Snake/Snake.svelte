@@ -29,7 +29,7 @@
 		return audioCtx;
 	}
 
-	function playEat() {
+	function playEat(): void {
 		const ac = getAudioCtx();
 		const osc = ac.createOscillator();
 		const gain = ac.createGain();
@@ -43,7 +43,7 @@
 		osc.stop(ac.currentTime + 0.12);
 	}
 
-	function playGameOver() {
+	function playGameOver(): void {
 		const ac = getAudioCtx();
 		const osc = ac.createOscillator();
 		const gain = ac.createGain();
@@ -57,7 +57,7 @@
 		osc.stop(ac.currentTime + 0.5);
 	}
 
-	function playStart() {
+	function playStart(): void {
 		const ac = getAudioCtx();
 		[440, 660].forEach((freq, i) => {
 			const osc = ac.createOscillator();
@@ -73,12 +73,12 @@
 	}
 
 	// --- Game logic ---
-	function calcGrid() {
+	function calcGrid(): void {
 		cols = Math.floor(canvas.width / GRID);
 		rows = Math.floor(canvas.height / GRID);
 	}
 
-	function spawnFood() {
+	function spawnFood(): void {
 		const total = cols * rows;
 		if (snake.length >= total) return;
 		const occupied = new Set(snake.map(s => s.y * cols + s.x));
@@ -91,7 +91,7 @@
 		food = free[Math.floor(Math.random() * free.length)]!;
 	}
 
-	function resetGame() {
+	function resetGame(): void {
 		calcGrid();
 		const cx = Math.floor(cols / 2);
 		const cy = Math.floor(rows / 2);
@@ -106,7 +106,7 @@
 		spawnFood();
 	}
 
-	function startGame() {
+	function startGame(): void {
 		resetGame();
 		gameState = 'playing';
 		lastTick = 0;
@@ -146,7 +146,7 @@
 		return true;
 	}
 
-	function endGame() {
+	function endGame(): void {
 		gameState = 'gameover';
 		playGameOver();
 		if (score > highScore) {
@@ -159,7 +159,7 @@
 	}
 
 	// --- Render ---
-	function draw() {
+	function draw(): void {
 		if (!ctx) return;
 		const w = canvas.width;
 		const h = canvas.height;
@@ -209,7 +209,7 @@
 		ctx.fillText('Space = Pause', w - 8, 20);
 	}
 
-	function drawOverlay(title: string, subtitle: string, action: string) {
+	function drawOverlay(title: string, subtitle: string, action: string): void {
 		draw();
 		ctx.fillStyle = 'rgba(0,0,0,0.6)';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -228,7 +228,7 @@
 	}
 
 	// --- Loop ---
-	function loop(timestamp: number) {
+	function loop(timestamp: number): void {
 		if (gameState !== 'playing') return;
 		if (timestamp - lastTick >= getInterval()) {
 			lastTick = timestamp;
@@ -243,7 +243,7 @@
 	}
 
 	// --- Input ---
-	function onKeyDown(e: KeyboardEvent) {
+	function onKeyDown(e: KeyboardEvent): void {
 		if (e.key === ' ') {
 			e.preventDefault();
 			if (gameState === 'menu' || gameState === 'gameover') startGame();
@@ -272,7 +272,7 @@
 	}
 
 	// --- Resize ---
-	function syncSize() {
+	function syncSize(): void {
 		const rect = container.getBoundingClientRect();
 		canvas.width = rect.width;
 		canvas.height = rect.height;

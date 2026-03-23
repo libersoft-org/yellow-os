@@ -9,7 +9,6 @@
 
 ## New features
 
-- Add return types to all functions (void, string etc.)
 - Click on window title bar icon should show menu - maximize, minimize, restore, close, double click to close
 - Create a generic list items - use in File manager in left column, in System settings etc.
 - File manager - add file / directory info in right panel
@@ -19,6 +18,7 @@
 - File manager - connect with OPFS
 - File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
 - File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
+- Trash can
 - Cleanup code
 - Tray icons
 - Quick launch
@@ -35,7 +35,6 @@
 - Add system settings app
 - Create file manager with 2 panels - like Midnight Commander
 - Serverless data synchronization between devices
-- Trash can
 - Photo viewer
 - Drag and drop / upload form from main OS to web OS
 - Terminal (for interacting with file system)

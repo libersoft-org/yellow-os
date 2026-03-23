@@ -5,14 +5,14 @@
 	let waitingForOperand = $state(false);
 	let lastExpression = $state('');
 
-	function inputDigit(digit: string) {
+	function inputDigit(digit: string): void {
 		if (waitingForOperand) {
 			display = digit;
 			waitingForOperand = false;
 		} else display = display === '0' ? digit : display + digit;
 	}
 
-	function inputDecimal() {
+	function inputDecimal(): void {
 		if (waitingForOperand) {
 			display = '0.';
 			waitingForOperand = false;
@@ -23,12 +23,12 @@
 		}
 	}
 
-	function toggleSign() {
+	function toggleSign(): void {
 		const val = parseFloat(display);
 		display = String(-val);
 	}
 
-	function inputPercent() {
+	function inputPercent(): void {
 		const val = parseFloat(display);
 		display = String(val / 100);
 	}
@@ -52,7 +52,7 @@
 		}
 	}
 
-	function handleOperator(nextOperator: string) {
+	function handleOperator(nextOperator: string): void {
 		const current = parseFloat(display);
 
 		if (operator && !waitingForOperand) {
@@ -74,7 +74,7 @@
 		waitingForOperand = true;
 	}
 
-	function handleEquals() {
+	function handleEquals(): void {
 		if (operator === null || previousValue === null) return;
 		const current = parseFloat(display);
 		const result = calculate(previousValue, current, operator);
@@ -85,7 +85,7 @@
 		waitingForOperand = true;
 	}
 
-	function clear() {
+	function clear(): void {
 		display = '0';
 		previousValue = null;
 		operator = null;
@@ -93,7 +93,7 @@
 		lastExpression = '';
 	}
 
-	function handleKeydown(e: KeyboardEvent) {
+	function handleKeydown(e: KeyboardEvent): void {
 		if (e.key >= '0' && e.key <= '9') inputDigit(e.key);
 		else if (e.key === '.') inputDecimal();
 		else if (e.key === '+') handleOperator('+');

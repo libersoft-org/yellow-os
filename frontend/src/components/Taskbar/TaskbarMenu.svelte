@@ -19,12 +19,12 @@
 	];
 	let menuOpen = $state(false);
 
-	function launchApp(app: (typeof apps)[number]) {
+	function launchApp(app: (typeof apps)[number]): void {
 		openWindow({ title: app.name, icon: app.icon, component: app.component, width: app.width, height: app.height });
 		menuOpen = false;
 	}
 
-	function onClickOutside(e: PointerEvent) {
+	function onClickOutside(e: PointerEvent): void {
 		if (menuOpen && !(e.target as HTMLElement).closest('.taskbar-menu-area')) menuOpen = false;
 	}
 </script>

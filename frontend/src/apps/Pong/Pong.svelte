@@ -32,7 +32,7 @@
 		return audioCtx;
 	}
 
-	function playHit() {
+	function playHit(): void {
 		const ac = getAudioCtx();
 		const osc = ac.createOscillator();
 		const gain = ac.createGain();
@@ -45,7 +45,7 @@
 		osc.stop(ac.currentTime + 0.06);
 	}
 
-	function playWall() {
+	function playWall(): void {
 		const ac = getAudioCtx();
 		const osc = ac.createOscillator();
 		const gain = ac.createGain();
@@ -58,7 +58,7 @@
 		osc.stop(ac.currentTime + 0.08);
 	}
 
-	function playScore() {
+	function playScore(): void {
 		const ac = getAudioCtx();
 		const osc = ac.createOscillator();
 		const gain = ac.createGain();
@@ -72,7 +72,7 @@
 		osc.stop(ac.currentTime + 0.35);
 	}
 
-	function playWin() {
+	function playWin(): void {
 		const ac = getAudioCtx();
 		[523, 659, 784].forEach((freq, i) => {
 			const osc = ac.createOscillator();
@@ -88,7 +88,7 @@
 	}
 
 	// --- Game logic ---
-	function resetBall(direction: number) {
+	function resetBall(direction: number): void {
 		const w = canvas.width;
 		const h = canvas.height;
 		ballX = w / 2;
@@ -98,7 +98,7 @@
 		ballDY = BALL_BASE_SPEED * Math.sin(angle);
 	}
 
-	function resetGame() {
+	function resetGame(): void {
 		const h = canvas.height;
 		p1Y = h / 2 - PADDLE_H / 2;
 		p2Y = h / 2 - PADDLE_H / 2;
@@ -108,7 +108,7 @@
 		resetBall(1);
 	}
 
-	function startGame() {
+	function startGame(): void {
 		resetGame();
 		gameState = 'playing';
 		lastTick = 0;
@@ -119,7 +119,7 @@
 		return Math.max(0, Math.min(canvas.height - PADDLE_H, y));
 	}
 
-	function update() {
+	function update(): void {
 		const w = canvas.width;
 		const h = canvas.height;
 		const paddleMargin = 20;
@@ -190,7 +190,7 @@
 	}
 
 	// --- Render ---
-	function draw() {
+	function draw(): void {
 		if (!ctx) return;
 		const w = canvas.width;
 		const h = canvas.height;
@@ -239,7 +239,7 @@
 		ctx.fill();
 	}
 
-	function drawOverlay(title: string, subtitle: string, action: string) {
+	function drawOverlay(title: string, subtitle: string, action: string): void {
 		draw();
 		ctx.fillStyle = 'rgba(0,0,0,0.6)';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -258,7 +258,7 @@
 	}
 
 	// --- Loop ---
-	function loop(timestamp: number) {
+	function loop(timestamp: number): void {
 		if (gameState !== 'playing') return;
 		if (timestamp - lastTick >= TICK_INTERVAL) {
 			lastTick = timestamp;
@@ -269,7 +269,7 @@
 	}
 
 	// --- Input ---
-	function onKeyDown(e: KeyboardEvent) {
+	function onKeyDown(e: KeyboardEvent): void {
 		if (e.key === ' ') {
 			e.preventDefault();
 			if (gameState === 'menu' || gameState === 'gameover') startGame();
@@ -299,12 +299,12 @@
 		}
 	}
 
-	function onKeyUp(e: KeyboardEvent) {
+	function onKeyUp(e: KeyboardEvent): void {
 		delete keys[e.key];
 	}
 
 	// --- Resize ---
-	function syncSize() {
+	function syncSize(): void {
 		const rect = container.getBoundingClientRect();
 		canvas.width = rect.width;
 		canvas.height = rect.height;

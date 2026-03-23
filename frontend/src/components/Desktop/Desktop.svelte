@@ -12,11 +12,11 @@
 		Numpad3: 2,
 		Numpad4: 3,
 	};
-	function onDesktopPointerDown(e: PointerEvent) {
+	function onDesktopPointerDown(e: PointerEvent): void {
 		if (e.target === e.currentTarget) defocusAll();
 	}
 
-	function onKeyDown(e: KeyboardEvent) {
+	function onKeyDown(e: KeyboardEvent): void {
 		if (e.ctrlKey && e.altKey) {
 			if (e.code === 'ArrowLeft') {
 				e.preventDefault();
@@ -38,7 +38,7 @@
 		handleKeyboardShortcut(e);
 	}
 
-	function onAnimationEnd(e: AnimationEvent) {
+	function onAnimationEnd(e: AnimationEvent): void {
 		if (e.currentTarget === e.target) clearSlide();
 	}
 </script>

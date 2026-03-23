@@ -28,8 +28,17 @@ export function computeClickSelection(current: Set<string>, id: string, index: n
 	};
 }
 
+export interface Selection {
+	readonly selected: Set<string>;
+	select(id: string, index: number, allIds: string[], e: MouseEvent | KeyboardEvent): void;
+	selectAll(allIds: string[]): void;
+	clear(): void;
+	isSelected(id: string): boolean;
+	set(newSelected: Set<string>): void;
+}
+
 /** Self-contained selection state — for components that own their selection. */
-export function createSelection() {
+export function createSelection(): Selection {
 	let selected = $state(new Set<string>());
 	let lastClickedIndex = -1;
 

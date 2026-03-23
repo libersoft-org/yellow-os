@@ -38,7 +38,7 @@
 		return _selSig === itemSignature && selection.isSelected(id);
 	}
 
-	function resetIfItemsChanged() {
+	function resetIfItemsChanged(): void {
 		if (_selSig !== itemSignature) {
 			_selSig = itemSignature;
 			_overrides = { sig: itemSignature, map: new Map() };
@@ -76,7 +76,7 @@
 	let pendingDeselect = $state<string | null>(null);
 	let lastClickedItemId = $state<string | null>(null);
 
-	function observeResize(node: HTMLElement) {
+	function observeResize(node: HTMLElement): { destroy(): void } {
 		containerWidth = node.clientWidth;
 		const ro = new ResizeObserver(entries => {
 			containerWidth = entries[0]!.contentRect.width;
@@ -93,7 +93,7 @@
 		};
 	}
 
-	function onContainerPointerDown(e: PointerEvent) {
+	function onContainerPointerDown(e: PointerEvent): void {
 		resetIfItemsChanged();
 		const cell = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
 		if (cell) {
@@ -103,13 +103,13 @@
 		}
 	}
 
-	function onContainerDblClick() {
+	function onContainerDblClick(): void {
 		if (!lastClickedItemId) return;
 		const item = items.find(i => i.id === lastClickedItemId);
 		if (item) ondblclick?.(item);
 	}
 
-	function onCellPointerDown(e: PointerEvent, id: string) {
+	function onCellPointerDown(e: PointerEvent, id: string): void {
 		e.preventDefault();
 		pendingDeselect = null;
 		lastClickedItemId = id;
@@ -150,7 +150,7 @@
 		containerEl!.setPointerCapture(e.pointerId);
 	}
 
-	function onEmptyPointerDown(e: PointerEvent) {
+	function onEmptyPointerDown(e: PointerEvent): void {
 		pendingDeselect = null;
 		lastClickedItemId = null;
 		if (!(e.ctrlKey || e.metaKey)) selection.clear();
@@ -164,7 +164,7 @@
 		containerEl!.setPointerCapture(e.pointerId);
 	}
 
-	function onContainerPointerMove(e: PointerEvent) {
+	function onContainerPointerMove(e: PointerEvent): void {
 		if (dragMode === 'none') return;
 
 		const dx = Math.abs(e.clientX - dragStartClient.x);
@@ -209,7 +209,7 @@
 		}
 	}
 
-	function onContainerPointerUp() {
+	function onContainerPointerUp(): void {
 		if (dragMode === 'move' && dragMoveItemId) {
 			const newGridX = Math.max(0, Math.round(dragGhostPos.x / cellWidth));
 			const newGridY = Math.max(0, Math.round(dragGhostPos.y / cellHeight));
@@ -267,7 +267,7 @@
 		pendingDeselect = null;
 	}
 
-	function onKeydown(e: KeyboardEvent) {
+	function onKeydown(e: KeyboardEvent): void {
 		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
 			e.preventDefault();
 			_selSig = itemSignature;
@@ -275,7 +275,7 @@
 		}
 	}
 
-	export function clearSelection() {
+	export function clearSelection(): void {
 		selection.clear();
 	}
 </script>

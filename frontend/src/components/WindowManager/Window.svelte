@@ -15,11 +15,11 @@
 	const winId = $derived(win.id);
 	const resize = createResizeHandler(() => winId);
 
-	function onWindowPointerDown() {
+	function onWindowPointerDown(): void {
 		focusWindow(win.id);
 	}
 
-	function onWindowTransitionEnd(e: TransitionEvent) {
+	function onWindowTransitionEnd(e: TransitionEvent): void {
 		if (e.propertyName === 'transform' && win.minimizing) finishMinimize(win.id);
 		if (e.propertyName === 'transform' && win.closing) finishClose(win.id);
 		if (e.propertyName === 'width' && snapAnimating) finishSnapAnimation(win.id);
