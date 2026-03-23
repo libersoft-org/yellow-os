@@ -1,0 +1,38 @@
+<script lang="ts">
+	import Clickable from '../Clickable/Clickable.svelte';
+	import Icon from '../Icon/Icon.svelte';
+	interface Props {
+		img: string;
+		alt: string;
+		title: string;
+		onclick: () => void;
+		enabled?: boolean | undefined;
+	}
+	const { img, alt, title, onclick, enabled = true }: Props = $props();
+</script>
+
+<style>
+	.toolbar-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 28px;
+		height: 28px;
+		border-radius: 4px;
+		flex-shrink: 0;
+	}
+
+	.toolbar-btn:hover {
+		background: rgba(255, 255, 255, 0.1);
+	}
+
+	.toolbar-btn:active {
+		background: rgba(255, 255, 255, 0.15);
+	}
+</style>
+
+<Clickable {onclick} {enabled} {title}>
+	<div class="toolbar-btn">
+		<Icon {img} {alt} size="16px" padding="0" colorVariable="--color-text" />
+	</div>
+</Clickable>

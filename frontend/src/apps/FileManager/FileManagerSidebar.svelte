@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { DiskInfo } from './filemanager.ts';
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
+	import Clickable from '../../components/Clickable/Clickable.svelte';
 	interface Props {
 		disks: DiskInfo[];
 		currentPath: string;
@@ -24,22 +25,20 @@
 		padding: 5px;
 	}
 
-	.sidebar .items .item {
-		all: unset;
+	.item {
 		display: flex;
 		align-items: center;
 		border-radius: 10px;
 		padding: 6px 12px;
 		width: 100%;
 		box-sizing: border-box;
-		cursor: pointer;
 	}
 
-	.sidebar .items .item:hover {
+	.item:hover {
 		background: rgba(255, 255, 255, 0.06);
 	}
 
-	.sidebar .items .item.active {
+	.item.active {
 		background: var(--color-accent);
 	}
 </style>
@@ -47,9 +46,11 @@
 <div class="sidebar" style:width="{width}px">
 	<div class="items">
 		{#each disks as disk}
-			<button class="item" class:active={currentPath === disk.path} onclick={() => onnavigate(disk.path)}>
-				<IconGridItem icon={disk.icon} label={disk.name} subtitle="{disk.free} free of {disk.total}" layout="horizontal" iconSize="20px" iconColor={currentPath === disk.path ? '--color-bg' : '--color-accent'} color={currentPath === disk.path ? 'var(--color-bg)' : undefined} />
-			</button>
+			<Clickable onclick={() => onnavigate(disk.path)}>
+				<div class="item" class:active={currentPath === disk.path}>
+					<IconGridItem icon={disk.icon} label={disk.name} subtitle="{disk.free} free of {disk.total}" layout="horizontal" iconSize="20px" iconColor={currentPath === disk.path ? '--color-bg' : '--color-accent'} color={currentPath === disk.path ? 'var(--color-bg)' : undefined} />
+				</div>
+			</Clickable>
 		{/each}
 	</div>
 </div>

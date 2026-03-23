@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DESKTOP_COUNT, desktop, switchDesktop } from '../../scripts/desktop.svelte.ts';
+	import Clickable from '../Clickable/Clickable.svelte';
 </script>
 
 <style>
@@ -18,7 +19,6 @@
 		justify-content: center;
 		font-size: 11px;
 		font-weight: 600;
-		cursor: pointer;
 		user-select: none;
 		color: var(--color-text-dim);
 		background: var(--color-fill);
@@ -40,9 +40,8 @@
 
 <div class="desktop-switcher">
 	{#each Array(DESKTOP_COUNT) as _, i}
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="desktop-btn" class:active={desktop.active === i} onpointerdown={() => switchDesktop(i)}>
-			{i + 1}
-		</div>
+		<Clickable onclick={() => switchDesktop(i)}>
+			<div class="desktop-btn" class:active={desktop.active === i}>{i + 1}</div>
+		</Clickable>
 	{/each}
 </div>

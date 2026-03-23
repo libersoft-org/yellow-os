@@ -3,6 +3,7 @@
 	import { closeWindow, minimizeWindow, toggleMaximize, moveWindow, focus, snapPreview, snapWindow } from '../../scripts/window-store.svelte.ts';
 	import { getSnapZone } from '../../scripts/window-snap.ts';
 	import Icon from '../Icon/Icon.svelte';
+	import WindowControl from './WindowControl.svelte';
 	interface Props {
 		win: WindowState;
 	}
@@ -137,42 +138,6 @@
 		display: flex;
 		gap: 4px;
 	}
-
-	.control {
-		width: 26px;
-		height: 22px;
-		border: none;
-		border-radius: 4px;
-		background: transparent;
-		color: var(--color-text);
-		font-size: 13px;
-		cursor: pointer;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.control:hover {
-		background: var(--color-hover);
-	}
-
-	.focused .control {
-		color: var(--color-accent-fg);
-	}
-
-	.focused .control:hover {
-		background: var(--color-hover-on-accent);
-	}
-
-	.control.close:hover {
-		background: var(--color-danger);
-		color: var(--color-text);
-	}
-
-	.focused .control.close:hover {
-		background: var(--color-danger);
-		color: var(--color-text);
-	}
 </style>
 
 <div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" onpointerdown={onPointerDown} onpointermove={onPointerMove} onpointerup={onPointerUp}>
@@ -181,14 +146,8 @@
 		<span class="title">{win.title}</span>
 	</div>
 	<div class="window-controls">
-		<button class="control minimize" onclick={() => minimizeWindow(win.id)}>
-			<Icon img="/img/window/minimize.svg" alt="Minimize" size="14px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
-		</button>
-		<button class="control maximize" onclick={() => handleMaximize()}>
-			<Icon img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} size="14px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
-		</button>
-		<button class="control close" onclick={() => closeWindow(win.id)}>
-			<Icon img="/img/window/close.svg" alt="Close" size="14px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
-		</button>
+		<WindowControl img="/img/window/minimize.svg" alt="Minimize" onclick={() => minimizeWindow(win.id)} {focused} />
+		<WindowControl img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} onclick={() => handleMaximize()} {focused} />
+		<WindowControl img="/img/window/close.svg" alt="Close" onclick={() => closeWindow(win.id)} {focused} variant="close" />
 	</div>
 </div>

@@ -2,14 +2,14 @@
 
 ## Bugs / changes
 
-- Replace all <button> elements with div. If it's clickable, create component "Clickable.svelte" with slot / Snippet.
+- TaskbarMenuItem is basically the same as FileManagerSidebar items. Unify it in generic component (including animations as they are in TaskbarMenuItem)
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 - Unify fonts for the whole OS (mono and non-mono)
 
 ## New features
 
-- Click on window title bar icon should show menu - maximize, minimize, restore, close, double click to close
+- Click on window title bar icon should show context menu - maximize, minimize, restore, close, double click to close
 - Create a generic list items - use in File manager in left column, in System settings etc.
 - File manager - add file / directory info in right panel
 - File manager - create a new generic component - ContextMenu a ContextMenuItem - use it for right click (long tap on mobile) to bring up the menu with: copy, cut, paste, rename, delete, open, open in new window (directory only)

@@ -3,6 +3,7 @@
 	import { desktop } from '../../scripts/desktop.svelte.ts';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
 	import Icon from '../Icon/Icon.svelte';
+	import Clickable from '../Clickable/Clickable.svelte';
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
 	const desktopWindows = $derived(getWindows().filter(w => w.desktopId === activeId));
@@ -148,14 +149,12 @@
 	}
 
 	.scroll-btn {
-		all: unset;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		width: 20px;
 		height: calc(var(--taskbar-height) - 12px);
 		flex-shrink: 0;
-		cursor: pointer;
 		opacity: 0.6;
 		transition: opacity 0.15s;
 		z-index: 1;
@@ -195,9 +194,11 @@
 
 <div class="taskbar-items">
 	{#if canScrollLeft}
-		<button type="button" class="scroll-btn" tabindex="-1" onclick={() => scrollBy(-SCROLL_STEP)}>
-			<Icon img="/img/caret-left.svg" alt="Scroll left" size="12px" padding="0" colorVariable="--color-text" />
-		</button>
+		<Clickable tabindex={-1} onclick={() => scrollBy(-SCROLL_STEP)}>
+			<div class="scroll-btn">
+				<Icon img="/img/caret-left.svg" alt="Scroll left" size="12px" padding="0" colorVariable="--color-text" />
+			</div>
+		</Clickable>
 	{/if}
 	<div class="window-buttons" class:fade-left={canScrollLeft} class:fade-right={canScrollRight} bind:this={scrollContainer} use:observeOverflow use:scrollOnFocusChange={focus.id} onscroll={updateScrollState} onwheel={onWheel} onpointermove={onPointerMove} onpointerup={onPointerUp} role="tablist" tabindex="-1">
 		{#each desktopWindows as win (win.id)}
@@ -207,8 +208,10 @@
 		{/each}
 	</div>
 	{#if canScrollRight}
-		<button type="button" class="scroll-btn" tabindex="-1" onclick={() => scrollBy(SCROLL_STEP)}>
-			<Icon img="/img/caret-right.svg" alt="Scroll right" size="12px" padding="0" colorVariable="--color-text" />
-		</button>
+		<Clickable tabindex={-1} onclick={() => scrollBy(SCROLL_STEP)}>
+			<div class="scroll-btn">
+				<Icon img="/img/caret-right.svg" alt="Scroll right" size="12px" padding="0" colorVariable="--color-text" />
+			</div>
+		</Clickable>
 	{/if}
 </div>

@@ -9,6 +9,7 @@
 	import Pong from '../../apps/Pong/Pong.svelte';
 	import Snake from '../../apps/Snake/Snake.svelte';
 	import About from '../../apps/About/About.svelte';
+	import Clickable from '../Clickable/Clickable.svelte';
 	const apps = [
 		{ name: 'About Yellow OS', icon: '/img/logo.svg', component: About, width: 480, height: 340 },
 		{ name: 'File Manager', icon: '/img/apps/file-manager.svg', component: FileManager, width: 700, height: 500 },
@@ -27,6 +28,14 @@
 	function onClickOutside(e: PointerEvent): void {
 		if (menuOpen && !(e.target as HTMLElement).closest('.taskbar-menu-area')) menuOpen = false;
 	}
+
+	function toggleMenu(): void {
+		menuOpen = !menuOpen;
+	}
+
+	function launchBrand(): void {
+		if (apps[0]) launchApp(apps[0]);
+	}
 </script>
 
 <style>
@@ -35,13 +44,13 @@
 	}
 
 	.menu-btn {
-		border: none;
 		background: transparent;
-		cursor: pointer;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		padding: 0;
+		width: var(--taskbar-height);
+		height: var(--taskbar-height);
 	}
 
 	.menu-btn:hover {
@@ -65,14 +74,13 @@
 
 	.menu-brand {
 		width: 32px;
+		height: 100%;
 		background: var(--color-accent);
 		display: flex;
 		align-items: flex-end;
 		justify-content: center;
 		padding-bottom: 5px;
 		flex-shrink: 0;
-		cursor: pointer;
-		border: none;
 	}
 	.menu-brand span {
 		writing-mode: vertical-rl;
@@ -95,17 +103,16 @@
 <svelte:window onpointerdown={onClickOutside} />
 
 <div class="taskbar-menu-area">
-	<button class="menu-btn" onclick={() => (menuOpen = !menuOpen)}>
-		<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="24px" padding="10px" colorVariable="--color-accent" />
-	</button>
+	<Clickable onclick={toggleMenu}>
+		<div class="menu-btn">
+			<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="calc(var(--taskbar-height) * 0.6)" padding="calc(var(--taskbar-height) * 0.2)" colorVariable="--color-accent" />
+		</div>
+	</Clickable>
 	{#if menuOpen}
 		<div class="menu-popup">
-			<button
-				class="menu-brand"
-				onclick={() => {
-					if (apps[0]) launchApp(apps[0]);
-				}}><span>{PRODUCT_NAME} {PRODUCT_VERSION}</span></button
-			>
+			<Clickable onclick={launchBrand} style="align-self: stretch">
+				<div class="menu-brand"><span>{PRODUCT_NAME} {PRODUCT_VERSION}</span></div>
+			</Clickable>
 			<div class="menu-items">
 				{#each apps as app}
 					<TaskbarMenuItem icon={app.icon} name={app.name} onclick={() => launchApp(app)} />

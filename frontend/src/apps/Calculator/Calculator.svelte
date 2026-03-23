@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Clickable from '../../components/Clickable/Clickable.svelte';
 	let display = $state('0');
 	let previousValue = $state<number | null>(null);
 	let operator = $state<string | null>(null);
@@ -178,15 +179,14 @@
 	}
 
 	.btn {
-		border: none;
 		background: var(--color-surface-2);
 		color: var(--color-text);
 		font-size: 5cqi;
-		cursor: pointer;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		transition: background 0.1s;
+		height: 100%;
 	}
 
 	.btn:hover {
@@ -211,10 +211,6 @@
 	.btn.op:hover {
 		background: #ffc800;
 	}
-
-	.btn.zero {
-		grid-column: span 2;
-	}
 </style>
 
 <div class="calculator" tabindex="-1" onkeydown={handleKeydown} role="grid" aria-label="Calculator">
@@ -224,9 +220,9 @@
 	</div>
 	<div class="buttons">
 		{#each buttons as btn}
-			<button class="btn {btn.class ?? ''}" onclick={btn.action}>
-				{btn.label}
-			</button>
+			<Clickable onclick={btn.action} style={btn.class === 'zero' ? 'grid-column: span 2' : undefined}>
+				<div class="btn" class:fn={btn.class === 'fn'} class:op={btn.class === 'op'}>{btn.label}</div>
+			</Clickable>
 		{/each}
 	</div>
 </div>

@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { getColorFromCSSToFilter } from '../../scripts/colors.ts';
+	import type { MouseEventHandler } from 'svelte/elements';
+	import Clickable from '../Clickable/Clickable.svelte';
+
 	interface Props {
 		img?: string | undefined;
 		alt?: string | undefined;
@@ -9,8 +12,15 @@
 		noColorFilter?: boolean | undefined;
 		badgeIcon?: string | undefined;
 		badgeColorVariable?: string | undefined;
+		onclick?: MouseEventHandler<HTMLDivElement>;
+		oncontextmenu?: MouseEventHandler<HTMLDivElement>;
+		enabled?: boolean | undefined;
+		class?: string | undefined;
+		title?: string | undefined;
+		tabindex?: number | undefined;
 	}
-	let { img, alt = '', size = '24px', padding = '10px', colorVariable, noColorFilter = false, badgeIcon, badgeColorVariable = '--color-success' }: Props = $props();
+	let { img, alt = '', size = '24px', padding = '10px', colorVariable, noColorFilter = false, badgeIcon, badgeColorVariable = '--color-success', onclick, oncontextmenu, enabled, class: className, title, tabindex }: Props = $props();
+	const clickable = $derived(!!onclick || !!oncontextmenu);
 	let filterValue = $derived.by(() => {
 		if (noColorFilter) return 'none';
 		if (colorVariable) return getColorFromCSSToFilter(colorVariable);
@@ -52,7 +62,7 @@
 	}
 </style>
 
-{#if img}
+{#snippet iconContent()}
 	<div class="icon" style:padding>
 		<img style:min-width={size} style:min-height={size} style:max-width={size} style:max-height={size} style:filter={filterValue} src={img} draggable={false} {alt} />
 		{#if badgeIcon}
@@ -61,4 +71,14 @@
 			</div>
 		{/if}
 	</div>
+{/snippet}
+
+{#if img}
+	{#if clickable}
+		<Clickable class={className} {onclick} {oncontextmenu} {enabled} {title} {tabindex}>
+			{@render iconContent()}
+		</Clickable>
+	{:else}
+		{@render iconContent()}
+	{/if}
 {/if}
