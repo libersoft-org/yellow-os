@@ -126,7 +126,7 @@
 	}
 
 	.focused .title {
-		color: #000;
+		color: var(--color-accent-fg);
 		font-weight: bold;
 	}
 
@@ -150,25 +150,25 @@
 	}
 
 	.control:hover {
-		background: rgba(255, 255, 255, 0.12);
+		background: var(--color-hover);
 	}
 
 	.focused .control {
-		color: #000;
+		color: var(--color-accent-fg);
 	}
 
 	.focused .control:hover {
-		background: rgba(0, 0, 0, 0.15);
+		background: var(--color-hover-on-accent);
 	}
 
 	.control.close:hover {
-		background: #e53935;
-		color: #fff;
+		background: var(--color-danger);
+		color: var(--color-text);
 	}
 
 	.focused .control.close:hover {
-		background: #e53935;
-		color: #fff;
+		background: var(--color-danger);
+		color: var(--color-text);
 	}
 </style>
 

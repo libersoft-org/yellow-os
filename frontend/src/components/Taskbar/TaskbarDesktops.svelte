@@ -21,18 +21,18 @@
 		cursor: pointer;
 		user-select: none;
 		color: var(--color-text-dim);
-		background: rgba(255, 255, 255, 0.05);
+		background: var(--color-fill);
 		border: 1px solid transparent;
 		transition: all 0.15s ease;
 	}
 
 	.desktop-btn:hover {
-		background: rgba(255, 255, 255, 0.1);
+		background: var(--color-hover);
 		color: var(--color-text);
 	}
 
 	.desktop-btn.active {
-		background: rgba(253, 221, 51, 0.15);
+		background: var(--color-accent-subtle);
 		border-color: var(--color-accent);
 		color: var(--color-accent);
 	}

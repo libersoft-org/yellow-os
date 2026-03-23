@@ -2,7 +2,6 @@
 	--taskbar-height: 50px;
 	--titlebar-height: 32px;
 	--border-radius: 8px;
-
 	--color-bg: #333;
 	--color-surface: #222;
 	--color-surface-2: #444;
@@ -12,8 +11,13 @@
 	--color-text-dim: #888;
 	--color-accent: #fd3;
 	--color-accent-fg: #000;
-	--color-success: #4caf50;
-	--color-taskbar: #111;
+	--color-accent-subtle: rgba(253, 221, 51, 0.15);
+	--color-danger: #e53935;
+	--color-fill: rgba(255, 255, 255, 0.05);
+	--color-hover: rgba(255, 255, 255, 0.1);
+	--color-active: rgba(255, 255, 255, 0.14);
+	--color-hover-on-accent: rgba(0, 0, 0, 0.15);
+	--color-shadow: rgba(0, 0, 0, 0.4);
 }
 
 *,

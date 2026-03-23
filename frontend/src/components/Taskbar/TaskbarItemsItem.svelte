@@ -42,12 +42,12 @@
 	}
 
 	.window-btn:hover {
-		background: rgba(255, 255, 255, 0.1);
+		background: var(--color-hover);
 		color: var(--color-text);
 	}
 
 	.window-btn.active {
-		background: rgba(255, 255, 255, 0.14);
+		background: var(--color-active);
 		color: var(--color-text);
 		border-bottom: 2px solid var(--color-accent);
 		font-weight: bold;
@@ -55,8 +55,8 @@
 
 	.window-btn.dragging {
 		z-index: 1;
-		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-		background: rgba(255, 255, 255, 0.14);
+		box-shadow: 0 2px 8px var(--color-shadow);
+		background: var(--color-active);
 	}
 </style>
 
