@@ -26,6 +26,13 @@ export interface WindowState {
 	desktopId: number;
 }
 const Z_INDEX_COMPACT_THRESHOLD = 1000;
+const CASCADE_OFFSET = 30;
+const CASCADE_ORIGIN = 100;
+const CASCADE_SLOTS = 5;
+const DEFAULT_WIDTH = 600;
+const DEFAULT_HEIGHT = 400;
+const DEFAULT_MIN_WIDTH = 200;
+const DEFAULT_MIN_HEIGHT = 150;
 let nextZIndex = $state(1);
 const _windows: WindowState[] = $state([]);
 const _windowMap = new Map<string, WindowState>();
@@ -68,12 +75,12 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 		id,
 		title: opts.title,
 		icon: opts.icon,
-		x: opts.x ?? 100 + (count % 5) * 30,
-		y: opts.y ?? 100 + (count % 5) * 30,
-		width: opts.width ?? 600,
-		height: opts.height ?? 400,
-		minWidth: 200,
-		minHeight: 150,
+		x: opts.x ?? CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET,
+		y: opts.y ?? CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET,
+		width: opts.width ?? DEFAULT_WIDTH,
+		height: opts.height ?? DEFAULT_HEIGHT,
+		minWidth: DEFAULT_MIN_WIDTH,
+		minHeight: DEFAULT_MIN_HEIGHT,
 		zIndex: nextZIndex++,
 		minimized: false,
 		minimizing: false,

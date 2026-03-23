@@ -7,6 +7,8 @@
 	const PADDLE_SPEED = 8;
 	const BALL_BASE_SPEED = 10;
 	const TICK_INTERVAL = 1000 / 30;
+	const PADDLE_MARGIN = 20;
+	const BALL_SPEED_INCREMENT = 0.2;
 	let lastTick = 0;
 	const WIN_SCORE = 10;
 	let canvas: HTMLCanvasElement;
@@ -122,7 +124,7 @@
 	function update(): void {
 		const w = canvas.width;
 		const h = canvas.height;
-		const paddleMargin = 20;
+		const paddleMargin = PADDLE_MARGIN;
 		// Move paddles
 		if (keys['ArrowUp']) p1Y -= PADDLE_SPEED;
 		if (keys['ArrowDown']) p1Y += PADDLE_SPEED;
@@ -149,7 +151,7 @@
 			ballX = p1X - BALL_R;
 			const rel = (ballY - (p1Y + PADDLE_H / 2)) / (PADDLE_H / 2);
 			const angle = rel * (Math.PI / 3);
-			const speed = Math.sqrt(ballDX * ballDX + ballDY * ballDY) + 0.2;
+			const speed = Math.sqrt(ballDX * ballDX + ballDY * ballDY) + BALL_SPEED_INCREMENT;
 			ballDX = -speed * Math.cos(angle);
 			ballDY = speed * Math.sin(angle);
 			playHit();
@@ -160,7 +162,7 @@
 			ballX = p2X + PADDLE_W + BALL_R;
 			const rel = (ballY - (p2Y + PADDLE_H / 2)) / (PADDLE_H / 2);
 			const angle = rel * (Math.PI / 3);
-			const speed = Math.sqrt(ballDX * ballDX + ballDY * ballDY) + 0.2;
+			const speed = Math.sqrt(ballDX * ballDX + ballDY * ballDY) + BALL_SPEED_INCREMENT;
 			ballDX = speed * Math.cos(angle);
 			ballDY = speed * Math.sin(angle);
 			playHit();
@@ -194,7 +196,7 @@
 		if (!ctx) return;
 		const w = canvas.width;
 		const h = canvas.height;
-		const paddleMargin = 20;
+		const paddleMargin = PADDLE_MARGIN;
 		// Background
 		ctx.fillStyle = '#1a1a2e';
 		ctx.fillRect(0, 0, w, h);

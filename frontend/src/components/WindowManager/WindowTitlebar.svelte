@@ -16,6 +16,8 @@
 	let dragWinStartX = 0;
 	let dragWinStartY = 0;
 	let dragStartedMaximized = false;
+	const DOUBLE_TAP_MS = 300;
+	const UNMAXIMIZE_Y_OFFSET = 16;
 
 	function handleMaximize(): void {
 		if (hasDragged) return;
@@ -25,7 +27,7 @@
 	function onPointerDown(e: PointerEvent): void {
 		if ((e.target as HTMLElement).closest('.window-controls')) return;
 		const now = Date.now();
-		if (now - lastTapTime < 300) {
+		if (now - lastTapTime < DOUBLE_TAP_MS) {
 			lastTapTime = 0;
 			toggleMaximize(win.id);
 			return;
@@ -56,7 +58,7 @@
 			const prevH = win.preMaximize?.height ?? win.height;
 			const relativeX = e.clientX / globalThis.innerWidth;
 			win.x = e.clientX - prevW * relativeX;
-			win.y = e.clientY - 16;
+			win.y = e.clientY - UNMAXIMIZE_Y_OFFSET;
 			win.width = prevW;
 			win.height = prevH;
 			win.maximized = false;

@@ -114,8 +114,10 @@
 		loop(0);
 	}
 
+	const SPEED_DECREMENT = 8;
+
 	function getInterval(): number {
-		return Math.max(MIN_INTERVAL, BASE_INTERVAL - Math.floor(score / SPEED_STEP) * 8);
+		return Math.max(MIN_INTERVAL, BASE_INTERVAL - Math.floor(score / SPEED_STEP) * SPEED_DECREMENT);
 	}
 
 	function tick(): boolean {
