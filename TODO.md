@@ -9,6 +9,7 @@
 
 ## New features
 
+- Add return types to all functions (void, string etc.)
 - Click on window title bar icon should show menu - maximize, minimize, restore, close, double click to close
 - Create a generic list items - use in File manager in left column, in System settings etc.
 - File manager - add file / directory info in right panel

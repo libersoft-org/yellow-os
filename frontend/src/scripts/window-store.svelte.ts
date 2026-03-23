@@ -1,0 +1,196 @@
+import type { Component } from 'svelte';
+import { flushSync } from 'svelte';
+import { desktop } from './desktop.svelte';
+import type { SnapZone } from './window-snap';
+import { getSnapBounds } from './window-snap';
+export interface WindowState {
+	id: string;
+	title: string;
+	icon: string;
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+	minWidth: number;
+	minHeight: number;
+	zIndex: number;
+	minimized: boolean;
+	minimizing: boolean;
+	maximized: boolean;
+	restoring: boolean;
+	preMaximize: { x: number; y: number; width: number; height: number } | null;
+	snappedZone: SnapZone | null;
+	component: Component;
+	desktopId: number;
+}
+const Z_INDEX_COMPACT_THRESHOLD = 1000;
+let nextZIndex = $state(1);
+const _windows: WindowState[] = $state([]);
+const _windowMap = new Map<string, WindowState>();
+export const focus: { id: string | null } = $state({ id: null });
+export const snapPreview: { zone: SnapZone | null } = $state({ zone: null });
+export const snapAnimatingIds: Record<string, boolean> = $state({});
+
+export function getWindows(): WindowState[] {
+	return _windows;
+}
+
+export function getWindow(id: string): WindowState | undefined {
+	return _windowMap.get(id);
+}
+
+function compactZIndexes(): void {
+	const sorted = [..._windows].sort((a, b) => a.zIndex - b.zIndex);
+	for (let i = 0; i < sorted.length; i++) sorted[i]!.zIndex = i + 1;
+	nextZIndex = sorted.length + 1;
+}
+
+function assignZIndex(win: WindowState): void {
+	win.zIndex = nextZIndex++;
+	if (nextZIndex > Z_INDEX_COMPACT_THRESHOLD) compactZIndexes();
+}
+
+function triggerSnapAnimation(id: string): void {
+	snapAnimatingIds[id] = true;
+	flushSync();
+}
+
+export function finishSnapAnimation(id: string): void {
+	delete snapAnimatingIds[id];
+}
+
+export function openWindow(opts: { title: string; icon: string; component: Component; width?: number; height?: number; x?: number; y?: number }): string {
+	const id = crypto.randomUUID();
+	const count = _windows.length;
+	const win: WindowState = {
+		id,
+		title: opts.title,
+		icon: opts.icon,
+		x: opts.x ?? 100 + (count % 5) * 30,
+		y: opts.y ?? 100 + (count % 5) * 30,
+		width: opts.width ?? 600,
+		height: opts.height ?? 400,
+		minWidth: 200,
+		minHeight: 150,
+		zIndex: nextZIndex++,
+		minimized: false,
+		minimizing: false,
+		maximized: false,
+		restoring: false,
+		preMaximize: null,
+		snappedZone: null,
+		component: opts.component,
+		desktopId: desktop.active,
+	};
+	_windows.push(win);
+	_windowMap.set(id, _windows[_windows.length - 1]!);
+	focus.id = id;
+	return id;
+}
+
+export function closeWindow(id: string): void {
+	const idx = _windows.findIndex(w => w.id === id);
+	if (idx === -1) return;
+	_windows.splice(idx, 1);
+	_windowMap.delete(id);
+	if (focus.id === id) focus.id = null;
+	compactZIndexes();
+}
+
+export function focusWindow(id: string): void {
+	const win = _windowMap.get(id);
+	if (!win) return;
+	assignZIndex(win);
+	if (win.minimized) {
+		win.restoring = true;
+		win.minimized = false;
+		requestAnimationFrame(() => {
+			requestAnimationFrame(() => (win.restoring = false));
+		});
+	}
+	focus.id = id;
+}
+
+export function minimizeWindow(id: string): void {
+	const win = _windowMap.get(id);
+	if (!win || win.minimized || win.minimizing) return;
+	win.minimizing = true;
+}
+
+export function finishMinimize(id: string): void {
+	const win = _windowMap.get(id);
+	if (!win || !win.minimizing) return;
+	win.minimized = true;
+	win.minimizing = false;
+}
+
+export function restoreWindow(id: string): void {
+	const win = _windowMap.get(id);
+	if (!win || !win.preMaximize) return;
+	triggerSnapAnimation(id);
+	win.x = win.preMaximize.x;
+	win.y = win.preMaximize.y;
+	win.width = win.preMaximize.width;
+	win.height = win.preMaximize.height;
+	win.maximized = false;
+	win.preMaximize = null;
+	win.snappedZone = null;
+	assignZIndex(win);
+	focus.id = id;
+}
+
+export function toggleMaximize(id: string): void {
+	const win = _windowMap.get(id);
+	if (!win) return;
+	if (win.maximized) restoreWindow(id);
+	else snapWindow(id, 'top');
+}
+
+export function moveWindow(id: string, x: number, y: number): void {
+	const win = _windowMap.get(id);
+	if (win) {
+		win.x = x;
+		win.y = y;
+	}
+}
+
+export function resizeWindow(id: string, width: number, height: number, x?: number, y?: number): void {
+	const win = _windowMap.get(id);
+	if (!win) return;
+	win.width = width;
+	win.height = height;
+	if (x !== undefined) win.x = x;
+	if (y !== undefined) win.y = y;
+}
+
+export function defocusAll(): void {
+	focus.id = null;
+}
+
+export function isTopWindow(id: string): boolean {
+	return focus.id === id;
+}
+
+export function reorderWindow(dragId: string, targetId: string): void {
+	const dragIdx = _windows.findIndex(w => w.id === dragId);
+	const targetIdx = _windows.findIndex(w => w.id === targetId);
+	if (dragIdx === -1 || targetIdx === -1) return;
+	const [removed] = _windows.splice(dragIdx, 1);
+	_windows.splice(targetIdx, 0, removed!);
+}
+
+export function snapWindow(id: string, zone: SnapZone): void {
+	const win = _windowMap.get(id);
+	if (!win) return;
+	triggerSnapAnimation(id);
+	const bounds = getSnapBounds(zone);
+	if (!win.preMaximize) win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
+	win.x = bounds.x;
+	win.y = bounds.y;
+	win.width = bounds.width;
+	win.height = bounds.height;
+	win.maximized = zone === 'top';
+	win.snappedZone = zone;
+	assignZIndex(win);
+	focus.id = id;
+}

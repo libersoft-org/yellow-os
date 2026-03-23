@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { windows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow } from '../../scripts/window.svelte';
+	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow, reorderWindow } from '../../scripts/window.svelte';
 	import { desktop } from '../../scripts/desktop.svelte';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
 	import Icon from '../Icon/Icon.svelte';
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
-	const desktopWindows = $derived(windows.filter(w => w.desktopId === activeId));
+	const desktopWindows = $derived(getWindows().filter(w => w.desktopId === activeId));
 	const DRAG_THRESHOLD = 4;
 	const SCROLL_STEP = 150;
 	let dragging = $state(false);
@@ -103,18 +103,17 @@
 			if (btn) btn.setPointerCapture(e.pointerId);
 		}
 		dragTranslateX = dx;
-		const dragIdx = windows.findIndex(w => w.id === dragId);
+		const allWindows = getWindows();
+		const dragIdx = allWindows.findIndex(w => w.id === dragId);
 		if (dragIdx === -1) return;
 		for (const [id, el] of btnElements) {
 			if (id === dragId) continue;
 			const rect = el.getBoundingClientRect();
 			const midX = rect.left + rect.width / 2;
-			const targetIdx = windows.findIndex(w => w.id === id);
+			const targetIdx = allWindows.findIndex(w => w.id === id);
 			if (targetIdx === -1) continue;
 			if ((targetIdx > dragIdx && e.clientX > midX) || (targetIdx < dragIdx && e.clientX < midX)) {
-				const item = windows.splice(dragIdx, 1)[0];
-				if (!item) break;
-				windows.splice(targetIdx, 0, item);
+				reorderWindow(dragId, id);
 				dragStartX = e.clientX;
 				dragTranslateX = 0;
 				break;
