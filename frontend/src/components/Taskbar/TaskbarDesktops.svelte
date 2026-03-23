@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { DESKTOP_COUNT, desktop, switchDesktop } from '../../scripts/desktop.svelte';
+	import { DESKTOP_COUNT, desktop, switchDesktop } from '../../scripts/desktop.svelte.ts';
 </script>
 
 <style>

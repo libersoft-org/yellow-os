@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
-	import { openWindow, defocusAll } from '../../scripts/window.svelte';
-	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte';
+	import { openWindow, defocusAll } from '../../scripts/window-store.svelte.ts';
+	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte.ts';
 	import IconGrid, { type IconGridItemData } from '../IconGrid/IconGrid.svelte';
 	import FileManager from '../../apps/FileManager/FileManager.svelte';
 

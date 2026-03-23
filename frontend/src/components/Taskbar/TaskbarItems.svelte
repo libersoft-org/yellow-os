@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow, reorderWindow } from '../../scripts/window.svelte';
-	import { desktop } from '../../scripts/desktop.svelte';
+	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow, reorderWindow } from '../../scripts/window-store.svelte.ts';
+	import { desktop } from '../../scripts/desktop.svelte.ts';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
 	import Icon from '../Icon/Icon.svelte';
 	const { desktopId }: { desktopId?: number | undefined } = $props();

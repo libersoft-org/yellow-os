@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { getWindows, snapPreview, getSnapBounds } from '../../scripts/window.svelte';
-	import { desktop } from '../../scripts/desktop.svelte';
+	import { getWindows, snapPreview } from '../../scripts/window-store.svelte.ts';
+	import { getSnapBounds } from '../../scripts/window-snap.ts';
+	import { desktop } from '../../scripts/desktop.svelte.ts';
 	import Window from './Window.svelte';
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);

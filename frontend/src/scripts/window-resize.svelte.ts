@@ -1,4 +1,4 @@
-import { getWindow, focusWindow, resizeWindow } from './window-store.svelte';
+import { getWindow, focusWindow, resizeWindow } from './window-store.svelte.ts';
 export type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 export const RESIZE_DIRS: readonly ResizeDir[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 

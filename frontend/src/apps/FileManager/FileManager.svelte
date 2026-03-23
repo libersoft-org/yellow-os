@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { FileEntry } from './filemanager';
-	import { mockFs, mockDisks } from './filemanager';
+	import type { FileEntry } from './filemanager.ts';
+	import { mockFs, mockDisks } from './filemanager.ts';
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';
 	import FileManagerSeparator from './FileManagerSeparator.svelte';

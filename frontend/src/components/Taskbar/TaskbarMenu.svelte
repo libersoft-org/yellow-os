@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { openWindow } from '../../scripts/window.svelte';
-	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product';
+	import { openWindow } from '../../scripts/window-store.svelte.ts';
+	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import TaskbarMenuItem from './TaskbarMenuItem.svelte';
 	import Calculator from '../../apps/Calculator/Calculator.svelte';

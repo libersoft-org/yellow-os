@@ -1,8 +1,8 @@
 import type { Component } from 'svelte';
 import { flushSync } from 'svelte';
-import { desktop } from './desktop.svelte';
-import type { SnapZone } from './window-snap';
-import { getSnapBounds } from './window-snap';
+import { desktop } from './desktop.svelte.ts';
+import type { SnapZone } from './window-snap.ts';
+import { getSnapBounds } from './window-snap.ts';
 export interface WindowState {
 	id: string;
 	title: string;

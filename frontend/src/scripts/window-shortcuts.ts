@@ -1,5 +1,5 @@
-import type { SnapZone } from './window-snap';
-import { getWindow, focus, minimizeWindow, restoreWindow, snapWindow } from './window-store.svelte';
+import type { SnapZone } from './window-snap.ts';
+import { getWindow, focus, minimizeWindow, restoreWindow, snapWindow } from './window-store.svelte.ts';
 
 const NUMPAD_SNAP: Record<string, SnapZone> = {
 	Numpad7: 'top-left',

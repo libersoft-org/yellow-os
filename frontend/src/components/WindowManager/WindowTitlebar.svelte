@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { WindowState } from '../../scripts/window.svelte';
-	import { closeWindow, minimizeWindow, toggleMaximize, moveWindow, focus, snapPreview, getSnapZone, snapWindow } from '../../scripts/window.svelte';
+	import type { WindowState } from '../../scripts/window-store.svelte.ts';
+	import { closeWindow, minimizeWindow, toggleMaximize, moveWindow, focus, snapPreview, snapWindow } from '../../scripts/window-store.svelte.ts';
+	import { getSnapZone } from '../../scripts/window-snap.ts';
 	import Icon from '../Icon/Icon.svelte';
 	interface Props {
 		win: WindowState;

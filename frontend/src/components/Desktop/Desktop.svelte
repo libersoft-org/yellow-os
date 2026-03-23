@@ -2,8 +2,9 @@
 	import WindowManager from '../WindowManager/WindowManager.svelte';
 	import Taskbar from '../Taskbar/Taskbar.svelte';
 	import DesktopIcons from './DesktopIcons.svelte';
-	import { defocusAll, handleKeyboardShortcut } from '../../scripts/window.svelte';
-	import { DESKTOP_COUNT, desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte';
+	import { defocusAll } from '../../scripts/window-store.svelte.ts';
+	import { handleKeyboardShortcut } from '../../scripts/window-shortcuts.ts';
+	import { DESKTOP_COUNT, desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte.ts';
 	const sliding = $derived(desktop.slideDirection !== null && desktop.previous !== null);
 	const NUMPAD_DESKTOP: Record<string, number> = {
 		Numpad1: 0,

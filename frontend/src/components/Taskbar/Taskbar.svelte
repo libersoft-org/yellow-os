@@ -3,7 +3,7 @@
 	import TaskbarItems from './TaskbarItems.svelte';
 	import TaskbarDesktops from './TaskbarDesktops.svelte';
 	import TaskbarTime from './TaskbarTime.svelte';
-	import { defocusAll } from '../../scripts/window.svelte';
+	import { defocusAll } from '../../scripts/window-store.svelte.ts';
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 </script>
 

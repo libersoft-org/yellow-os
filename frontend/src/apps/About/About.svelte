@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PRODUCT_NAME, PRODUCT_VERSION, COMMIT_HASH, BUILD_DATE } from '../../scripts/product';
+	import { PRODUCT_NAME, PRODUCT_VERSION, COMMIT_HASH, BUILD_DATE } from '../../scripts/product.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 </script>
 
