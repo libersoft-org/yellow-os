@@ -39,6 +39,7 @@
 			win.height = prevH;
 			win.maximized = false;
 			win.preMaximize = null;
+			win.snappedZone = null;
 			dragStartedMaximized = false;
 			dragRefX = e.clientX;
 			dragRefY = e.clientY;

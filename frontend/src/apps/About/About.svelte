@@ -1,5 +1,17 @@
+<script module lang="ts">
+	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
+	import { PRODUCT_NAME } from '../../scripts/product.ts';
+	export const appConfig: AppConfig = {
+		title: `About ${PRODUCT_NAME}`,
+		icon: '/img/logo.svg',
+		width: 512,
+		height: 384,
+		position: 'center',
+	};
+</script>
+
 <script lang="ts">
-	import { PRODUCT_NAME, PRODUCT_VERSION, COMMIT_HASH, BUILD_DATE } from '../../scripts/product.ts';
+	import { PRODUCT_VERSION, COMMIT_HASH, BUILD_DATE } from '../../scripts/product.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 </script>
 

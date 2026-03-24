@@ -3,6 +3,16 @@ import { flushSync } from 'svelte';
 import { desktop } from './desktop.svelte.ts';
 import type { SnapZone } from './window-snap.ts';
 import { getSnapBounds } from './window-snap.ts';
+export type WindowPosition = 'default' | 'center';
+export type WindowStartState = 'normal' | 'minimized' | 'maximized';
+export interface AppConfig {
+	title: string;
+	icon: string;
+	width?: number;
+	height?: number;
+	position?: WindowPosition;
+	startState?: WindowStartState;
+}
 export interface WindowState {
 	id: string;
 	title: string;
@@ -68,34 +78,57 @@ export function finishSnapAnimation(id: string): void {
 	delete snapAnimatingIds[id];
 }
 
-export function openWindow(opts: { title: string; icon: string; component: Component; width?: number; height?: number; x?: number; y?: number }): string {
+export function openWindow(opts: { title: string; icon: string; component: Component; width?: number; height?: number; x?: number; y?: number; position?: WindowPosition; startState?: WindowStartState }): string {
 	const id = crypto.randomUUID();
 	const count = _windows.length;
+	const w = opts.width ?? DEFAULT_WIDTH;
+	const h = opts.height ?? DEFAULT_HEIGHT;
+	const position = opts.position ?? 'default';
+	const startState = opts.startState ?? 'normal';
+	let x: number;
+	let y: number;
+	if (opts.x != null && opts.y != null) {
+		x = opts.x;
+		y = opts.y;
+	} else if (position === 'center') {
+		x = Math.round((window.innerWidth - w) / 2);
+		y = Math.round((window.innerHeight - h) / 2);
+	} else {
+		x = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
+		y = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
+	}
 	const win: WindowState = {
 		id,
 		title: opts.title,
 		icon: opts.icon,
-		x: opts.x ?? CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET,
-		y: opts.y ?? CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET,
-		width: opts.width ?? DEFAULT_WIDTH,
-		height: opts.height ?? DEFAULT_HEIGHT,
+		x,
+		y,
+		width: w,
+		height: h,
 		minWidth: DEFAULT_MIN_WIDTH,
 		minHeight: DEFAULT_MIN_HEIGHT,
 		zIndex: nextZIndex++,
-		minimized: false,
+		minimized: startState === 'minimized',
 		minimizing: false,
-		maximized: false,
+		maximized: startState === 'maximized',
 		restoring: false,
 		opening: true,
 		closing: false,
-		preMaximize: null,
-		snappedZone: null,
+		preMaximize: startState === 'maximized' ? { x, y, width: w, height: h } : null,
+		snappedZone: startState === 'maximized' ? 'top' : null,
 		component: opts.component,
 		desktopId: desktop.active,
 	};
 	_windows.push(win);
 	const ref = _windows[_windows.length - 1]!;
 	_windowMap.set(id, ref);
+	if (startState === 'maximized') {
+		const bounds = getSnapBounds('top');
+		ref.x = bounds.x;
+		ref.y = bounds.y;
+		ref.width = bounds.width;
+		ref.height = bounds.height;
+	}
 	focus.id = id;
 	requestAnimationFrame(() => {
 		requestAnimationFrame(() => (ref.opening = false));

@@ -1,20 +1,20 @@
 <script lang="ts">
 	import type { Component } from 'svelte';
 	import { openWindow, defocusAll } from '../../scripts/window-store.svelte.ts';
+	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
 	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
-	import FileManager from '../../apps/FileManager/FileManager.svelte';
+	import FileManager, { appConfig as fileManagerConfig } from '../../apps/FileManager/FileManager.svelte';
 	interface DesktopShortcut {
 		id: string;
-		name: string;
+		label: string;
 		icon: string;
 		iconColor?: string;
 		gridX: number;
 		gridY: number;
+		appConfig?: AppConfig;
 		component?: Component;
-		windowWidth?: number;
-		windowHeight?: number;
 	}
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
@@ -22,8 +22,8 @@
 		Array.from({ length: DESKTOP_COUNT }, (_, i) =>
 			i === 0
 				? [
-						{ id: 'file-manager', name: 'File Manager', icon: '/img/apps/file-manager.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, component: FileManager, windowWidth: 700, windowHeight: 500 },
-						{ id: 'trash-can', name: 'Trash can', icon: '/img/apps/trash.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
+						{ id: 'file-manager', label: fileManagerConfig.title, icon: fileManagerConfig.icon, iconColor: '--color-accent', gridX: 0, gridY: 0, appConfig: fileManagerConfig, component: FileManager },
+						{ id: 'trash-can', label: 'Trash can', icon: '/img/apps/trash.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
 					]
 				: []
 		)
@@ -34,7 +34,7 @@
 		shortcuts.map(s => ({
 			id: s.id,
 			icon: s.icon,
-			label: s.name,
+			label: s.label,
 			iconColor: s.iconColor,
 			gridX: s.gridX,
 			gridY: s.gridY,
@@ -43,14 +43,8 @@
 
 	function onDblClick(item: IconGridItemData): void {
 		const shortcut = shortcuts.find(s => s.id === item.id);
-		if (shortcut?.component) {
-			openWindow({
-				title: shortcut.name,
-				icon: shortcut.icon,
-				component: shortcut.component,
-				...(shortcut.windowWidth != null && { width: shortcut.windowWidth }),
-				...(shortcut.windowHeight != null && { height: shortcut.windowHeight }),
-			});
+		if (shortcut?.appConfig && shortcut.component) {
+			openWindow({ ...shortcut.appConfig, component: shortcut.component });
 		}
 	}
 

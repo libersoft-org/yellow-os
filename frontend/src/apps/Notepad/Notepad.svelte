@@ -1,3 +1,13 @@
+<script module lang="ts">
+	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
+	export const appConfig: AppConfig = {
+		title: 'Notepad',
+		icon: '/img/apps/notepad.svg',
+		width: 640,
+		height: 480,
+	};
+</script>
+
 <script lang="ts">
 	let content = $state('');
 

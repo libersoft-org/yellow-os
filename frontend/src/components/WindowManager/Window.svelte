@@ -3,11 +3,9 @@
 	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds } from '../../scripts/window-store.svelte.ts';
 	import { RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window-resize.svelte.ts';
 	import WindowTitlebar from './WindowTitlebar.svelte';
-
 	interface Props {
 		win: WindowState;
 	}
-
 	const { win }: Props = $props();
 	const WindowContent = $derived(win.component);
 	const focused = $derived(focus.id === win.id);

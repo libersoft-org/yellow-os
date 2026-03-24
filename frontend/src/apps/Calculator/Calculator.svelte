@@ -1,3 +1,13 @@
+<script module lang="ts">
+	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
+	export const appConfig: AppConfig = {
+		title: 'Calculator',
+		icon: '/img/apps/calculator.svg',
+		width: 280,
+		height: 420,
+	};
+</script>
+
 <script lang="ts">
 	import Clickable from '../../components/Clickable/Clickable.svelte';
 	let display = $state('0');

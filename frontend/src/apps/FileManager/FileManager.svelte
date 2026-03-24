@@ -1,3 +1,13 @@
+<script module lang="ts">
+	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
+	export const appConfig: AppConfig = {
+		title: 'File Manager',
+		icon: '/img/apps/file-manager.svg',
+		width: 640,
+		height: 480,
+	};
+</script>
+
 <script lang="ts">
 	import type { FileEntry } from './filemanager.ts';
 	import { mockFs, mockDisks } from './filemanager.ts';

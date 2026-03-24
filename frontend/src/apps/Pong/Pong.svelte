@@ -1,3 +1,14 @@
+<script module lang="ts">
+	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
+	export const appConfig: AppConfig = {
+		title: 'Pong',
+		icon: '/img/apps/pong.svg',
+		width: 640,
+		height: 480,
+		position: 'center',
+	};
+</script>
+
 <script lang="ts">
 	import { onMount } from 'svelte';
 	type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
@@ -6,8 +17,8 @@
 	const BALL_R = 6;
 	const PADDLE_SPEED = 8;
 	const BALL_BASE_SPEED = 10;
-	const GAME_WIDTH = 600;
-	const GAME_HEIGHT = 400;
+	const GAME_WIDTH = 640;
+	const GAME_HEIGHT = 480;
 	const TICK_INTERVAL = 1000 / 30;
 	const PADDLE_MARGIN = 20;
 	const BALL_SPEED_INCREMENT = 0.2;
