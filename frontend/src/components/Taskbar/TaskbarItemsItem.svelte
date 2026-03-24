@@ -6,10 +6,9 @@
 		active: boolean;
 		dragging: boolean;
 		translateX: number;
-		onpointerdown: (e: PointerEvent) => void;
 	}
 
-	let { icon, title, active, dragging, translateX, onpointerdown }: Props = $props();
+	let { icon, title, active, dragging, translateX }: Props = $props();
 </script>
 
 <style>
@@ -60,7 +59,7 @@
 	}
 </style>
 
-<div class="window-btn" class:active class:dragging style:transform={dragging ? `translateX(${translateX}px)` : ''} {onpointerdown} role="tab" tabindex="-1">
+<div class="window-btn" class:active class:dragging style:transform={dragging ? `translateX(${translateX}px)` : ''} role="tab" tabindex="-1">
 	<Icon img={icon} alt={title} size="16px" padding="0" colorVariable={active ? '--color-text' : '--color-text-dim'} />
 	<span class="window-title">{title}</span>
 </div>

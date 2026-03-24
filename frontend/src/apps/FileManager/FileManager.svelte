@@ -4,7 +4,8 @@
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';
 	import FileManagerSeparator from './FileManagerSeparator.svelte';
-	import IconGrid, { type IconGridItemData } from '../../components/IconGrid/IconGrid.svelte';
+	import type { IconGridItemData } from '../../components/IconGrid/icon-grid.ts';
+	import IconGrid from '../../components/IconGrid/IconGrid.svelte';
 
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);

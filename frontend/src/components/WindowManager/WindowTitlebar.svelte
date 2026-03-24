@@ -2,6 +2,7 @@
 	import type { WindowState } from '../../scripts/window-store.svelte.ts';
 	import { closeWindow, minimizeWindow, toggleMaximize, moveWindow, focus, snapPreview, snapWindow } from '../../scripts/window-store.svelte.ts';
 	import { getSnapZone } from '../../scripts/window-snap.ts';
+	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import WindowControl from './WindowControl.svelte';
 	interface Props {
@@ -9,51 +10,25 @@
 	}
 	const { win }: Props = $props();
 	const focused = $derived(focus.id === win.id);
-	let dragging = false;
-	let hasDragged = false;
-	let lastTapTime = 0;
-	let dragStartX = 0;
-	let dragStartY = 0;
+	let dragRefX = 0;
+	let dragRefY = 0;
 	let dragWinStartX = 0;
 	let dragWinStartY = 0;
 	let dragStartedMaximized = false;
-	const DOUBLE_TAP_MS = 300;
+	const DRAG_THRESHOLD = 5;
 	const UNMAXIMIZE_Y_OFFSET = 16;
 
-	function handleMaximize(): void {
-		if (hasDragged) return;
-		toggleMaximize(win.id);
-	}
-
-	function onPointerDown(e: PointerEvent): void {
-		if ((e.target as HTMLElement).closest('.window-controls')) return;
-		const now = Date.now();
-		if (now - lastTapTime < DOUBLE_TAP_MS) {
-			lastTapTime = 0;
-			toggleMaximize(win.id);
-			return;
-		}
-		lastTapTime = now;
-		dragging = true;
-		dragStartX = e.clientX;
-		dragStartY = e.clientY;
+	function handlePress(e: PointerEvent): boolean | void {
+		if ((e.target as HTMLElement).closest('.window-controls')) return false;
+		e.preventDefault();
 		dragStartedMaximized = !!(win.maximized || win.preMaximize);
+		dragRefX = e.clientX;
+		dragRefY = e.clientY;
 		dragWinStartX = win.x;
 		dragWinStartY = win.y;
-		hasDragged = false;
-		(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-		e.preventDefault();
 	}
 
-	const DRAG_THRESHOLD = 5;
-
-	function onPointerMove(e: PointerEvent): void {
-		if (!dragging) return;
-		const dx = e.clientX - dragStartX;
-		const dy = e.clientY - dragStartY;
-		if (!hasDragged && Math.abs(dx) < DRAG_THRESHOLD && Math.abs(dy) < DRAG_THRESHOLD) return;
-		hasDragged = true;
-		lastTapTime = 0;
+	function handleDragStart(e: PointerEvent): void {
 		if (dragStartedMaximized) {
 			const prevW = win.preMaximize?.width ?? win.width;
 			const prevH = win.preMaximize?.height ?? win.height;
@@ -65,19 +40,20 @@
 			win.maximized = false;
 			win.preMaximize = null;
 			dragStartedMaximized = false;
-			dragStartX = e.clientX;
-			dragStartY = e.clientY;
+			dragRefX = e.clientX;
+			dragRefY = e.clientY;
 			dragWinStartX = win.x;
 			dragWinStartY = win.y;
 		}
-		moveWindow(win.id, dragWinStartX + e.clientX - dragStartX, dragWinStartY + e.clientY - dragStartY);
+	}
+
+	function handleDragMove(e: PointerEvent): void {
+		moveWindow(win.id, dragWinStartX + e.clientX - dragRefX, dragWinStartY + e.clientY - dragRefY);
 		snapPreview.zone = getSnapZone(e.clientX, e.clientY);
 	}
 
-	function onPointerUp(): void {
-		if (dragging && snapPreview.zone) snapWindow(win.id, snapPreview.zone);
-		dragging = false;
-		hasDragged = false;
+	function handleDragEnd(): void {
+		if (snapPreview.zone) snapWindow(win.id, snapPreview.zone);
 		dragStartedMaximized = false;
 		snapPreview.zone = null;
 	}
@@ -97,7 +73,6 @@
 		transition: background 0.15s;
 		border: 1px solid var(--color-border);
 		border-bottom: none;
-		touch-action: none;
 	}
 
 	.titlebar.focused {
@@ -140,14 +115,14 @@
 	}
 </style>
 
-<div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" onpointerdown={onPointerDown} onpointermove={onPointerMove} onpointerup={onPointerUp}>
+<div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" use:pointerGestures={{ onpress: handlePress, ondblclick: () => toggleMaximize(win.id), ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd, dragThreshold: DRAG_THRESHOLD }}>
 	<div class="titlebar-left">
 		<Icon img={win.icon} alt={win.title} size="16px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
 		<span class="title">{win.title}</span>
 	</div>
 	<div class="window-controls">
 		<WindowControl img="/img/window/minimize.svg" alt="Minimize" onclick={() => minimizeWindow(win.id)} {focused} />
-		<WindowControl img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} onclick={() => handleMaximize()} {focused} />
+		<WindowControl img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} onclick={() => toggleMaximize(win.id)} {focused} />
 		<WindowControl img="/img/window/close.svg" alt="Close" onclick={() => closeWindow(win.id)} {focused} variant="close" />
 	</div>
 </div>

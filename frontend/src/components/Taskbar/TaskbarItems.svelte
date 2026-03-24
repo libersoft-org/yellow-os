@@ -1,19 +1,18 @@
 <script lang="ts">
 	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow, reorderWindow } from '../../scripts/window-store.svelte.ts';
 	import { desktop } from '../../scripts/desktop.svelte.ts';
+	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
 	import Icon from '../Icon/Icon.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
 	const desktopWindows = $derived(getWindows().filter(w => w.desktopId === activeId));
-	const DRAG_THRESHOLD = 4;
 	const SCROLL_STEP = 150;
 	let dragging = $state(false);
 	let dragId = $state<string | null>(null);
 	let dragStartX = 0;
 	let dragTranslateX = $state(0);
-	let pointerDown = false;
 	let btnElements = new Map<string, HTMLElement>();
 	let scrollContainer: HTMLElement | undefined = $state();
 	let canScrollLeft = $state(false);
@@ -93,22 +92,27 @@
 		else focusWindow(id);
 	}
 
-	function onPointerDown(e: PointerEvent, id: string): void {
-		pointerDown = true;
-		dragId = id;
+	function handlePress(e: PointerEvent): boolean | void {
+		const wrapper = (e.target as HTMLElement).closest('[data-win-id]') as HTMLElement | null;
+		if (!wrapper) return false;
+		dragId = wrapper.dataset['winId']!;
 		dragStartX = e.clientX;
 	}
 
-	function onPointerMove(e: PointerEvent): void {
-		if (!pointerDown || !dragId) return;
-		const dx = e.clientX - dragStartX;
-		if (!dragging && Math.abs(dx) < DRAG_THRESHOLD) return;
-		if (!dragging) {
-			dragging = true;
-			const btn = btnElements.get(dragId);
-			if (btn) btn.setPointerCapture(e.pointerId);
-		}
-		dragTranslateX = dx;
+	function handleClick(): void {
+		if (!dragId) return;
+		const win = getWindow(dragId);
+		if (win) onWindowButtonClick(win.id, win.minimized);
+		dragId = null;
+	}
+
+	function handleDragStart(): void {
+		dragging = true;
+	}
+
+	function handleDragMove(e: PointerEvent): void {
+		if (!dragId) return;
+		dragTranslateX = e.clientX - dragStartX;
 		const allWindows = getWindows();
 		const dragIdx = allWindows.findIndex(w => w.id === dragId);
 		if (dragIdx === -1) return;
@@ -127,15 +131,9 @@
 		}
 	}
 
-	function onPointerUp(): void {
-		pointerDown = false;
-		const wasDragging = dragging;
+	function handleDragEnd(): void {
 		dragging = false;
 		dragTranslateX = 0;
-		if (!wasDragging && dragId) {
-			const win = getWindow(dragId);
-			if (win) onWindowButtonClick(win.id, win.minimized);
-		}
 		dragId = null;
 	}
 </script>
@@ -200,10 +198,10 @@
 			</div>
 		</Clickable>
 	{/if}
-	<div class="window-buttons" class:fade-left={canScrollLeft} class:fade-right={canScrollRight} bind:this={scrollContainer} use:observeOverflow use:scrollOnFocusChange={focus.id} onscroll={updateScrollState} onwheel={onWheel} onpointermove={onPointerMove} onpointerup={onPointerUp} role="tablist" tabindex="-1">
+	<div class="window-buttons" class:fade-left={canScrollLeft} class:fade-right={canScrollRight} bind:this={scrollContainer} use:observeOverflow use:scrollOnFocusChange={focus.id} use:pointerGestures={{ onpress: handlePress, onclick: handleClick, ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd }} onscroll={updateScrollState} onwheel={onWheel} role="tablist" tabindex="-1">
 		{#each desktopWindows as win (win.id)}
-			<div use:trackBtn={win.id}>
-				<TaskbarItemsItem icon={win.icon} title={win.title} active={focus.id === win.id && !win.minimized} dragging={dragging && dragId === win.id} translateX={dragging && dragId === win.id ? dragTranslateX : 0} onpointerdown={e => onPointerDown(e, win.id)} />
+			<div use:trackBtn={win.id} data-win-id={win.id}>
+				<TaskbarItemsItem icon={win.icon} title={win.title} active={focus.id === win.id && !win.minimized} dragging={dragging && dragId === win.id} translateX={dragging && dragId === win.id ? dragTranslateX : 0} />
 			</div>
 		{/each}
 	</div>

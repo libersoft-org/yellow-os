@@ -2,12 +2,9 @@
 	import type { Component } from 'svelte';
 	import { openWindow, defocusAll } from '../../scripts/window-store.svelte.ts';
 	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte.ts';
-	import IconGrid, { type IconGridItemData } from '../IconGrid/IconGrid.svelte';
+	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
+	import IconGrid from '../IconGrid/IconGrid.svelte';
 	import FileManager from '../../apps/FileManager/FileManager.svelte';
-
-	const { desktopId }: { desktopId?: number | undefined } = $props();
-	const activeId = $derived(desktopId ?? desktop.active);
-
 	interface DesktopShortcut {
 		id: string;
 		name: string;
@@ -19,7 +16,8 @@
 		windowWidth?: number;
 		windowHeight?: number;
 	}
-
+	const { desktopId }: { desktopId?: number | undefined } = $props();
+	const activeId = $derived(desktopId ?? desktop.active);
 	let perDesktopShortcuts = $state<DesktopShortcut[][]>(
 		Array.from({ length: DESKTOP_COUNT }, (_, i) =>
 			i === 0
@@ -30,11 +28,8 @@
 				: []
 		)
 	);
-
 	const shortcuts = $derived(perDesktopShortcuts[activeId] ?? []);
-
 	let iconView: ReturnType<typeof IconGrid> | undefined = $state();
-
 	const iconViewItems = $derived<IconGridItemData[]>(
 		shortcuts.map(s => ({
 			id: s.id,

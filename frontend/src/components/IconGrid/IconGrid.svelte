@@ -1,19 +1,9 @@
-<script lang="ts" module>
-	export interface IconGridItemData {
-		id: string;
-		icon: string;
-		label: string;
-		iconColor?: string | undefined;
-		gridX?: number | undefined;
-		gridY?: number | undefined;
-	}
-</script>
-
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { IconGridItemData } from './icon-grid.ts';
 	import { createSelection } from '../../scripts/selection.svelte';
+	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import IconGridItem from './IconGridItem.svelte';
-
 	interface Props {
 		items: IconGridItemData[];
 		cellWidth?: number;
@@ -23,9 +13,7 @@
 		onitemsmove?: (moves: { id: string; gridX: number; gridY: number }[]) => void;
 		empty?: Snippet;
 	}
-
 	let { items, cellWidth = 90, cellHeight = 90, iconSize = '40px', ondblclick, onitemsmove, empty }: Props = $props();
-
 	const selection = createSelection();
 	let containerEl: HTMLElement | undefined = $state();
 	let containerWidth = $state(0);
@@ -64,17 +52,20 @@
 	});
 
 	// Drag state
-	type DragMode = 'none' | 'select' | 'move-pending' | 'move';
+	type DragMode = 'none' | 'select' | 'move';
 	let dragMode = $state<DragMode>('none');
+	let pressedOnItem = false;
 	let dragSelectStart = $state({ x: 0, y: 0 });
 	let dragSelectEnd = $state({ x: 0, y: 0 });
 	let dragPreSelected = new Set<string>();
-	let dragStartClient = $state({ x: 0, y: 0 });
 	let dragMoveItemId = $state<string | null>(null);
 	let dragMoveOffset = $state({ x: 0, y: 0 });
 	let dragGhostPos = $state({ x: 0, y: 0 });
 	let pendingDeselect = $state<string | null>(null);
 	let lastClickedItemId = $state<string | null>(null);
+	let lastTapTime = 0;
+	let lastTapItemId: string | null = null;
+	const DOUBLE_TAP_MS = 300;
 
 	function observeResize(node: HTMLElement): { destroy(): void } {
 		containerWidth = node.clientWidth;
@@ -93,29 +84,29 @@
 		};
 	}
 
-	function onContainerPointerDown(e: PointerEvent): void {
+	function handlePress(e: PointerEvent): boolean | void {
 		resetIfItemsChanged();
-		const cell = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
-		if (cell) {
-			onCellPointerDown(e, cell.dataset['iconId']!);
-		} else {
-			onEmptyPointerDown(e);
-		}
-	}
-
-	function onContainerDblClick(): void {
-		if (!lastClickedItemId) return;
-		const item = items.find(i => i.id === lastClickedItemId);
-		if (item) ondblclick?.(item);
-	}
-
-	function onCellPointerDown(e: PointerEvent, id: string): void {
 		e.preventDefault();
 		pendingDeselect = null;
-		lastClickedItemId = id;
 
-		if (selection.isSelected(id)) {
-			if (e.ctrlKey || e.metaKey) {
+		const cell = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
+		if (cell) {
+			const id = cell.dataset['iconId']!;
+			lastClickedItemId = id;
+
+			if (selection.isSelected(id)) {
+				if (e.ctrlKey || e.metaKey) {
+					const idx = items.findIndex(i => i.id === id);
+					selection.select(
+						id,
+						idx,
+						items.map(i => i.id),
+						e
+					);
+					return false;
+				}
+				pendingDeselect = id;
+			} else {
 				const idx = items.findIndex(i => i.id === id);
 				selection.select(
 					id,
@@ -123,60 +114,54 @@
 					items.map(i => i.id),
 					e
 				);
+			}
+
+			pressedOnItem = true;
+			dragMoveItemId = id;
+			const pos = itemPositions.get(id)!;
+			const coords = getContainerCoords(e);
+			dragMoveOffset = {
+				x: coords.x - pos.gridX * cellWidth,
+				y: coords.y - pos.gridY * cellHeight,
+			};
+			dragGhostPos = { x: pos.gridX * cellWidth, y: pos.gridY * cellHeight };
+		} else {
+			lastClickedItemId = null;
+			if (!(e.ctrlKey || e.metaKey)) selection.clear();
+			pressedOnItem = false;
+			const coords = getContainerCoords(e);
+			dragSelectStart = coords;
+			dragSelectEnd = coords;
+			dragPreSelected = e.ctrlKey || e.metaKey ? new Set(selection.selected) : new Set();
+		}
+	}
+
+	function handleClick(): void {
+		if (ondblclick && lastClickedItemId) {
+			const now = Date.now();
+			if (now - lastTapTime < DOUBLE_TAP_MS && lastTapItemId === lastClickedItemId) {
+				lastTapTime = 0;
+				lastTapItemId = null;
+				const item = items.find(i => i.id === lastClickedItemId);
+				if (item) ondblclick(item);
 				return;
 			}
-			pendingDeselect = id;
-		} else {
-			const idx = items.findIndex(i => i.id === id);
-			selection.select(
-				id,
-				idx,
-				items.map(i => i.id),
-				e
-			);
+			lastTapTime = now;
+			lastTapItemId = lastClickedItemId;
 		}
 
-		dragMode = 'move-pending';
-		dragMoveItemId = id;
-		dragStartClient = { x: e.clientX, y: e.clientY };
-
-		const pos = itemPositions.get(id)!;
-		const coords = getContainerCoords(e);
-		dragMoveOffset = {
-			x: coords.x - pos.gridX * cellWidth,
-			y: coords.y - pos.gridY * cellHeight,
-		};
-		dragGhostPos = { x: pos.gridX * cellWidth, y: pos.gridY * cellHeight };
-		containerEl!.setPointerCapture(e.pointerId);
+		if (pendingDeselect) {
+			selection.set(new Set([pendingDeselect]));
+			pendingDeselect = null;
+		}
 	}
 
-	function onEmptyPointerDown(e: PointerEvent): void {
+	function handleDragStart(): void {
+		dragMode = pressedOnItem ? 'move' : 'select';
 		pendingDeselect = null;
-		lastClickedItemId = null;
-		if (!(e.ctrlKey || e.metaKey)) selection.clear();
-
-		dragMode = 'select';
-		const coords = getContainerCoords(e);
-		dragSelectStart = coords;
-		dragSelectEnd = coords;
-		dragPreSelected = e.ctrlKey || e.metaKey ? new Set(selection.selected) : new Set();
-		dragStartClient = { x: e.clientX, y: e.clientY };
-		containerEl!.setPointerCapture(e.pointerId);
 	}
 
-	function onContainerPointerMove(e: PointerEvent): void {
-		if (dragMode === 'none') return;
-
-		const dx = Math.abs(e.clientX - dragStartClient.x);
-		const dy = Math.abs(e.clientY - dragStartClient.y);
-
-		if (dragMode === 'move-pending') {
-			if (dx > 3 || dy > 3) {
-				dragMode = 'move';
-				pendingDeselect = null;
-			} else return;
-		}
-
+	function handleDragMove(e: PointerEvent): void {
 		if (dragMode === 'move') {
 			const coords = getContainerCoords(e);
 			dragGhostPos = {
@@ -209,7 +194,7 @@
 		}
 	}
 
-	function onContainerPointerUp(): void {
+	function handleDragEnd(): void {
 		if (dragMode === 'move' && dragMoveItemId) {
 			const newGridX = Math.max(0, Math.round(dragGhostPos.x / cellWidth));
 			const newGridY = Math.max(0, Math.round(dragGhostPos.y / cellHeight));
@@ -250,16 +235,6 @@
 					onitemsmove?.(moves);
 				}
 			}
-		}
-
-		if (dragMode === 'select') {
-			const dx = Math.abs(dragSelectEnd.x - dragSelectStart.x);
-			const dy = Math.abs(dragSelectEnd.y - dragSelectStart.y);
-			if (dx < 3 && dy < 3) selection.set(new Set(dragPreSelected));
-		}
-
-		if (dragMode === 'move-pending' && pendingDeselect) {
-			selection.set(new Set([pendingDeselect]));
 		}
 
 		dragMode = 'none';
@@ -340,7 +315,7 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div class="icon-grid" use:observeResize bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" onpointerdown={onContainerPointerDown} onpointermove={onContainerPointerMove} onpointerup={onContainerPointerUp} ondblclick={onContainerDblClick} onkeydown={onKeydown} tabindex="0">
+<div class="icon-grid" use:observeResize bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" use:pointerGestures={{ onpress: handlePress, onclick: handleClick, ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd }} onkeydown={onKeydown} tabindex="0">
 	{#if items.length === 0 && empty}
 		<div class="empty-state">{@render empty()}</div>
 	{/if}

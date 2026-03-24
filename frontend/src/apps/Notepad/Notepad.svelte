@@ -1,7 +1,17 @@
 <script lang="ts">
 	let content = $state('');
 
-	const lineCount = $derived(content ? content.split('\n').length : 1);
+	function countLines(text: string): number {
+		let count = 1;
+		let pos = 0;
+		while ((pos = text.indexOf('\n', pos)) !== -1) {
+			count++;
+			pos++;
+		}
+		return count;
+	}
+
+	const lineCount = $derived(countLines(content));
 	const charCount = $derived(content.length);
 </script>
 

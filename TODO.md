@@ -3,13 +3,14 @@
 ## Bugs / changes
 
 - TaskbarMenuItem is basically the same as FileManagerSidebar items. Unify it in generic component (including animations as they are in TaskbarMenuItem)
+- When resizing Snake and Pong game window, it should not create a bigger gameplay area, but rather scale it. Keep aspect ratio.
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 - Unify fonts for the whole OS (mono and non-mono)
 
 ## New features
 
-- Add ALT + F4 to close active window (suppress closing browser!)
+- Key shortcuts - ALT + F4, ALT + TAB, WIN + left / right (snap) (suppress host system shortcuts!)
 - Click on window title bar icon should show context menu - maximize, minimize, restore, close, double click to close
 - Create a generic list items - use in File manager in left column, in System settings etc.
 - File manager - add file / directory info in right panel
@@ -47,7 +48,6 @@
 - Notification system - toast
 - Sounds
 - More themes (light, dark etc.)
-- Key shortcuts - ALT + F4, ALT + TAB, WIN + left / right (snap)
 - API for app development
 - Security - app sandboxing, XSS prevention, CSRF protection, API rate limits
 - App installer
