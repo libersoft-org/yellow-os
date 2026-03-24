@@ -86,8 +86,7 @@
 	.file-manager {
 		display: flex;
 		flex-direction: column;
-		height: calc(100% + 32px);
-		margin: -16px;
+		height: 100%;
 		user-select: none;
 		outline: none;
 	}

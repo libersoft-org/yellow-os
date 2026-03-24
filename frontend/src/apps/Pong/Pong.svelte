@@ -6,6 +6,8 @@
 	const BALL_R = 6;
 	const PADDLE_SPEED = 8;
 	const BALL_BASE_SPEED = 10;
+	const GAME_WIDTH = 600;
+	const GAME_HEIGHT = 400;
 	const TICK_INTERVAL = 1000 / 30;
 	const PADDLE_MARGIN = 20;
 	const BALL_SPEED_INCREMENT = 0.2;
@@ -307,12 +309,6 @@
 
 	// --- Resize ---
 	function syncSize(): void {
-		const rect = container.getBoundingClientRect();
-		canvas.width = rect.width;
-		canvas.height = rect.height;
-		// Re-center paddles on resize
-		p1Y = clampPaddle(p1Y);
-		p2Y = clampPaddle(p2Y);
 		if (gameState === 'menu') drawOverlay('PONG', 'P1: ↑↓  |  P2: W/S  |  First to 10', 'Press Space to start');
 		else if (gameState === 'paused') drawOverlay('PAUSED', '', 'Press Space to resume');
 		else if (gameState === 'gameover') drawOverlay(`${winner} wins!`, `${scoreP2} — ${scoreP1}`, 'Press Space to play again');
@@ -321,6 +317,8 @@
 
 	onMount(() => {
 		ctx = canvas.getContext('2d')!;
+		canvas.width = GAME_WIDTH;
+		canvas.height = GAME_HEIGHT;
 		const ro = new ResizeObserver(() => syncSize());
 		ro.observe(container);
 		syncSize();
@@ -338,11 +336,16 @@
 		height: 100%;
 		outline: none;
 		overflow: hidden;
-		background: #1a1a2e;
+		background: #000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	canvas {
-		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 	}
 </style>
 

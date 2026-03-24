@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- When resizing Snake and Pong game window, it should not create a bigger gameplay area, but rather scale it. Keep aspect ratio.
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 - Unify fonts for the whole OS (mono and non-mono)

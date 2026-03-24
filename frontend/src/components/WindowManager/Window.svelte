@@ -102,7 +102,6 @@
 	.content {
 		flex: 1;
 		overflow: auto;
-		padding: 16px;
 		border: 1px solid var(--color-border);
 		border-top: none;
 		border-radius: 0 0 var(--border-radius) var(--border-radius);

@@ -4,6 +4,8 @@
 	type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
 	type Point = { x: number; y: number };
 	const GRID = 20;
+	const GAME_WIDTH = 500;
+	const GAME_HEIGHT = 500;
 	const BASE_INTERVAL = 150;
 	const MIN_INTERVAL = 60;
 	const SPEED_STEP = 3;
@@ -74,8 +76,8 @@
 
 	// --- Game logic ---
 	function calcGrid(): void {
-		cols = Math.floor(canvas.width / GRID);
-		rows = Math.floor(canvas.height / GRID);
+		cols = Math.floor(GAME_WIDTH / GRID);
+		rows = Math.floor(GAME_HEIGHT / GRID);
 	}
 
 	function spawnFood(): void {
@@ -275,10 +277,6 @@
 
 	// --- Resize ---
 	function syncSize(): void {
-		const rect = container.getBoundingClientRect();
-		canvas.width = rect.width;
-		canvas.height = rect.height;
-		calcGrid();
 		if (gameState === 'menu') drawOverlay('SNAKE', `High Score: ${highScore}`, 'Press Space to start');
 		else if (gameState === 'paused') drawOverlay('PAUSED', '', 'Press Space to resume');
 		else if (gameState === 'gameover') drawOverlay('GAME OVER', `Score: ${score}  |  Best: ${highScore}`, 'Press Space to play again');
@@ -287,6 +285,9 @@
 
 	onMount(() => {
 		ctx = canvas.getContext('2d')!;
+		canvas.width = GAME_WIDTH;
+		canvas.height = GAME_HEIGHT;
+		calcGrid();
 		try {
 			highScore = Number(localStorage.getItem('yellow-os-snake-highscore')) || 0;
 		} catch {}
@@ -308,11 +309,16 @@
 		height: 100%;
 		outline: none;
 		overflow: hidden;
-		background: #1a1a2e;
+		background: #000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	canvas {
-		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: contain;
 	}
 </style>
 
