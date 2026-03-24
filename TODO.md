@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- TaskbarMenuItem is basically the same as FileManagerSidebar items. Unify it in generic component (including animations as they are in TaskbarMenuItem)
 - When resizing Snake and Pong game window, it should not create a bigger gameplay area, but rather scale it. Keep aspect ratio.
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme

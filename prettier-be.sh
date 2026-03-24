@@ -1,5 +1,5 @@
 #!/bin/sh
 
 cd backend
-npx prettier --write "**/*.{js,ts,json}"
+bun prettier --write "**/*.{js,ts,json}"
 cd ..

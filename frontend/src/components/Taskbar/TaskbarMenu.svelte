@@ -2,7 +2,7 @@
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
 	import Icon from '../Icon/Icon.svelte';
-	import TaskbarMenuItem from './TaskbarMenuItem.svelte';
+	import ListItem from '../ListItem/ListItem.svelte';
 	import Calculator from '../../apps/Calculator/Calculator.svelte';
 	import FileManager from '../../apps/FileManager/FileManager.svelte';
 	import Notepad from '../../apps/Notepad/Notepad.svelte';
@@ -115,7 +115,10 @@
 			</Clickable>
 			<div class="menu-items">
 				{#each apps as app}
-					<TaskbarMenuItem icon={app.icon} name={app.name} onclick={() => launchApp(app)} />
+					<ListItem onclick={() => launchApp(app)}>
+						<Icon img={app.icon} alt={app.name} size="18px" padding="0" colorVariable="--color-text" />
+						<div>{app.name}</div>
+					</ListItem>
 				{/each}
 			</div>
 		</div>
