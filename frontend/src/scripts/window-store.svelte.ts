@@ -43,6 +43,11 @@ const DEFAULT_WIDTH = 600;
 const DEFAULT_HEIGHT = 400;
 const DEFAULT_MIN_WIDTH = 200;
 const DEFAULT_MIN_HEIGHT = 150;
+
+function getChrome(): { width: number; height: number } {
+	const titlebarHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--titlebar-height'));
+	return { width: 2, height: titlebarHeight + 1 };
+}
 let nextZIndex = $state(1);
 const _windows: WindowState[] = $state([]);
 const _windowMap = new Map<string, WindowState>();
@@ -85,17 +90,27 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 	const h = opts.height ?? DEFAULT_HEIGHT;
 	const position = opts.position ?? 'default';
 	const startState = opts.startState ?? 'normal';
-	let x: number;
-	let y: number;
+	const chrome = getChrome();
+	const outerW = w + chrome.width;
+	const outerH = h + chrome.height;
+	let normalX: number;
+	let normalY: number;
 	if (opts.x != null && opts.y != null) {
-		x = opts.x;
-		y = opts.y;
+		normalX = opts.x;
+		normalY = opts.y;
 	} else if (position === 'center') {
-		x = Math.round((window.innerWidth - w) / 2);
-		y = Math.round((window.innerHeight - h) / 2);
+		normalX = Math.round((window.innerWidth - outerW) / 2);
+		normalY = Math.round((window.innerHeight - outerH) / 2);
 	} else {
-		x = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
-		y = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
+		normalX = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
+		normalY = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
+	}
+	let x = normalX;
+	let y = normalY;
+	if (startState === 'maximized') {
+		const bounds = getSnapBounds('top');
+		x = bounds.x;
+		y = bounds.y;
 	}
 	const win: WindowState = {
 		id,
@@ -103,8 +118,8 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 		icon: opts.icon,
 		x,
 		y,
-		width: w,
-		height: h,
+		width: outerW,
+		height: outerH,
 		minWidth: DEFAULT_MIN_WIDTH,
 		minHeight: DEFAULT_MIN_HEIGHT,
 		zIndex: nextZIndex++,
@@ -114,7 +129,7 @@ export function openWindow(opts: { title: string; icon: string; component: Compo
 		restoring: false,
 		opening: true,
 		closing: false,
-		preMaximize: startState === 'maximized' ? { x, y, width: w, height: h } : null,
+		preMaximize: startState === 'maximized' ? { x: normalX, y: normalY, width: outerW, height: outerH } : null,
 		snappedZone: startState === 'maximized' ? 'top' : null,
 		component: opts.component,
 		desktopId: desktop.active,
