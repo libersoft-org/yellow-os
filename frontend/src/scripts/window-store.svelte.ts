@@ -74,7 +74,7 @@ function assignZIndex(win: WindowState): void {
 	if (nextZIndex > Z_INDEX_COMPACT_THRESHOLD) compactZIndexes();
 }
 
-function triggerSnapAnimation(id: string): void {
+export function triggerSnapAnimation(id: string): void {
 	snapAnimatingIds[id] = true;
 	flushSync();
 }

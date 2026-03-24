@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WindowState } from '../../scripts/window-store.svelte.ts';
-	import { closeWindow, minimizeWindow, toggleMaximize, moveWindow, focus, snapPreview, snapWindow } from '../../scripts/window-store.svelte.ts';
+	import { closeWindow, minimizeWindow, toggleMaximize, moveWindow, focus, snapPreview, snapWindow, triggerSnapAnimation } from '../../scripts/window-store.svelte.ts';
 	import { getSnapZone } from '../../scripts/window-snap.ts';
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import Icon from '../Icon/Icon.svelte';
@@ -33,6 +33,7 @@
 			const prevW = win.preMaximize?.width ?? win.width;
 			const prevH = win.preMaximize?.height ?? win.height;
 			const relativeX = e.clientX / globalThis.innerWidth;
+			triggerSnapAnimation(win.id);
 			win.x = e.clientX - prevW * relativeX;
 			win.y = e.clientY - UNMAXIMIZE_Y_OFFSET;
 			win.width = prevW;
