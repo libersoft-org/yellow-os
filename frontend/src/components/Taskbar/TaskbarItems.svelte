@@ -7,7 +7,7 @@
 	import Clickable from '../Clickable/Clickable.svelte';
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
-	const desktopWindows = $derived(getWindows().filter(w => w.desktopId === activeId));
+	const desktopWindows = $derived(getWindows().filter(w => w.desktopId === activeId && w.showInTaskbar));
 	const SCROLL_STEP = 150;
 	let dragging = $state(false);
 	let dragId = $state<string | null>(null);

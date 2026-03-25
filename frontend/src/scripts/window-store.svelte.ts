@@ -29,7 +29,9 @@ export interface WindowState {
 	snappedZone: SnapZone | null;
 	component: Component;
 	desktopId: number;
+	showInTaskbar: boolean;
 	set position(value: 'default' | 'center');
+	set state(value: 'normal' | 'maximized' | 'minimized');
 }
 const Z_INDEX_COMPACT_THRESHOLD = 1000;
 const CASCADE_OFFSET = 30;
@@ -108,11 +110,40 @@ export function openWindow(component: Component): string {
 		snappedZone: null,
 		component,
 		desktopId: desktop.active,
+		showInTaskbar: true,
 		set position(value: 'default' | 'center') {
 			if (value === 'center') {
 				const chrome = getChrome();
 				this.x = Math.round((globalThis.innerWidth - (this.width + chrome.width)) / 2);
 				this.y = Math.round((globalThis.innerHeight - (this.height + chrome.height)) / 2);
+			}
+		},
+		set state(value: 'normal' | 'maximized' | 'minimized') {
+			if (value === 'maximized') {
+				const bounds = getSnapBounds('top');
+				const chrome = getChrome();
+				this.preMaximize = { x: this.x, y: this.y, width: this.width, height: this.height };
+				this.x = bounds.x;
+				this.y = bounds.y;
+				this.width = bounds.width - chrome.width;
+				this.height = bounds.height - chrome.height;
+				this.maximized = true;
+				this.snappedZone = 'top';
+			} else if (value === 'minimized') {
+				this.minimized = true;
+			} else if (value === 'normal') {
+				if (this.maximized && this.preMaximize) {
+					this.x = this.preMaximize.x;
+					this.y = this.preMaximize.y;
+					this.width = this.preMaximize.width;
+					this.height = this.preMaximize.height;
+					this.maximized = false;
+					this.preMaximize = null;
+					this.snappedZone = null;
+				}
+				if (this.minimized) {
+					this.minimized = false;
+				}
 			}
 		},
 	};
