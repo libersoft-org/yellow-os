@@ -69,8 +69,9 @@
 	}
 
 	function launchBrand(): void {
-		const first = menuItems[0];
-		if (first && !isCategory(first)) launchApp(first);
+		openWindow(About);
+		menuOpen = false;
+		openCategory = null;
 	}
 </script>
 
@@ -104,14 +105,13 @@
 		padding: 0;
 		display: flex;
 		min-width: 220px;
-		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 -4px 20px var(--color-shadow);
 	}
 
 	.menu-brand {
 		width: 32px;
 		height: 100%;
 		background: var(--color-accent);
-		border-radius: 0 0 0 0;
 		display: flex;
 		align-items: flex-end;
 		justify-content: center;
@@ -123,7 +123,7 @@
 		transform: rotate(180deg);
 		font-size: 14px;
 		font-weight: bold;
-		color: #000;
+		color: var(--color-accent-fg);
 		letter-spacing: 1px;
 		white-space: nowrap;
 	}
@@ -155,7 +155,7 @@
 		border-radius: 10px;
 		padding: 10px;
 		min-width: 200px;
-		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
+		box-shadow: 0 -4px 20px var(--color-shadow);
 		z-index: 1;
 	}
 </style>
@@ -187,15 +187,7 @@
 							{#if openCategory === item.label}
 								<div class="submenu">
 									{#each item.items as subItem}
-										{#if isCategory(subItem)}
-											<ListItem onclick={() => {}}>
-												<Icon img={subItem.icon} alt={subItem.label} size="18px" padding="0" colorVariable="--color-text" />
-												<div class="category-label">
-													{subItem.label}
-													<Icon img="/img/caret-right.svg" alt="" size="10px" padding="0" colorVariable="--color-text" />
-												</div>
-											</ListItem>
-										{:else}
+										{#if !isCategory(subItem)}
 											<ListItem onclick={() => launchApp(subItem)}>
 												<Icon img={subItem.icon} alt={subItem.label} size="18px" padding="0" colorVariable="--color-text" />
 												<div>{subItem.label}</div>

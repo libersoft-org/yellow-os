@@ -27,7 +27,6 @@
 - Edit README (maybe done) and INSTALL.md
 - Add menu bar and use it in apps (File, Edit, Help etc.)
 - Add logout screen + button in taskbar menu
-- Add categories in taskbar menu
 - Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
 - Add desktop icons (+ grid align)
 - Add system settings app

@@ -30,6 +30,11 @@
 		e.preventDefault();
 		onclose();
 	}
+
+	function handleItemClick(item: ContextMenuItem): void {
+		item.onclick();
+		onclose();
+	}
 </script>
 
 <style>
@@ -53,12 +58,7 @@
 <div class="backdrop" role="none" onpointerdown={handlePointerDown} oncontextmenu={handleContextMenu}>
 	<div class="context-menu" use:adjustPosition style:left="{x}px" style:top="{y}px">
 		{#each items as item}
-			<ListItem
-				onclick={() => {
-					item.onclick();
-					onclose();
-				}}
-			>
+			<ListItem onclick={() => handleItemClick(item)}>
 				<Icon img={item.icon} alt={item.label} size="16px" padding="0" colorVariable="--color-text" />
 				<div>{item.label}</div>
 			</ListItem>
