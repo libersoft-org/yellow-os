@@ -12,12 +12,13 @@
 	import FileManagerSeparator from './FileManagerSeparator.svelte';
 	import type { IconGridItemData } from '../../components/IconGrid/icon-grid.ts';
 	import IconGrid from '../../components/IconGrid/IconGrid.svelte';
-
+	import ContextMenu from '../../components/ContextMenu/ContextMenu.svelte';
+	import type { ContextMenuItem } from '../../components/ContextMenu/context-menu.ts';
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);
 	let historyIndex = $state(0);
 	let sidebarWidth = $state(180);
-
+	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
 	const canGoUp = $derived(currentPath !== '/');
@@ -44,6 +45,29 @@
 		for (let i = 0; i < parts.length; i++) segments.push({ name: parts[i]!, path: '/' + parts.slice(0, i + 1).join('/') });
 		return segments;
 	});
+
+	const emptySpaceMenuItems: ContextMenuItem[] = [
+		{
+			icon: '/img/settings.svg',
+			label: 'Sort by',
+			children: [{ icon: '/img/check.svg', label: 'Name', onclick: () => {} }, { label: 'Modification date', onclick: () => {} }, { label: 'Extension', onclick: () => {} }, { label: 'Size', onclick: () => {} }, { separator: true }, { icon: '/img/check.svg', label: 'Ascending', onclick: () => {} }, { label: 'Descending', onclick: () => {} }],
+		},
+		{
+			icon: '/img/settings.svg',
+			label: 'View',
+			children: [
+				{ icon: '/img/check.svg', label: 'Grid', onclick: () => {} },
+				{ label: 'List', onclick: () => {} },
+			],
+		},
+		{ separator: true },
+		{ icon: '/img/file.svg', label: 'New file', onclick: () => {} },
+		{ icon: '/img/directory.svg', label: 'New directory', onclick: () => {} },
+	];
+
+	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
+		return [{ icon: '/img/open.svg', label: 'Open', onclick: () => {} }, ...(entry.type === 'directory' ? [{ icon: '/img/open.svg', label: 'Open in new window', onclick: () => {} }] : []), { separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => {} }, { icon: '/img/trash.svg', label: 'Delete', onclick: () => {} }];
+	}
 
 	function onSeparatorResize(dx: number): void {
 		sidebarWidth = Math.max(120, Math.min(400, sidebarWidth + dx));
@@ -86,6 +110,15 @@
 			navigateTo(path);
 		}
 	}
+
+	function onGridContextMenu(e: MouseEvent): void {
+		e.preventDefault();
+		const iconEl = (e.target as HTMLElement).closest('[data-icon-id]');
+		if (iconEl) {
+			const entry = entries.find(en => en.name === (iconEl as HTMLElement).dataset['iconId']);
+			if (entry) contextMenu = { x: e.clientX, y: e.clientY, items: getIconMenuItems(entry) };
+		} else contextMenu = { x: e.clientX, y: e.clientY, items: emptySpaceMenuItems };
+	}
 </script>
 
 <style>
@@ -116,7 +149,7 @@
 	<div class="body">
 		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileManagerSeparator onresize={onSeparatorResize} />
-		<div class="grid-area">
+		<div class="grid-area" oncontextmenu={onGridContextMenu}>
 			<IconGrid items={iconViewItems} ondblclick={onIconDblClick}>
 				{#snippet empty()}
 					This directory is empty
@@ -124,4 +157,7 @@
 			</IconGrid>
 		</div>
 	</div>
+	{#if contextMenu}
+		<ContextMenu items={contextMenu.items} x={contextMenu.x} y={contextMenu.y} onclose={() => (contextMenu = null)} />
+	{/if}
 </div>
