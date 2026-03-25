@@ -11,14 +11,13 @@
 	}
 
 	.desktop-btn {
-		width: 24px;
-		height: 24px;
+		width: 32px;
+		height: 32px;
 		border-radius: 4px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		font-size: 11px;
-		font-weight: 600;
+		font-size: 14px;
 		user-select: none;
 		color: var(--color-text-dim);
 		background: var(--color-fill);

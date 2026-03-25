@@ -168,7 +168,6 @@
 
 	.value {
 		font-size: 9cqi;
-		font-weight: 300;
 		font-variant-numeric: tabular-nums;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -210,7 +209,7 @@
 	.btn.op {
 		background: var(--color-accent);
 		color: #000;
-		font-weight: 600;
+		font-weight: bold;
 	}
 
 	.btn.op:hover {

@@ -40,7 +40,7 @@
 
 	.breadcrumb-item.current {
 		color: var(--color-text);
-		font-weight: 600;
+		font-weight: bold;
 		cursor: default;
 	}
 

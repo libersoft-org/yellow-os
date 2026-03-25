@@ -176,7 +176,7 @@
 
 	.title {
 		font-size: 13px;
-		font-weight: 500;
+
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
