@@ -4,8 +4,9 @@
 	import DesktopIcons from './DesktopIcons.svelte';
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	import { defocusAll } from '../../scripts/window-store.svelte.ts';
-	import { handleKeyboardShortcut } from '../../scripts/window-shortcuts.ts';
+	import { handleKeyboardShortcut, handleKeyUp } from '../../scripts/window-shortcuts.ts';
 	import { DESKTOP_COUNT, desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte.ts';
+	import AppSwitcher from '../AppSwitcher/AppSwitcher.svelte';
 	const sliding = $derived(desktop.slideDirection !== null && desktop.previous !== null);
 	const NUMPAD_DESKTOP: Record<string, number> = {
 		Numpad1: 0,
@@ -134,7 +135,7 @@
 	}
 </style>
 
-<svelte:window onkeydown={onKeyDown} />
+<svelte:window onkeydown={onKeyDown} onkeyup={handleKeyUp} />
 
 <div class="viewport">
 	{#key desktop.slideId}
@@ -158,4 +159,5 @@
 	{#if contextMenu}
 		<ContextMenu items={desktopMenuItems} x={contextMenu.x} y={contextMenu.y} onclose={() => (contextMenu = null)} />
 	{/if}
+	<AppSwitcher />
 </div>

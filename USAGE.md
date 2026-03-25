@@ -2,6 +2,11 @@
 
 ## Keyboard shortcuts
 
+> **Why not the standard OS shortcuts?**
+> Yellow OS runs inside a web browser, which imposes strict limitations on keyboard shortcuts.
+> Many familiar combinations are intercepted by the host operating system or the browser itself and cannot be captured by a web application:
+> For this reason, Yellow OS uses following alternative key bindings that do not conflict with the host environment:
+
 ### Window management
 
 These shortcuts require a focused (selected) window. Hold **Meta** (Win / Cmd) and press a numpad key:
@@ -26,8 +31,17 @@ These shortcuts require a focused (selected) window. Hold **Meta** (Win / Cmd) a
 | Ctrl + Alt + Arrow Right   | Switch to next desktop              |
 | Ctrl + Alt + Numpad number | Switch to specific desktop directly |
 
+### App switcher
+
+| Shortcut    | Action                                        |
+| ----------- | --------------------------------------------- |
+| Alt + 1     | Open app switcher / cycle backward            |
+| Alt + 2     | Open app switcher / cycle forward             |
+| Release Alt | Confirm selection and focus the chosen window |
+
 ### General
 
-| Shortcut | Action           |
-| -------- | ---------------- |
-| Ctrl + A | Select all icons |
+| Shortcut  | Action           |
+| --------- | ---------------- |
+| Meta + F4 | Close window     |
+| Ctrl + A  | Select all icons |

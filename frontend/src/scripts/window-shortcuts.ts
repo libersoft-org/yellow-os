@@ -1,5 +1,6 @@
 import type { SnapZone } from './window-snap.ts';
-import { findWindow, focus, minimizeWindow, restoreWindow, snapWindow } from './window-store.svelte.ts';
+import { closeWindow, findWindow, focus, minimizeWindow, restoreWindow, snapWindow } from './window-store.svelte.ts';
+import { appSwitcher, openSwitcher, cycleSwitcher, confirmSwitcher } from './app-switcher.svelte.ts';
 
 const NUMPAD_SNAP: Record<string, SnapZone> = {
 	Numpad7: 'top-left',
@@ -12,9 +13,23 @@ const NUMPAD_SNAP: Record<string, SnapZone> = {
 };
 
 export function handleKeyboardShortcut(e: KeyboardEvent): void {
+	if (e.altKey && !e.ctrlKey && !e.metaKey) {
+		if (e.code === 'Digit1' || e.code === 'Digit2') {
+			e.preventDefault();
+			const direction = e.code === 'Digit1' ? -1 : 1;
+			if (appSwitcher.open) cycleSwitcher(direction);
+			else openSwitcher();
+			return;
+		}
+	}
 	if (!e.metaKey) return;
 	const id = focus.id;
 	if (!id) return;
+	if (e.code === 'F4') {
+		e.preventDefault();
+		closeWindow(id);
+		return;
+	}
 	const win = findWindow(id);
 	if (!win || win.minimized || win.minimizing) return;
 	const zone = NUMPAD_SNAP[e.code];
@@ -32,5 +47,12 @@ export function handleKeyboardShortcut(e: KeyboardEvent): void {
 	if (e.code === 'Numpad5') {
 		e.preventDefault();
 		if (win.maximized || win.preMaximize) restoreWindow(id);
+	}
+}
+
+export function handleKeyUp(e: KeyboardEvent): void {
+	if ((e.code === 'AltLeft' || e.code === 'AltRight') && appSwitcher.open) {
+		e.preventDefault();
+		confirmSwitcher();
 	}
 }

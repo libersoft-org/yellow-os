@@ -4,14 +4,15 @@
 	const win = getWindow();
 	win.title = 'File Manager';
 	win.icon = '/img/apps/file-manager.svg';
-	win.width = 640;
-	win.height = 480;
+	win.width = 800;
+	win.height = 600;
 	win.minWidth = 320;
 	win.minHeight = 240;
 	import { mockFs, mockDisks } from './filemanager.ts';
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';
 	import FileManagerSeparator from './FileManagerSeparator.svelte';
+	import FileManagerInfo from './FileManagerInfo.svelte';
 	import type { IconGridItemData } from '../../components/IconGrid/icon-grid.ts';
 	import IconGrid from '../../components/IconGrid/IconGrid.svelte';
 	import ContextMenu from '../../components/ContextMenu/ContextMenu.svelte';
@@ -23,6 +24,8 @@
 	let historyIndex = $state(0);
 	let sidebarWidth = $state(180);
 	let viewMode = $state<'grid' | 'list'>('grid');
+	let showInfo = $state(true);
+	let selectedEntry = $state<FileEntry | null>(null);
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
@@ -78,12 +81,19 @@
 		sidebarWidth = Math.max(120, Math.min(400, sidebarWidth + dx));
 	}
 
+	let infoWidth = $state(220);
+
+	function onInfoSeparatorResize(dx: number): void {
+		infoWidth = Math.max(150, Math.min(400, infoWidth - dx));
+	}
+
 	function navigateTo(path: string): void {
 		if (path === currentPath) return;
 		history = history.slice(0, historyIndex + 1);
 		history.push(path);
 		historyIndex = history.length - 1;
 		currentPath = path;
+		selectedEntry = null;
 	}
 
 	function goBack(): void {
@@ -102,6 +112,11 @@
 		if (!canGoUp) return;
 		const parent = currentPath.substring(0, currentPath.lastIndexOf('/')) || '/';
 		navigateTo(parent);
+	}
+
+	function onIconClick(item: IconGridItemData): void {
+		const entry = entries.find(e => e.name === item.id);
+		selectedEntry = entry ?? null;
 	}
 
 	function onIconDblClick(item: IconGridItemData): void {
@@ -164,13 +179,13 @@
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="file-manager" tabindex="-1">
-	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={mode => (viewMode = mode)} />
+	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={mode => (viewMode = mode)} ontoggleinfo={() => (showInfo = !showInfo)} />
 	<div class="body">
 		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileManagerSeparator onresize={onSeparatorResize} />
 		<div class="grid-area" oncontextmenu={onGridContextMenu}>
 			{#if viewMode === 'grid'}
-				<IconGrid items={iconViewItems} ondblclick={onIconDblClick}>
+				<IconGrid items={iconViewItems} onclick={onIconClick} ondblclick={onIconDblClick}>
 					{#snippet empty()}
 						This directory is empty
 					{/snippet}
@@ -180,13 +195,17 @@
 			{:else}
 				<div class="list-view">
 					{#each entries as entry}
-						<ListItem onclick={() => openEntry(entry)}>
+						<ListItem onclick={() => (selectedEntry = entry)} ondblclick={() => openEntry(entry)} active={selectedEntry === entry}>
 							<IconGridItem icon={entry.type === 'directory' ? '/img/directory.svg' : '/img/file.svg'} label={entry.name} layout="horizontal" iconSize="20px" iconColor={entry.type === 'directory' ? '--color-accent' : '--color-text-dim'} />
 						</ListItem>
 					{/each}
 				</div>
 			{/if}
 		</div>
+		{#if showInfo}
+			<FileManagerSeparator onresize={onInfoSeparatorResize} />
+			<FileManagerInfo selected={selectedEntry} {currentPath} {entries} width={infoWidth} />
+		{/if}
 	</div>
 	{#if contextMenu}
 		<ContextMenu items={contextMenu.items} x={contextMenu.x} y={contextMenu.y} onclose={() => (contextMenu = null)} />

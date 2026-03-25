@@ -7,7 +7,6 @@
 
 ## New features
 
-- Key shortcuts - ALT + F4, ALT + TAB, WIN + left / right (snap) (suppress host system shortcuts!)
 - File manager - add file / directory info in right panel
 - File manager - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File manager - connect with OPFS

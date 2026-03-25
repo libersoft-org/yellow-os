@@ -9,11 +9,12 @@
 		cellWidth?: number;
 		cellHeight?: number;
 		iconSize?: string;
+		onclick?: (item: IconGridItemData) => void;
 		ondblclick?: (item: IconGridItemData) => void;
 		onitemsmove?: (moves: { id: string; gridX: number; gridY: number }[]) => void;
 		empty?: Snippet;
 	}
-	let { items, cellWidth = 90, cellHeight = 90, iconSize = '40px', ondblclick, onitemsmove, empty }: Props = $props();
+	let { items, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onitemsmove, empty }: Props = $props();
 	const selection = createSelection();
 	let containerEl: HTMLElement | undefined = $state();
 	let containerWidth = $state(0);
@@ -148,6 +149,11 @@
 			}
 			lastTapTime = now;
 			lastTapItemId = lastClickedItemId;
+		}
+
+		if (onclick && lastClickedItemId) {
+			const item = items.find(i => i.id === lastClickedItemId);
+			if (item) onclick(item);
 		}
 
 		if (pendingDeselect) {

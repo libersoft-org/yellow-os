@@ -252,6 +252,15 @@ export function reorderWindow(dragId: string, targetId: string): void {
 	_windows.splice(targetIdx, 0, removed!);
 }
 
+export function cycleWindow(direction: 1 | -1): void {
+	const visible = _windows.filter(w => !w.closing);
+	if (visible.length === 0) return;
+	const sorted = [...visible].sort((a, b) => b.zIndex - a.zIndex);
+	const currentIdx = sorted.findIndex(w => w.id === focus.id);
+	const nextIdx = currentIdx === -1 ? 0 : (currentIdx + direction + sorted.length) % sorted.length;
+	focusWindow(sorted[nextIdx]!.id);
+}
+
 export function snapWindow(id: string, zone: SnapZone): void {
 	const win = _windowMap.get(id);
 	if (!win || !win.canMaximize) return;
