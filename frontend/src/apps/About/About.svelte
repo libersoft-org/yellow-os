@@ -1,18 +1,13 @@
-<script module lang="ts">
-	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
-	import { PRODUCT_NAME } from '../../scripts/product.ts';
-	export const appConfig: AppConfig = {
-		title: `About ${PRODUCT_NAME}`,
-		icon: '/img/logo.svg',
-		width: 512,
-		height: 384,
-		position: 'center',
-	};
-</script>
-
 <script lang="ts">
-	import { PRODUCT_VERSION, COMMIT_HASH, BUILD_DATE } from '../../scripts/product.ts';
+	import { PRODUCT_NAME, PRODUCT_VERSION, PRODUCT_URL, GITHUB_URL, COMMIT_HASH, BUILD_DATE } from '../../scripts/product.ts';
+	import { getWindow } from '../../scripts/window-context.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
+	const win = getWindow();
+	win.title = `About ${PRODUCT_NAME}`;
+	win.icon = '/img/logo.svg';
+	win.width = 512;
+	win.height = 380;
+	win.position = 'center';
 </script>
 
 <style>
@@ -33,7 +28,8 @@
 		font-weight: bold;
 	}
 
-	.version {
+	.version,
+	.link {
 		display: flex;
 		gap: 6px;
 		color: var(--color-text);
@@ -47,6 +43,11 @@
 
 	.description {
 		color: var(--color-text-dim);
+	}
+
+	.link a {
+		color: var(--color-accent);
+		text-decoration: none;
 	}
 </style>
 
@@ -65,5 +66,13 @@
 	<div class="version">
 		<div>Build:</div>
 		<div class="value">{BUILD_DATE}</div>
+	</div>
+	<div class="link">
+		<div>Official website:</div>
+		<div><a href={PRODUCT_URL} target="_blank">{PRODUCT_URL}</a></div>
+	</div>
+	<div class="link">
+		<div>GitHub:</div>
+		<div><a href={GITHUB_URL} target="_blank">{GITHUB_URL}</a></div>
 	</div>
 </div>

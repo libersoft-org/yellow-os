@@ -1,15 +1,11 @@
-<script module lang="ts">
-	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
-	export const appConfig: AppConfig = {
-		title: 'Calculator',
-		icon: '/img/apps/calculator.svg',
-		width: 280,
-		height: 420,
-	};
-</script>
-
 <script lang="ts">
+	import { getWindow } from '../../scripts/window-context.ts';
 	import Clickable from '../../components/Clickable/Clickable.svelte';
+	const win = getWindow();
+	win.title = 'Calculator';
+	win.icon = '/img/apps/calculator.svg';
+	win.width = 280;
+	win.height = 420;
 	let display = $state('0');
 	let previousValue = $state<number | null>(null);
 	let operator = $state<string | null>(null);

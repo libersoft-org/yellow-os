@@ -1,16 +1,12 @@
-<script module lang="ts">
-	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
-	export const appConfig: AppConfig = {
-		title: 'Snake',
-		icon: '/img/apps/snake.svg',
-		width: 480,
-		height: 480,
-		position: 'center',
-	};
-</script>
-
 <script lang="ts">
+	import { getWindow } from '../../scripts/window-context.ts';
 	import { onMount } from 'svelte';
+	const win = getWindow();
+	win.title = 'Snake';
+	win.icon = '/img/apps/snake.svg';
+	win.width = 480;
+	win.height = 480;
+	win.position = 'center';
 	type Dir = 'up' | 'down' | 'left' | 'right';
 	type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
 	type Point = { x: number; y: number };

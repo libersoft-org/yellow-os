@@ -3,25 +3,25 @@
 	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import ListItem from '../ListItem/ListItem.svelte';
-	import About, { appConfig as aboutConfig } from '../../apps/About/About.svelte';
-	import FileManager, { appConfig as fileManagerConfig } from '../../apps/FileManager/FileManager.svelte';
-	import Calculator, { appConfig as calculatorConfig } from '../../apps/Calculator/Calculator.svelte';
-	import Notepad, { appConfig as notepadConfig } from '../../apps/Notepad/Notepad.svelte';
-	import Pong, { appConfig as pongConfig } from '../../apps/Pong/Pong.svelte';
-	import Snake, { appConfig as snakeConfig } from '../../apps/Snake/Snake.svelte';
+	import About from '../../apps/About/About.svelte';
+	import FileManager from '../../apps/FileManager/FileManager.svelte';
+	import Calculator from '../../apps/Calculator/Calculator.svelte';
+	import Notepad from '../../apps/Notepad/Notepad.svelte';
+	import Pong from '../../apps/Pong/Pong.svelte';
+	import Snake from '../../apps/Snake/Snake.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
 	const apps = [
-		{ ...aboutConfig, component: About },
-		{ ...fileManagerConfig, component: FileManager },
-		{ ...calculatorConfig, component: Calculator },
-		{ ...notepadConfig, component: Notepad },
-		{ ...pongConfig, component: Pong },
-		{ ...snakeConfig, component: Snake },
+		{ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', component: About },
+		{ label: 'File Manager', icon: '/img/apps/file-manager.svg', component: FileManager },
+		{ label: 'Calculator', icon: '/img/apps/calculator.svg', component: Calculator },
+		{ label: 'Notepad', icon: '/img/apps/notepad.svg', component: Notepad },
+		{ label: 'Pong', icon: '/img/apps/pong.svg', component: Pong },
+		{ label: 'Snake', icon: '/img/apps/snake.svg', component: Snake },
 	];
 	let menuOpen = $state(false);
 
 	function launchApp(app: (typeof apps)[number]): void {
-		openWindow({ ...app });
+		openWindow(app.component);
 		menuOpen = false;
 	}
 
@@ -116,8 +116,8 @@
 			<div class="menu-items">
 				{#each apps as app}
 					<ListItem onclick={() => launchApp(app)}>
-						<Icon img={app.icon} alt={app.title} size="18px" padding="0" colorVariable="--color-text" />
-						<div>{app.title}</div>
+						<Icon img={app.icon} alt={app.label} size="18px" padding="0" colorVariable="--color-text" />
+						<div>{app.label}</div>
 					</ListItem>
 				{/each}
 			</div>

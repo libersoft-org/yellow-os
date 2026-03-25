@@ -1,11 +1,9 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
 	import { openWindow, defocusAll } from '../../scripts/window-store.svelte.ts';
-	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
 	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
-	import FileManager, { appConfig as fileManagerConfig } from '../../apps/FileManager/FileManager.svelte';
+	import FileManager from '../../apps/FileManager/FileManager.svelte';
 	interface DesktopShortcut {
 		id: string;
 		label: string;
@@ -13,8 +11,7 @@
 		iconColor?: string;
 		gridX: number;
 		gridY: number;
-		appConfig?: AppConfig;
-		component?: Component;
+		launch?: () => void;
 	}
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
@@ -22,7 +19,7 @@
 		Array.from({ length: DESKTOP_COUNT }, (_, i) =>
 			i === 0
 				? [
-						{ id: 'file-manager', label: fileManagerConfig.title, icon: fileManagerConfig.icon, iconColor: '--color-accent', gridX: 0, gridY: 0, appConfig: fileManagerConfig, component: FileManager },
+						{ id: 'file-manager', label: 'File Manager', icon: '/img/apps/file-manager.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, launch: () => openWindow(FileManager) },
 						{ id: 'trash-can', label: 'Trash can', icon: '/img/apps/trash.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
 					]
 				: []
@@ -43,9 +40,7 @@
 
 	function onDblClick(item: IconGridItemData): void {
 		const shortcut = shortcuts.find(s => s.id === item.id);
-		if (shortcut?.appConfig && shortcut.component) {
-			openWindow({ ...shortcut.appConfig, component: shortcut.component });
-		}
+		shortcut?.launch?.();
 	}
 
 	function onItemsMove(moves: { id: string; gridX: number; gridY: number }[]): void {

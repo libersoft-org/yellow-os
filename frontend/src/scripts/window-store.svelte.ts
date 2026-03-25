@@ -3,16 +3,6 @@ import { flushSync } from 'svelte';
 import { desktop } from './desktop.svelte.ts';
 import type { SnapZone } from './window-snap.ts';
 import { getSnapBounds } from './window-snap.ts';
-export type WindowPosition = 'default' | 'center';
-export type WindowStartState = 'normal' | 'minimized' | 'maximized';
-export interface AppConfig {
-	title: string;
-	icon: string;
-	width?: number;
-	height?: number;
-	position?: WindowPosition;
-	startState?: WindowStartState;
-}
 export interface WindowState {
 	id: string;
 	title: string;
@@ -34,6 +24,7 @@ export interface WindowState {
 	snappedZone: SnapZone | null;
 	component: Component;
 	desktopId: number;
+	set position(value: 'default' | 'center');
 }
 const Z_INDEX_COMPACT_THRESHOLD = 1000;
 const CASCADE_OFFSET = 30;
@@ -44,7 +35,7 @@ const DEFAULT_HEIGHT = 400;
 const DEFAULT_MIN_WIDTH = 200;
 const DEFAULT_MIN_HEIGHT = 150;
 
-function getChrome(): { width: number; height: number } {
+export function getChrome(): { width: number; height: number } {
 	const titlebarHeight = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--titlebar-height'));
 	return { width: 2, height: titlebarHeight + 1 };
 }
@@ -83,67 +74,41 @@ export function finishSnapAnimation(id: string): void {
 	delete snapAnimatingIds[id];
 }
 
-export function openWindow(opts: { title: string; icon: string; component: Component; width?: number; height?: number; x?: number; y?: number; position?: WindowPosition; startState?: WindowStartState }): string {
+export function openWindow(component: Component): string {
 	const id = crypto.randomUUID();
 	const count = _windows.length;
-	const w = opts.width ?? DEFAULT_WIDTH;
-	const h = opts.height ?? DEFAULT_HEIGHT;
-	const position = opts.position ?? 'default';
-	const startState = opts.startState ?? 'normal';
-	const chrome = getChrome();
-	const outerW = w + chrome.width;
-	const outerH = h + chrome.height;
-	let normalX: number;
-	let normalY: number;
-	if (opts.x != null && opts.y != null) {
-		normalX = opts.x;
-		normalY = opts.y;
-	} else if (position === 'center') {
-		normalX = Math.round((window.innerWidth - outerW) / 2);
-		normalY = Math.round((window.innerHeight - outerH) / 2);
-	} else {
-		normalX = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
-		normalY = CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET;
-	}
-	let x = normalX;
-	let y = normalY;
-	if (startState === 'maximized') {
-		const bounds = getSnapBounds('top');
-		x = bounds.x;
-		y = bounds.y;
-	}
 	const win: WindowState = {
 		id,
-		title: opts.title,
-		icon: opts.icon,
-		x,
-		y,
-		width: outerW,
-		height: outerH,
+		title: '',
+		icon: '',
+		x: CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET,
+		y: CASCADE_ORIGIN + (count % CASCADE_SLOTS) * CASCADE_OFFSET,
+		width: DEFAULT_WIDTH,
+		height: DEFAULT_HEIGHT,
 		minWidth: DEFAULT_MIN_WIDTH,
 		minHeight: DEFAULT_MIN_HEIGHT,
 		zIndex: nextZIndex++,
-		minimized: startState === 'minimized',
+		minimized: false,
 		minimizing: false,
-		maximized: startState === 'maximized',
+		maximized: false,
 		restoring: false,
 		opening: true,
 		closing: false,
-		preMaximize: startState === 'maximized' ? { x: normalX, y: normalY, width: outerW, height: outerH } : null,
-		snappedZone: startState === 'maximized' ? 'top' : null,
-		component: opts.component,
+		preMaximize: null,
+		snappedZone: null,
+		component,
 		desktopId: desktop.active,
+		set position(value: 'default' | 'center') {
+			if (value === 'center') {
+				const chrome = getChrome();
+				this.x = Math.round((globalThis.innerWidth - (this.width + chrome.width)) / 2);
+				this.y = Math.round((globalThis.innerHeight - (this.height + chrome.height)) / 2);
+			}
+		},
 	};
 	_windows.push(win);
 	const ref = _windows[_windows.length - 1]!;
 	_windowMap.set(id, ref);
-	if (startState === 'maximized') {
-		const bounds = getSnapBounds('top');
-		ref.x = bounds.x;
-		ref.y = bounds.y;
-		ref.width = bounds.width;
-		ref.height = bounds.height;
-	}
 	focus.id = id;
 	requestAnimationFrame(() => {
 		requestAnimationFrame(() => (ref.opening = false));
@@ -254,10 +219,11 @@ export function snapWindow(id: string, zone: SnapZone): void {
 	triggerSnapAnimation(id);
 	const bounds = getSnapBounds(zone);
 	if (!win.preMaximize) win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
+	const chrome = getChrome();
 	win.x = bounds.x;
 	win.y = bounds.y;
-	win.width = bounds.width;
-	win.height = bounds.height;
+	win.width = bounds.width - chrome.width;
+	win.height = bounds.height - chrome.height;
 	win.maximized = zone === 'top';
 	win.snappedZone = zone;
 	assignZIndex(win);

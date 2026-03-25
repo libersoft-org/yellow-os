@@ -1,15 +1,11 @@
-<script module lang="ts">
-	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
-	export const appConfig: AppConfig = {
-		title: 'File Manager',
-		icon: '/img/apps/file-manager.svg',
-		width: 640,
-		height: 480,
-	};
-</script>
-
 <script lang="ts">
+	import { getWindow } from '../../scripts/window-context.ts';
 	import type { FileEntry } from './filemanager.ts';
+	const win = getWindow();
+	win.title = 'File Manager';
+	win.icon = '/img/apps/file-manager.svg';
+	win.width = 640;
+	win.height = 480;
 	import { mockFs, mockDisks } from './filemanager.ts';
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';

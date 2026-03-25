@@ -1,15 +1,22 @@
 <script lang="ts">
 	import type { WindowState } from '../../scripts/window-store.svelte.ts';
-	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds } from '../../scripts/window-store.svelte.ts';
+	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds, getChrome } from '../../scripts/window-store.svelte.ts';
 	import { RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window-resize.svelte.ts';
+	import { setContext } from 'svelte';
+	import { WINDOW_KEY } from '../../scripts/window-context.ts';
 	import WindowTitlebar from './WindowTitlebar.svelte';
 	interface Props {
 		win: WindowState;
 	}
 	const { win }: Props = $props();
+	setContext(WINDOW_KEY, () => win);
 	const WindowContent = $derived(win.component);
 	const focused = $derived(focus.id === win.id);
 	const snapAnimating = $derived(!!snapAnimatingIds[win.id]);
+	const chrome = getChrome();
+	const outerWidth = $derived(win.width + chrome.width);
+	const outerHeight = $derived(win.height + chrome.height);
+
 	const winId = $derived(win.id);
 	const resize = createResizeHandler(() => winId);
 
@@ -110,7 +117,7 @@
 	}
 </style>
 
-<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:opening={win.opening} class:closing={win.closing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{win.width}px" style:height="{win.height}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
+<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:opening={win.opening} class:closing={win.closing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{outerWidth}px" style:height="{outerHeight}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
 	<WindowTitlebar {win} />
 	<div class="content">
 		<WindowContent />

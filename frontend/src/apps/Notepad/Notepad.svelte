@@ -1,14 +1,10 @@
-<script module lang="ts">
-	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
-	export const appConfig: AppConfig = {
-		title: 'Notepad',
-		icon: '/img/apps/notepad.svg',
-		width: 640,
-		height: 480,
-	};
-</script>
-
 <script lang="ts">
+	import { getWindow } from '../../scripts/window-context.ts';
+	const win = getWindow();
+	win.title = 'Notepad';
+	win.icon = '/img/apps/notepad.svg';
+	win.width = 640;
+	win.height = 480;
 	let content = $state('');
 
 	function countLines(text: string): number {

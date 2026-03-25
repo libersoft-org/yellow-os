@@ -1,16 +1,12 @@
-<script module lang="ts">
-	import type { AppConfig } from '../../scripts/window-store.svelte.ts';
-	export const appConfig: AppConfig = {
-		title: 'Pong',
-		icon: '/img/apps/pong.svg',
-		width: 640,
-		height: 480,
-		position: 'center',
-	};
-</script>
-
 <script lang="ts">
+	import { getWindow } from '../../scripts/window-context.ts';
 	import { onMount } from 'svelte';
+	const win = getWindow();
+	win.title = 'Pong';
+	win.icon = '/img/apps/pong.svg';
+	win.width = 640;
+	win.height = 480;
+	win.position = 'center';
 	type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
 	const PADDLE_W = 10;
 	const PADDLE_H = 80;
