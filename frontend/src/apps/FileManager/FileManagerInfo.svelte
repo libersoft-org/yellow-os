@@ -4,7 +4,7 @@
 	import Icon from '../../components/Icon/Icon.svelte';
 	import { formatBytes, parseBytes } from '../../scripts/format.ts';
 	interface Props {
-		selected: FileEntry | null;
+		selected: FileEntry[];
 		currentPath: string;
 		entries: FileEntry[];
 		width?: number;
@@ -91,26 +91,50 @@
 </style>
 
 <div class="info-panel" style:width="{width}px">
-	{#if selected}
-		<div class="name">{selected.name}</div>
+	{#if selected.length > 1}
+		{@const selDirs = selected.filter(e => e.type === 'directory').length}
+		{@const selFiles = selected.filter(e => e.type === 'file').length}
+		{@const selSize = formatBytes(selected.filter(e => e.type === 'file' && e.size).reduce((sum, e) => sum + parseBytes(e.size!), 0))}
+		<div class="name">{selected.length} items selected</div>
+		<div class="details">
+			{#if selDirs > 0}
+				<div class="detail-row">
+					<span class="detail-label">Folders</span>
+					<span class="detail-value">{selDirs}</span>
+				</div>
+			{/if}
+			{#if selFiles > 0}
+				<div class="detail-row">
+					<span class="detail-label">Files</span>
+					<span class="detail-value">{selFiles}</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Total size</span>
+					<span class="detail-value">{selSize}</span>
+				</div>
+			{/if}
+		</div>
+	{:else if selected.length === 1}
+		{@const item = selected[0]!}
+		<div class="name">{item.name}</div>
 		<div class="icon-preview">
-			<Icon img={entryIcon(selected)} alt={selected.name} size="64px" padding="0" colorVariable={entryIconColor(selected)} />
+			<Icon img={entryIcon(item)} alt={item.name} size="64px" padding="0" colorVariable={entryIconColor(item)} />
 		</div>
 		<div class="details">
 			<div class="detail-row">
 				<span class="detail-label">Type</span>
-				<span class="detail-value">{selected.type === 'directory' ? 'Directory' : getExtension(selected.name)}</span>
+				<span class="detail-value">{item.type === 'directory' ? 'Directory' : getExtension(item.name)}</span>
 			</div>
-			{#if selected.type === 'file' && selected.size}
+			{#if item.type === 'file' && item.size}
 				<div class="detail-row">
 					<span class="detail-label">Size</span>
-					<span class="detail-value">{selected.size}</span>
+					<span class="detail-value">{item.size}</span>
 				</div>
 			{/if}
-			{#if selected.modified}
+			{#if item.modified}
 				<div class="detail-row">
 					<span class="detail-label">Modified</span>
-					<span class="detail-value">{selected.modified}</span>
+					<span class="detail-value">{item.modified}</span>
 				</div>
 			{/if}
 		</div>

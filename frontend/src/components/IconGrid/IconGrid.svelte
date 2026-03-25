@@ -11,11 +11,16 @@
 		iconSize?: string;
 		onclick?: (item: IconGridItemData) => void;
 		ondblclick?: (item: IconGridItemData) => void;
+		onselectionchange?: (selectedIds: Set<string>) => void;
 		onitemsmove?: (moves: { id: string; gridX: number; gridY: number }[]) => void;
 		empty?: Snippet;
 	}
-	let { items, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onitemsmove, empty }: Props = $props();
+	let { items, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onselectionchange, onitemsmove, empty }: Props = $props();
 	const selection = createSelection();
+
+	function emitSelectionChange(): void {
+		onselectionchange?.(selection.selected);
+	}
 	let containerEl: HTMLElement | undefined = $state();
 	let containerWidth = $state(0);
 	const itemSignature = $derived(items.map(i => i.id).join('\0'));
@@ -32,6 +37,7 @@
 			_selSig = itemSignature;
 			_overrides = { sig: itemSignature, map: new Map() };
 			selection.clear();
+			emitSelectionChange();
 		}
 	}
 
@@ -104,6 +110,7 @@
 						items.map(i => i.id),
 						e
 					);
+					emitSelectionChange();
 					return false;
 				}
 				pendingDeselect = id;
@@ -135,6 +142,7 @@
 			dragSelectEnd = coords;
 			dragPreSelected = e.ctrlKey || e.metaKey ? new Set(selection.selected) : new Set();
 		}
+		emitSelectionChange();
 	}
 
 	function handleClick(): void {
@@ -160,6 +168,7 @@
 			selection.set(new Set([pendingDeselect]));
 			pendingDeselect = null;
 		}
+		emitSelectionChange();
 	}
 
 	function handleDragStart(): void {
@@ -197,6 +206,7 @@
 				}
 			}
 			selection.set(next);
+			emitSelectionChange();
 		}
 	}
 
@@ -253,6 +263,7 @@
 			e.preventDefault();
 			_selSig = itemSignature;
 			selection.selectAll(items.map(i => i.id));
+			emitSelectionChange();
 		}
 	}
 

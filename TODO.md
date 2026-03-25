@@ -7,12 +7,13 @@
 
 ## New features
 
-- File manager - add file / directory info in right panel
-- File manager - add functionality to all menu items when right clicking (long taping) on empty space / icon
-- File manager - connect with OPFS
+- Snake - zpomalene reakce klavesnice
+
 - File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
-- File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
-- File manager - drag and drop / upload form from main OS to web OS
+- File browser - connect with OPFS
+- File browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
+- File browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
+- File browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps
 - Trash can
 - Cleanup code

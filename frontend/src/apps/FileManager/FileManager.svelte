@@ -28,7 +28,7 @@
 	let sidebarWidth = $state(180);
 	let viewMode = $state<'grid' | 'list'>('grid');
 	let showInfo = $state(true);
-	let selectedEntry = $state<FileEntry | null>(null);
+	let selectedEntries = $state<FileEntry[]>([]);
 	const listSelection = createSelection();
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	const canGoBack = $derived(historyIndex > 0);
@@ -97,7 +97,7 @@
 		history.push(path);
 		historyIndex = history.length - 1;
 		currentPath = path;
-		selectedEntry = null;
+		selectedEntries = [];
 		listSelection.clear();
 	}
 
@@ -119,20 +119,12 @@
 		navigateTo(parent);
 	}
 
-	function onIconClick(item: IconGridItemData): void {
-		const entry = entries.find(e => e.name === item.id);
-		selectedEntry = entry ?? null;
+	function onGridSelectionChange(selectedIds: Set<string>): void {
+		selectedEntries = entries.filter(e => selectedIds.has(e.name));
 	}
 
-	function updateSelectedEntryFromListSelection(lastClickedName?: string): void {
-		const sel = listSelection.selected;
-		if (sel.size === 1) {
-			selectedEntry = entries.find(en => sel.has(en.name)) ?? null;
-		} else if (sel.size > 1 && lastClickedName) {
-			selectedEntry = entries.find(en => en.name === lastClickedName) ?? null;
-		} else {
-			selectedEntry = null;
-		}
+	function updateSelectedEntriesFromList(): void {
+		selectedEntries = entries.filter(en => listSelection.selected.has(en.name));
 	}
 
 	let listViewEl: HTMLElement | undefined = $state();
@@ -157,13 +149,13 @@
 					entries.map(en => en.name),
 					e
 				);
-				updateSelectedEntryFromListSelection(name);
+				updateSelectedEntriesFromList();
 			}
 		} else {
 			listLastClickedName = null;
 			if (!(e.ctrlKey || e.metaKey)) {
 				listSelection.clear();
-				selectedEntry = null;
+				selectedEntries = [];
 			}
 		}
 		listDragPreSelected = new Set(listSelection.selected);
@@ -192,7 +184,7 @@
 			}
 		}
 		listSelection.set(next);
-		updateSelectedEntryFromListSelection();
+		updateSelectedEntriesFromList();
 	}
 
 	function listHandleClick(): void {
@@ -236,8 +228,18 @@
 		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
 			e.preventDefault();
 			listSelection.selectAll(entries.map(en => en.name));
-			updateSelectedEntryFromListSelection();
+			updateSelectedEntriesFromList();
 		}
+	}
+
+	function onToggleInfo(): void {
+		showInfo = !showInfo;
+	}
+
+	function onViewModeChange(mode: 'grid' | 'list'): void {
+		viewMode = mode;
+		selectedEntries = [];
+		listSelection.clear();
 	}
 
 	function onGridContextMenu(e: MouseEvent): void {
@@ -297,13 +299,13 @@
 </style>
 
 <div class="file-manager" role="application" tabindex="-1">
-	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={mode => (viewMode = mode)} ontoggleinfo={() => (showInfo = !showInfo)} />
+	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
 		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileManagerSeparator onresize={onSeparatorResize} />
 		<div class="grid-area" role="region" oncontextmenu={onGridContextMenu}>
 			{#if viewMode === 'grid'}
-				<IconGrid items={iconViewItems} onclick={onIconClick} ondblclick={onIconDblClick}>
+				<IconGrid items={iconViewItems} onselectionchange={onGridSelectionChange} ondblclick={onIconDblClick}>
 					{#snippet empty()}
 						This directory is empty
 					{/snippet}
@@ -333,7 +335,7 @@
 		</div>
 		{#if showInfo}
 			<FileManagerSeparator onresize={onInfoSeparatorResize} />
-			<FileManagerInfo selected={selectedEntry} {currentPath} {entries} width={infoWidth} />
+			<FileManagerInfo selected={selectedEntries} {currentPath} {entries} width={infoWidth} />
 		{/if}
 	</div>
 	{#if contextMenu}
