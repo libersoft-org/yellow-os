@@ -122,7 +122,7 @@
 	<div class="content">
 		<WindowContent />
 	</div>
-	{#if !win.maximized}
+	{#if !win.maximized && win.resizable}
 		{#each RESIZE_DIRS as dir}
 			<div role="separator" style={getHandleStyle(dir)} onpointerdown={e => resize.start(e, dir)} onpointermove={resize.move} onpointerup={resize.up}></div>
 		{/each}

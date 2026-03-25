@@ -37,7 +37,7 @@ export function createResizeHandler(getWinId: () => string): ResizeHandler {
 	function start(e: PointerEvent, d: ResizeDir): void {
 		const winId = getWinId();
 		const win = findWindow(winId);
-		if (!win || win.maximized) return;
+		if (!win || win.maximized || !win.resizable) return;
 		resizing = true;
 		dir = d;
 		startX = e.clientX;
@@ -79,6 +79,14 @@ export function createResizeHandler(getWinId: () => string): ResizeHandler {
 		if (h < win.minHeight) {
 			if (dir.includes('n')) y -= win.minHeight - h;
 			h = win.minHeight;
+		}
+		if (w > win.maxWidth) {
+			if (dir.includes('w')) x -= win.maxWidth - w;
+			w = win.maxWidth;
+		}
+		if (h > win.maxHeight) {
+			if (dir.includes('n')) y -= win.maxHeight - h;
+			h = win.maxHeight;
 		}
 		resizeWindow(winId, w, h, x, y);
 	}

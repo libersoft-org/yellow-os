@@ -72,10 +72,10 @@
 			items.push({ icon: '/img/window/restore.svg', label: 'Restore', onclick: resetAndRestore });
 		} else if (win.maximized) {
 			items.push({ icon: '/img/window/restore.svg', label: 'Restore', onclick: resetAndToggleMaximize });
-			items.push({ icon: '/img/window/minimize.svg', label: 'Minimize', onclick: resetAndMinimize });
+			if (win.canMinimize) items.push({ icon: '/img/window/minimize.svg', label: 'Minimize', onclick: resetAndMinimize });
 		} else {
-			items.push({ icon: '/img/window/maximize.svg', label: 'Maximize', onclick: resetAndToggleMaximize });
-			items.push({ icon: '/img/window/minimize.svg', label: 'Minimize', onclick: resetAndMinimize });
+			if (win.canMaximize) items.push({ icon: '/img/window/maximize.svg', label: 'Maximize', onclick: resetAndToggleMaximize });
+			if (win.canMinimize) items.push({ icon: '/img/window/minimize.svg', label: 'Minimize', onclick: resetAndMinimize });
 		}
 		items.push({ icon: '/img/window/close.svg', label: 'Close', onclick: resetAndClose });
 		return items;
@@ -121,7 +121,7 @@
 
 	function handleDragMove(e: PointerEvent): void {
 		moveWindow(win.id, dragWinStartX + e.clientX - dragRefX, dragWinStartY + e.clientY - dragRefY);
-		snapPreview.zone = getSnapZone(e.clientX, e.clientY);
+		snapPreview.zone = win.canMaximize ? getSnapZone(e.clientX, e.clientY) : null;
 	}
 
 	function handleDragEnd(): void {
@@ -193,7 +193,7 @@
 	}
 </style>
 
-<div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" oncontextmenu={handleTitlebarContextMenu} use:pointerGestures={{ onpress: handlePress, ondblclick: () => toggleMaximize(win.id), ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd, dragThreshold: DRAG_THRESHOLD }}>
+<div class="titlebar" class:focused class:maximized={win.maximized} role="toolbar" tabindex="-1" oncontextmenu={handleTitlebarContextMenu} use:pointerGestures={{ onpress: handlePress, ondblclick: () => win.canMaximize && toggleMaximize(win.id), ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd, dragThreshold: DRAG_THRESHOLD }}>
 	<div class="titlebar-left">
 		<div class="titlebar-icon" role="button" tabindex="-1" onpointerdown={handleIconPointerDown} oncontextmenu={handleIconContextMenu}>
 			<Icon img={win.icon} alt={win.title} size="16px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
@@ -201,8 +201,12 @@
 		<span class="title">{win.title}</span>
 	</div>
 	<div class="window-controls">
-		<WindowControl img="/img/window/minimize.svg" alt="Minimize" onclick={() => minimizeWindow(win.id)} {focused} />
-		<WindowControl img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} onclick={() => toggleMaximize(win.id)} {focused} />
+		{#if win.canMinimize}
+			<WindowControl img="/img/window/minimize.svg" alt="Minimize" onclick={() => minimizeWindow(win.id)} {focused} />
+		{/if}
+		{#if win.canMaximize}
+			<WindowControl img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} onclick={() => toggleMaximize(win.id)} {focused} />
+		{/if}
 		<WindowControl img="/img/window/close.svg" alt="Close" onclick={() => closeWindow(win.id)} {focused} variant="close" />
 	</div>
 </div>

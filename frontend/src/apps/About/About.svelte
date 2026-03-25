@@ -8,6 +8,8 @@
 	win.width = 512;
 	win.height = 380;
 	win.position = 'center';
+	win.canMaximize = false;
+	win.resizable = false;
 </script>
 
 <style>

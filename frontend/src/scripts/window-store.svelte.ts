@@ -13,6 +13,11 @@ export interface WindowState {
 	height: number;
 	minWidth: number;
 	minHeight: number;
+	maxWidth: number;
+	maxHeight: number;
+	resizable: boolean;
+	canMinimize: boolean;
+	canMaximize: boolean;
 	zIndex: number;
 	minimized: boolean;
 	minimizing: boolean;
@@ -87,6 +92,11 @@ export function openWindow(component: Component): string {
 		height: DEFAULT_HEIGHT,
 		minWidth: DEFAULT_MIN_WIDTH,
 		minHeight: DEFAULT_MIN_HEIGHT,
+		maxWidth: Infinity,
+		maxHeight: Infinity,
+		resizable: true,
+		canMinimize: true,
+		canMaximize: true,
 		zIndex: nextZIndex++,
 		minimized: false,
 		minimizing: false,
@@ -138,16 +148,14 @@ export function focusWindow(id: string): void {
 	if (win.minimized) {
 		win.restoring = true;
 		win.minimized = false;
-		requestAnimationFrame(() => {
-			requestAnimationFrame(() => (win.restoring = false));
-		});
+		requestAnimationFrame(() => requestAnimationFrame(() => (win.restoring = false)));
 	}
 	focus.id = id;
 }
 
 export function minimizeWindow(id: string): void {
 	const win = _windowMap.get(id);
-	if (!win || win.minimized || win.minimizing) return;
+	if (!win || !win.canMinimize || win.minimized || win.minimizing) return;
 	win.minimizing = true;
 }
 
@@ -177,7 +185,7 @@ export function toggleMaximize(id: string): void {
 	const win = _windowMap.get(id);
 	if (!win) return;
 	if (win.maximized) restoreWindow(id);
-	else snapWindow(id, 'top');
+	else if (win.canMaximize) snapWindow(id, 'top');
 }
 
 export function moveWindow(id: string, x: number, y: number): void {
@@ -215,7 +223,7 @@ export function reorderWindow(dragId: string, targetId: string): void {
 
 export function snapWindow(id: string, zone: SnapZone): void {
 	const win = _windowMap.get(id);
-	if (!win) return;
+	if (!win || !win.canMaximize) return;
 	triggerSnapAnimation(id);
 	const bounds = getSnapBounds(zone);
 	if (!win.preMaximize) win.preMaximize = { x: win.x, y: win.y, width: win.width, height: win.height };
