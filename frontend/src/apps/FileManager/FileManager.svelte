@@ -19,6 +19,8 @@
 	import type { ContextMenuItem } from '../../components/ContextMenu/context-menu.ts';
 	import ListItem from '../../components/ListItem/ListItem.svelte';
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
+	import { createSelection } from '../../scripts/selection.svelte.ts';
+	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);
 	let historyIndex = $state(0);
@@ -26,6 +28,7 @@
 	let viewMode = $state<'grid' | 'list'>('grid');
 	let showInfo = $state(true);
 	let selectedEntry = $state<FileEntry | null>(null);
+	const listSelection = createSelection();
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
@@ -94,6 +97,7 @@
 		historyIndex = history.length - 1;
 		currentPath = path;
 		selectedEntry = null;
+		listSelection.clear();
 	}
 
 	function goBack(): void {
@@ -118,6 +122,106 @@
 		const entry = entries.find(e => e.name === item.id);
 		selectedEntry = entry ?? null;
 	}
+
+	function updateSelectedEntryFromListSelection(lastClickedName?: string): void {
+		const sel = listSelection.selected;
+		if (sel.size === 1) {
+			selectedEntry = entries.find(en => sel.has(en.name)) ?? null;
+		} else if (sel.size > 1 && lastClickedName) {
+			selectedEntry = entries.find(en => en.name === lastClickedName) ?? null;
+		} else {
+			selectedEntry = null;
+		}
+	}
+
+	function onListItemDblClick(entry: FileEntry): void {
+		openEntry(entry);
+	}
+
+	let listViewEl: HTMLElement | undefined = $state();
+	let listDragStartX = 0;
+	let listDragStartY = 0;
+	let listDragCurrentX = $state(0);
+	let listDragCurrentY = $state(0);
+	let listDragActive = $state(false);
+	let listDragPreSelected = new Set<string>();
+	let listLastClickedName: string | null = null;
+
+	function listHandlePress(e: PointerEvent): boolean | void {
+		const itemEl = (e.target as HTMLElement).closest('[data-list-index]') as HTMLElement | null;
+		if (itemEl) {
+			const name = itemEl.dataset['listIndex']!;
+			listLastClickedName = name;
+			const index = entries.findIndex(en => en.name === name);
+			if (index >= 0) {
+				listSelection.select(
+					name,
+					index,
+					entries.map(en => en.name),
+					e
+				);
+				updateSelectedEntryFromListSelection(name);
+			}
+		} else {
+			listLastClickedName = null;
+			if (!(e.ctrlKey || e.metaKey)) {
+				listSelection.clear();
+				selectedEntry = null;
+			}
+		}
+		listDragPreSelected = new Set(listSelection.selected);
+		listDragStartX = e.clientX;
+		listDragStartY = e.clientY;
+	}
+
+	function listHandleDragStart(): void {
+		listDragActive = true;
+	}
+
+	function listHandleDragMove(e: PointerEvent): void {
+		if (!listViewEl) return;
+		listDragCurrentX = e.clientX;
+		listDragCurrentY = e.clientY;
+		const startY = listDragStartY;
+		const currentY = e.clientY;
+		const minY = Math.min(startY, currentY);
+		const maxY = Math.max(startY, currentY);
+		const next = new Set(listDragPreSelected);
+		const items = listViewEl.querySelectorAll('[data-list-index]');
+		for (const el of items) {
+			const rect = el.getBoundingClientRect();
+			if (rect.bottom > minY && rect.top < maxY) {
+				next.add((el as HTMLElement).dataset['listIndex']!);
+			}
+		}
+		listSelection.set(next);
+		updateSelectedEntryFromListSelection();
+	}
+
+	function listHandleClick(): void {
+		listDragActive = false;
+		if (listLastClickedName) {
+			const entry = entries.find(en => en.name === listLastClickedName);
+			if (entry) {
+				const now = Date.now();
+				if (now - listLastTapTime < 300 && listLastTapName === listLastClickedName) {
+					listLastTapTime = 0;
+					listLastTapName = null;
+					openEntry(entry);
+					return;
+				}
+				listLastTapTime = now;
+				listLastTapName = listLastClickedName;
+			}
+		}
+	}
+
+	function listHandleDragEnd(): void {
+		listDragActive = false;
+	}
+
+	let listLastTapTime = 0;
+	let listLastTapName: string | null = null;
 
 	function onIconDblClick(item: IconGridItemData): void {
 		const entry = entries.find(e => e.name === item.id);
@@ -165,6 +269,16 @@
 	.list-view {
 		display: flex;
 		flex-direction: column;
+		min-height: 100%;
+		position: relative;
+	}
+
+	.list-drag-rect {
+		position: fixed;
+		border: 1px solid var(--color-accent);
+		background: var(--color-selection);
+		pointer-events: none;
+		z-index: 10;
 	}
 
 	.empty-state {
@@ -193,12 +307,23 @@
 			{:else if entries.length === 0}
 				<div class="empty-state">This directory is empty</div>
 			{:else}
-				<div class="list-view">
-					{#each entries as entry}
-						<ListItem onclick={() => (selectedEntry = entry)} ondblclick={() => openEntry(entry)} active={selectedEntry === entry}>
-							<IconGridItem icon={entry.type === 'directory' ? '/img/directory.svg' : '/img/file.svg'} label={entry.name} layout="horizontal" iconSize="20px" iconColor={entry.type === 'directory' ? '--color-accent' : '--color-text-dim'} />
-						</ListItem>
+				<div class="list-view" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }}>
+					{#each entries as entry, i}
+						<div data-list-index={entry.name}>
+							<ListItem active={listSelection.isSelected(entry.name)}>
+								<IconGridItem icon={entry.type === 'directory' ? '/img/directory.svg' : '/img/file.svg'} label={entry.name} layout="horizontal" iconSize="20px" iconColor={entry.type === 'directory' ? '--color-accent' : '--color-text-dim'} />
+							</ListItem>
+						</div>
 					{/each}
+					{#if listDragActive}
+						{@const left = Math.min(listDragStartX, listDragCurrentX)}
+						{@const top = Math.min(listDragStartY, listDragCurrentY)}
+						{@const width = Math.abs(listDragCurrentX - listDragStartX)}
+						{@const height = Math.abs(listDragCurrentY - listDragStartY)}
+						{#if width > 3 || height > 3}
+							<div class="list-drag-rect" style="top: {top}px; left: {left}px; width: {width}px; height: {height}px;"></div>
+						{/if}
+					{/if}
 				</div>
 			{/if}
 		</div>

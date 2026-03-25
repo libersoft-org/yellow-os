@@ -283,7 +283,7 @@
 	}
 
 	.icon-cell.selected {
-		background: rgba(253, 221, 51, 0.15);
+		background: var(--color-selection);
 		outline: 1px solid var(--color-accent);
 	}
 

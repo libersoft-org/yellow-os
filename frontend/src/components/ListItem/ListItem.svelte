@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
 	interface Props {
-		onclick: () => void;
+		onclick?: (e: MouseEvent) => void;
 		ondblclick?: () => void;
 		active?: boolean | undefined;
 		children: Snippet;
@@ -26,7 +26,8 @@
 	}
 
 	.list-item.active {
-		background: var(--color-accent);
+		background: var(--color-selection);
+		outline: 1px solid var(--color-accent);
 	}
 </style>
 

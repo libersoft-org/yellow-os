@@ -14,6 +14,7 @@
 	--color-accent: #fd3;
 	--color-accent-fg: #000;
 	--color-accent-subtle: rgba(253, 221, 51, 0.15);
+	--color-selection: rgba(253, 221, 51, 0.15);
 	--color-danger: #e53935;
 	--color-fill: rgba(255, 255, 255, 0.05);
 	--color-hover: rgba(255, 255, 255, 0.1);

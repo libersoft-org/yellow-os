@@ -30,7 +30,7 @@
 	<div class="items">
 		{#each disks as disk}
 			<ListItem onclick={() => onnavigate(disk.path)} active={currentPath === disk.path}>
-				<IconGridItem icon={disk.icon} label={disk.name} subtitle="{disk.free} free of {disk.total}" layout="horizontal" iconSize="20px" iconColor={currentPath === disk.path ? '--color-bg' : '--color-accent'} color={currentPath === disk.path ? 'var(--color-bg)' : undefined} />
+				<IconGridItem icon={disk.icon} label={disk.name} subtitle="{disk.free} free of {disk.total}" layout="horizontal" iconSize="20px" iconColor="--color-accent" />
 			</ListItem>
 		{/each}
 	</div>
