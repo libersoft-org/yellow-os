@@ -2,6 +2,8 @@
 	--taskbar-height: 50px;
 	--titlebar-height: 32px;
 	--border-radius: 8px;
+	--font-family: 'Ubuntu', sans-serif;
+	--font-family-mono: 'Ubuntu Mono', monospace;
 	--color-bg: #333;
 	--color-surface: #222;
 	--color-surface-2: #444;
@@ -33,11 +35,7 @@ body {
 	height: 100%;
 	width: 100%;
 	overflow: hidden;
-	font-family:
-		'Segoe UI',
-		system-ui,
-		-apple-system,
-		sans-serif;
+	font-family: var(--font-family);
 	color: var(--color-text);
 	background: var(--color-bg);
 	-webkit-user-select: none;

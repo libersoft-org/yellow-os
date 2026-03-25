@@ -36,7 +36,7 @@
 		padding: 14px 16px;
 		background: #0e0e20;
 		color: var(--color-text);
-		font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+		font-family: var(--font-family-mono);
 		font-size: 14px;
 		line-height: 1.6;
 		tab-size: 4;
