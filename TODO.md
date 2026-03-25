@@ -15,6 +15,8 @@
 - File manager - connect with OPFS
 - File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
 - File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
+- File manager - drag and drop / upload form from main OS to web OS
+- Run WASM files as apps
 - Trash can
 - Cleanup code
 - Tray icons
@@ -31,7 +33,6 @@
 - Create file manager with 2 panels - like Midnight Commander
 - Serverless data synchronization between devices
 - Photo viewer
-- Drag and drop / upload form from main OS to web OS
 - Terminal (for interacting with file system)
 - Media player
 - Web browser (iframe-based)
