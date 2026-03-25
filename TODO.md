@@ -8,10 +8,8 @@
 ## New features
 
 - Key shortcuts - ALT + F4, ALT + TAB, WIN + left / right (snap) (suppress host system shortcuts!)
-- File manager - use ContextMenu for right click (long tap on mobile) to bring up the menu with: copy, cut, paste, rename, delete, open, open in new window (directory only)
 - File manager - add file / directory info in right panel
-- File manager - right click (long tap) on empty space in FileManagerGrid - menu with submenu - Sort by - Name, modification date, type, size (+ asc / desc), new file, new directory
-- File manager - in top toolbar add switch grid / list view (2 icons)
+- File manager - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File manager - connect with OPFS
 - File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
 - File manager - allow drag and drop directories and files from one folder to another, even inter-process (between 2 file browsers), right click = context menu copy / move
@@ -21,7 +19,7 @@
 - Cleanup code
 - Tray icons
 - Quick launch
-- Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
+- Add win.tray in apps + action on left / right click + double click
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
 - Wallpaper change in settings
 - Edit README (maybe done) and INSTALL.md

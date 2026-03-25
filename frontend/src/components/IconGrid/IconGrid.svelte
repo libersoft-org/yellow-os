@@ -269,6 +269,7 @@
 		border-radius: 8px;
 		cursor: default;
 		user-select: none;
+		transition: background 0.3s linear;
 	}
 
 	.icon-cell:hover {

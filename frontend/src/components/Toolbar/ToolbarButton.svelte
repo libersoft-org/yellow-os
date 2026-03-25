@@ -7,8 +7,9 @@
 		title: string;
 		onclick: () => void;
 		enabled?: boolean | undefined;
+		active?: boolean | undefined;
 	}
-	const { img, alt, title, onclick, enabled = true }: Props = $props();
+	const { img, alt, title, onclick, enabled = true, active = false }: Props = $props();
 </script>
 
 <style>
@@ -29,10 +30,14 @@
 	.toolbar-btn:active {
 		background: rgba(255, 255, 255, 0.15);
 	}
+
+	.toolbar-btn.active {
+		background: rgba(255, 255, 255, 0.15);
+	}
 </style>
 
 <Clickable {onclick} {enabled} {title}>
-	<div class="toolbar-btn">
+	<div class="toolbar-btn" class:active>
 		<Icon {img} {alt} size="16px" padding="0" colorVariable="--color-text" />
 	</div>
 </Clickable>

@@ -16,10 +16,13 @@
 	import IconGrid from '../../components/IconGrid/IconGrid.svelte';
 	import ContextMenu from '../../components/ContextMenu/ContextMenu.svelte';
 	import type { ContextMenuItem } from '../../components/ContextMenu/context-menu.ts';
+	import ListItem from '../../components/ListItem/ListItem.svelte';
+	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);
 	let historyIndex = $state(0);
 	let sidebarWidth = $state(180);
+	let viewMode = $state<'grid' | 'list'>('grid');
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
@@ -143,20 +146,46 @@
 		overflow: auto;
 		padding: 8px;
 	}
+
+	.list-view {
+		display: flex;
+		flex-direction: column;
+	}
+
+	.empty-state {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		color: var(--color-text-dim);
+		font-size: 14px;
+	}
 </style>
 
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div class="file-manager" tabindex="-1">
-	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} />
+	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={mode => (viewMode = mode)} />
 	<div class="body">
 		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileManagerSeparator onresize={onSeparatorResize} />
 		<div class="grid-area" oncontextmenu={onGridContextMenu}>
-			<IconGrid items={iconViewItems} ondblclick={onIconDblClick}>
-				{#snippet empty()}
-					This directory is empty
-				{/snippet}
-			</IconGrid>
+			{#if viewMode === 'grid'}
+				<IconGrid items={iconViewItems} ondblclick={onIconDblClick}>
+					{#snippet empty()}
+						This directory is empty
+					{/snippet}
+				</IconGrid>
+			{:else if entries.length === 0}
+				<div class="empty-state">This directory is empty</div>
+			{:else}
+				<div class="list-view">
+					{#each entries as entry}
+						<ListItem onclick={() => openEntry(entry)}>
+							<IconGridItem icon={entry.type === 'directory' ? '/img/directory.svg' : '/img/file.svg'} label={entry.name} layout="horizontal" iconSize="20px" iconColor={entry.type === 'directory' ? '--color-accent' : '--color-text-dim'} />
+						</ListItem>
+					{/each}
+				</div>
+			{/if}
 		</div>
 	</div>
 	{#if contextMenu}
