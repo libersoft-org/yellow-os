@@ -41,7 +41,6 @@
 	}
 </style>
 
-<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<div class="separator" class:dragging role="separator" tabindex="0" {onpointerdown} {onpointermove} {onpointerup}>
+<div class="separator" class:dragging role="separator" aria-valuenow={0} {onpointerdown} {onpointermove} {onpointerup}>
 	<div class="line"></div>
 </div>

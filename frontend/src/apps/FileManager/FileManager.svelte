@@ -296,13 +296,12 @@
 	}
 </style>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="file-manager" tabindex="-1">
+<div class="file-manager" role="application" tabindex="-1">
 	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={mode => (viewMode = mode)} ontoggleinfo={() => (showInfo = !showInfo)} />
 	<div class="body">
 		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileManagerSeparator onresize={onSeparatorResize} />
-		<div class="grid-area" oncontextmenu={onGridContextMenu}>
+		<div class="grid-area" role="region" oncontextmenu={onGridContextMenu}>
 			{#if viewMode === 'grid'}
 				<IconGrid items={iconViewItems} onclick={onIconClick} ondblclick={onIconDblClick}>
 					{#snippet empty()}
@@ -312,8 +311,7 @@
 			{:else if entries.length === 0}
 				<div class="empty-state">This directory is empty</div>
 			{:else}
-				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div class="list-view" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
+				<div class="list-view" role="listbox" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
 					{#each entries as entry}
 						<div data-list-index={entry.name}>
 							<ListItem active={listSelection.isSelected(entry.name)}>

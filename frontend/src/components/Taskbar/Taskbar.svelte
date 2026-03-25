@@ -22,8 +22,7 @@
 	}
 </style>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="taskbar" onpointerdown={defocusAll}>
+<div class="taskbar" role="toolbar" tabindex="-1" onpointerdown={defocusAll}>
 	<TaskbarMenu />
 	<TaskbarItems {desktopId} />
 	<TaskbarDesktops />
