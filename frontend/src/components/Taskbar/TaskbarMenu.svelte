@@ -1,25 +1,25 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import ListItem from '../ListItem/ListItem.svelte';
 	import About from '../../apps/About/About.svelte';
-	import FileBrowser from '../../apps/FileBrowser/FileBrowser.svelte';
-	import Calculator from '../../apps/Calculator/Calculator.svelte';
-	import Notepad from '../../apps/Notepad/Notepad.svelte';
-	import Pong from '../../apps/Pong/Pong.svelte';
-	import Snake from '../../apps/Snake/Snake.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
+	import { readDirectory } from '../../scripts/opfs.ts';
+	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
+	import type { LinkData } from '../../scripts/link.ts';
+	import { ensureOpfsReady, OS_PATH } from '../../scripts/opfs-init.ts';
+	import { browser } from '$app/environment';
+
 	interface MenuApp {
 		label: string;
 		icon: string;
-		component: Component;
+		link: LinkData;
 	}
 	interface MenuCategory {
 		label: string;
 		icon: string;
-		items: MenuItem[];
+		items: MenuApp[];
 	}
 	type MenuItem = MenuApp | MenuCategory;
 
@@ -27,31 +27,45 @@
 		return 'items' in item;
 	}
 
-	const menuItems: MenuItem[] = [
-		{
-			label: 'Programs',
-			icon: '/img/directory.svg',
-			items: [
-				{ label: 'File Browser', icon: '/img/apps/file-browser.svg', component: FileBrowser },
-				{ label: 'Calculator', icon: '/img/apps/calculator.svg', component: Calculator },
-				{ label: 'Notepad', icon: '/img/apps/notepad.svg', component: Notepad },
-			],
-		},
-		{
-			label: 'Games',
-			icon: '/img/directory.svg',
-			items: [
-				{ label: 'Pong', icon: '/img/apps/pong.svg', component: Pong },
-				{ label: 'Snake', icon: '/img/apps/snake.svg', component: Snake },
-			],
-		},
-		{ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', component: About },
-	];
+	let menuItems = $state<MenuItem[]>([]);
+
+	async function loadMenuItems(): Promise<void> {
+		await ensureOpfsReady();
+		try {
+			const entries = await readDirectory(OS_PATH + '/TaskbarMenu');
+			const items: MenuItem[] = [];
+			for (const entry of entries) {
+				if (entry.type === 'directory') {
+					const subEntries = await readDirectory(OS_PATH + '/TaskbarMenu/' + entry.name);
+					const subItems: MenuApp[] = [];
+					for (const sub of subEntries) {
+						if (sub.type === 'file' && isLinkFile(sub.name)) {
+							const linkData = await readLink(OS_PATH + '/TaskbarMenu/' + entry.name, sub.name);
+							if (linkData) subItems.push({ label: linkData.label, icon: linkData.icon, link: linkData });
+						}
+					}
+					if (subItems.length > 0) items.push({ label: entry.name, icon: '/img/directory.svg', items: subItems });
+				} else if (isLinkFile(entry.name)) {
+					const linkData = await readLink(OS_PATH + '/TaskbarMenu', entry.name);
+					if (linkData) items.push({ label: linkData.label, icon: linkData.icon, link: linkData });
+				}
+			}
+			// Always add About at the end
+			items.push({ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', link: { appId: 'about', label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg' } });
+			menuItems = items;
+		} catch {
+			menuItems = [{ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', link: { appId: 'about', label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg' } }];
+		}
+	}
+
+	if (browser) loadMenuItems();
+
 	let menuOpen = $state(false);
 	let openCategory = $state<string | null>(null);
 
 	function launchApp(item: MenuApp): void {
-		openWindow(item.component);
+		const component = resolveLink(item.link);
+		if (component) openWindow(component);
 		menuOpen = false;
 		openCategory = null;
 	}

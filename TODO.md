@@ -7,10 +7,10 @@
 
 ## New features
 
-- File Browser - connect with OPFS
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
 - File Browser - drag and drop / upload form from main OS to web OS
+- Make file type associations (.txt -> Notepad, .link -> open app, etc.)
 - Run WASM files as apps
 - Trash can
 - Cleanup code
@@ -25,7 +25,6 @@
 - Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
 - Add desktop icons (+ grid align)
 - Add system settings app
-- Create File Manager with 2 panels - like Midnight Commander
 - Serverless data synchronization between devices
 - Photo viewer
 - Terminal (for interacting with file system)
@@ -42,4 +41,5 @@
 - App installer
 - App store
 - Task manager + app killer
+- Create File Manager with 2 panels - like Midnight Commander
 - Tauri app?

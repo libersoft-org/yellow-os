@@ -1,11 +1,24 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window-context.ts';
+	import { readFileText } from '../../scripts/opfs.ts';
+	import { browser } from '$app/environment';
+	interface Props {
+		filePath?: string;
+		fileName?: string;
+	}
+	const { filePath, fileName }: Props = $props();
+
 	const win = getWindow();
-	win.title = 'Notepad';
 	win.icon = '/img/apps/notepad.svg';
 	win.width = 640;
 	win.height = 480;
 	let content = $state('');
+
+	function init(): void {
+		win.title = 'Notepad' + (fileName ? ' - ' + fileName : '');
+		if (browser && filePath && fileName) readFileText(filePath, fileName).then(text => (content = text));
+	}
+	init();
 
 	function countLines(text: string): number {
 		let count = 1;

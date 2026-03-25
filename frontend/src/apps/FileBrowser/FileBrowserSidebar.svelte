@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { DiskInfo } from './filebrowser.ts';
+	import { formatBytes } from '../../scripts/format.ts';
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	import ListItem from '../../components/ListItem/ListItem.svelte';
 	interface Props {
@@ -30,7 +31,7 @@
 	<div class="items">
 		{#each disks as disk}
 			<ListItem onclick={() => onnavigate(disk.path)} active={currentPath === disk.path}>
-				<IconGridItem icon={disk.icon} label={disk.name} subtitle="{disk.free} free of {disk.total}" layout="horizontal" iconSize="20px" iconColor="--color-accent" />
+				<IconGridItem icon={disk.icon} label={disk.name} subtitle="{formatBytes(disk.free)} free of {formatBytes(disk.total)}" layout="horizontal" iconSize="20px" iconColor="--color-accent" />
 			</ListItem>
 		{/each}
 	</div>

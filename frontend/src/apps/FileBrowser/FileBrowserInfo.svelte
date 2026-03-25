@@ -2,7 +2,7 @@
 	import type { FileEntry } from './filebrowser.ts';
 	import { entryIcon, entryIconColor } from './filebrowser.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
-	import { formatBytes, parseBytes } from '../../scripts/format.ts';
+	import { formatBytes } from '../../scripts/format.ts';
 	interface Props {
 		selected: FileEntry[];
 		currentPath: string;
@@ -25,7 +25,7 @@
 	const dirCount = $derived(entries.filter(e => e.type === 'directory').length);
 	const fileCount = $derived(entries.filter(e => e.type === 'file').length);
 
-	const totalSize = $derived(formatBytes(entries.filter(e => e.type === 'file' && e.size).reduce((sum, e) => sum + parseBytes(e.size!), 0)));
+	const totalSize = $derived(formatBytes(entries.filter(e => e.type === 'file').reduce((sum, e) => sum + e.size, 0)));
 </script>
 
 <style>
@@ -84,7 +84,7 @@
 	{#if selected.length > 1}
 		{@const selDirs = selected.filter(e => e.type === 'directory').length}
 		{@const selFiles = selected.filter(e => e.type === 'file').length}
-		{@const selSize = formatBytes(selected.filter(e => e.type === 'file' && e.size).reduce((sum, e) => sum + parseBytes(e.size!), 0))}
+		{@const selSize = formatBytes(selected.filter(e => e.type === 'file').reduce((sum, e) => sum + e.size, 0))}
 		<div class="name">{selected.length} items selected</div>
 		<div class="details">
 			{#if selDirs > 0}
@@ -115,16 +115,16 @@
 				<span class="detail-label">Type</span>
 				<span class="detail-value">{item.type === 'directory' ? 'Directory' : getExtension(item.name)}</span>
 			</div>
-			{#if item.type === 'file' && item.size}
+			{#if item.type === 'file' && item.size > 0}
 				<div class="detail-row">
 					<span class="detail-label">Size</span>
-					<span class="detail-value">{item.size}</span>
+					<span class="detail-value">{formatBytes(item.size)}</span>
 				</div>
 			{/if}
-			{#if item.modified}
+			{#if item.modified > 0}
 				<div class="detail-row">
 					<span class="detail-label">Modified</span>
-					<span class="detail-value">{item.modified}</span>
+					<span class="detail-value">{new Date(item.modified).toLocaleDateString()}</span>
 				</div>
 			{/if}
 		</div>

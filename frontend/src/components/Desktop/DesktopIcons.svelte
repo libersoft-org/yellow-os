@@ -3,7 +3,12 @@
 	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
-	import FileBrowser from '../../apps/FileBrowser/FileBrowser.svelte';
+	import { readDirectory } from '../../scripts/opfs.ts';
+	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
+	import type { LinkData } from '../../scripts/link.ts';
+	import { ensureOpfsReady, OS_PATH } from '../../scripts/opfs-init.ts';
+	import { browser } from '$app/environment';
+
 	interface DesktopShortcut {
 		id: string;
 		label: string;
@@ -11,20 +16,42 @@
 		iconColor?: string;
 		gridX: number;
 		gridY: number;
-		launch?: () => void;
+		link: LinkData | null;
 	}
+
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
-	let perDesktopShortcuts = $state<DesktopShortcut[][]>(
-		Array.from({ length: DESKTOP_COUNT }, (_, i) =>
-			i === 0
-				? [
-						{ id: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, launch: () => openWindow(FileBrowser) },
-						{ id: 'trash-can', label: 'Trash can', icon: '/img/apps/trash.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
-					]
-				: []
-		)
-	);
+	let perDesktopShortcuts = $state<DesktopShortcut[][]>(Array.from({ length: DESKTOP_COUNT }, () => []));
+
+	async function loadDesktopLinks(): Promise<void> {
+		await ensureOpfsReady();
+		try {
+			const entries = await readDirectory(OS_PATH + '/Desktop');
+			const linkFiles = entries.filter(e => e.type === 'file' && isLinkFile(e.name));
+			const shortcuts: DesktopShortcut[] = [];
+			for (let i = 0; i < linkFiles.length; i++) {
+				const entry = linkFiles[i]!;
+				const linkData = await readLink(OS_PATH + '/Desktop', entry.name);
+				if (linkData) {
+					shortcuts.push({
+						id: entry.name,
+						label: linkData.label,
+						icon: linkData.icon,
+						iconColor: '--color-accent',
+						gridX: 0,
+						gridY: i,
+						link: linkData,
+					});
+				}
+			}
+			perDesktopShortcuts[0] = shortcuts;
+		} catch {
+			// Desktop folder may not exist yet
+		}
+	}
+
+	if (browser) loadDesktopLinks();
+
 	const shortcuts = $derived(perDesktopShortcuts[activeId] ?? []);
 	let iconView: ReturnType<typeof IconGrid> | undefined = $state();
 	const iconViewItems = $derived<IconGridItemData[]>(
@@ -40,7 +67,10 @@
 
 	function onDblClick(item: IconGridItemData): void {
 		const shortcut = shortcuts.find(s => s.id === item.id);
-		shortcut?.launch?.();
+		if (shortcut?.link) {
+			const component = resolveLink(shortcut.link);
+			if (component) openWindow(component);
+		}
 	}
 
 	function onItemsMove(moves: { id: string; gridX: number; gridY: number }[]): void {

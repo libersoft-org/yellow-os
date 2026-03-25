@@ -1,7 +1,11 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window-context.ts';
-	import { mockFs, mockDisks, entryIcon, entryIconColor } from './filebrowser.ts';
-	import type { FileEntry } from './filebrowser.ts';
+	import { entryIcon, entryIconColor } from './filebrowser.ts';
+	import type { FileEntry, DiskInfo } from './filebrowser.ts';
+	import { readDirectory, getStorageEstimate } from '../../scripts/opfs.ts';
+	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
+	import { openWindow } from '../../scripts/window-store.svelte.ts';
+	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import FileBrowserToolbar from './FileBrowserToolbar.svelte';
 	import FileBrowserSidebar from './FileBrowserSidebar.svelte';
 	import FileBrowserSeparator from './FileBrowserSeparator.svelte';
@@ -14,6 +18,7 @@
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
+	import { browser } from '$app/environment';
 
 	const win = getWindow();
 	win.title = 'File Browser';
@@ -31,18 +36,46 @@
 	let selectedEntries = $state<FileEntry[]>([]);
 	const listSelection = createSelection();
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
+	let entries = $state<FileEntry[]>([]);
+	let disks = $state<DiskInfo[]>([]);
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
 	const canGoUp = $derived(currentPath !== '/');
-	const entries = $derived(
-		(mockFs[currentPath] ?? []).toSorted((a, b) => {
+
+	const sortedEntries = $derived(
+		entries.toSorted((a, b) => {
 			if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
 			return a.name.localeCompare(b.name);
 		})
 	);
 
+	async function loadDirectory(path: string): Promise<void> {
+		try {
+			const raw = await readDirectory(path);
+			for (const entry of raw) {
+				if (entry.type === 'file' && isLinkFile(entry.name)) {
+					const linkData = await readLink(path, entry.name);
+					if (linkData?.icon) (entry as FileEntry).linkIcon = linkData.icon;
+				}
+			}
+			entries = raw as FileEntry[];
+		} catch {
+			entries = [];
+		}
+	}
+
+	async function loadDiskInfo(): Promise<void> {
+		const estimate = await getStorageEstimate();
+		disks = [{ name: 'OPFS drive', path: '/', icon: '/img/apps/file-browser.svg', total: estimate.total, free: estimate.total - estimate.used }];
+	}
+
+	if (browser) {
+		loadDiskInfo();
+		loadDirectory('/');
+	}
+
 	const iconViewItems = $derived<IconGridItemData[]>(
-		entries.map(e => ({
+		sortedEntries.map(e => ({
 			id: e.name,
 			icon: entryIcon(e),
 			label: e.name,
@@ -78,7 +111,14 @@
 	];
 
 	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
-		return [{ icon: '/img/open.svg', label: 'Open', onclick: () => {} }, ...(entry.type === 'directory' ? [{ icon: '/img/open.svg', label: 'Open in new window', onclick: () => {} }] : []), { separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => {} }, { icon: '/img/trash.svg', label: 'Delete', onclick: () => {} }];
+		const items: ContextMenuItem[] = [{ icon: '/img/open.svg', label: 'Open', onclick: () => openEntry(entry) }];
+		if (entry.type === 'directory') {
+			items.push({ icon: '/img/open.svg', label: 'Open in new window', onclick: () => {} });
+		} else {
+			items.push({ icon: '/img/apps/notepad.svg', label: 'Edit', onclick: () => editEntry(entry) });
+		}
+		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => {} }, { icon: '/img/trash.svg', label: 'Delete', onclick: () => {} });
+		return items;
 	}
 
 	function onSeparatorResize(dx: number): void {
@@ -99,18 +139,21 @@
 		currentPath = path;
 		selectedEntries = [];
 		listSelection.clear();
+		loadDirectory(path);
 	}
 
 	function goBack(): void {
 		if (!canGoBack) return;
 		historyIndex--;
 		currentPath = history[historyIndex]!;
+		loadDirectory(currentPath);
 	}
 
 	function goForward(): void {
 		if (!canGoForward) return;
 		historyIndex++;
 		currentPath = history[historyIndex]!;
+		loadDirectory(currentPath);
 	}
 
 	function goUp(): void {
@@ -120,11 +163,11 @@
 	}
 
 	function onGridSelectionChange(selectedIds: Set<string>): void {
-		selectedEntries = entries.filter(e => selectedIds.has(e.name));
+		selectedEntries = sortedEntries.filter(e => selectedIds.has(e.name));
 	}
 
 	function updateSelectedEntriesFromList(): void {
-		selectedEntries = entries.filter(en => listSelection.selected.has(en.name));
+		selectedEntries = sortedEntries.filter(en => listSelection.selected.has(en.name));
 	}
 
 	let listViewEl: HTMLElement | undefined = $state();
@@ -141,12 +184,12 @@
 		if (itemEl) {
 			const name = itemEl.dataset['listIndex']!;
 			listLastClickedName = name;
-			const index = entries.findIndex(en => en.name === name);
+			const index = sortedEntries.findIndex(en => en.name === name);
 			if (index >= 0) {
 				listSelection.select(
 					name,
 					index,
-					entries.map(en => en.name),
+					sortedEntries.map(en => en.name),
 					e
 				);
 				updateSelectedEntriesFromList();
@@ -190,7 +233,7 @@
 	function listHandleClick(): void {
 		listDragActive = false;
 		if (listLastClickedName) {
-			const entry = entries.find(en => en.name === listLastClickedName);
+			const entry = sortedEntries.find(en => en.name === listLastClickedName);
 			if (entry) {
 				const now = Date.now();
 				if (now - listLastTapTime < 300 && listLastTapName === listLastClickedName) {
@@ -213,21 +256,39 @@
 	let listLastTapName: string | null = null;
 
 	function onIconDblClick(item: IconGridItemData): void {
-		const entry = entries.find(e => e.name === item.id);
+		const entry = sortedEntries.find(e => e.name === item.id);
 		if (entry) openEntry(entry);
 	}
 
-	function openEntry(entry: FileEntry): void {
+	async function openEntry(entry: FileEntry): Promise<void> {
 		if (entry.type === 'directory') {
 			const path = currentPath === '/' ? '/' + entry.name : currentPath + '/' + entry.name;
 			navigateTo(path);
+		} else if (isLinkFile(entry.name)) {
+			const linkData = await readLink(currentPath, entry.name);
+			if (linkData) {
+				const component = resolveLink(linkData);
+				if (component) openWindow(component);
+			}
+		} else {
+			const handler = await getFileHandler(currentPath, entry.name);
+			if (handler) {
+				openWindow(handler.component, handler.props);
+			}
+		}
+	}
+
+	function editEntry(entry: FileEntry): void {
+		if (entry.type === 'file') {
+			const handler = getEditHandler(currentPath, entry.name);
+			openWindow(handler.component, handler.props);
 		}
 	}
 
 	function onListKeydown(e: KeyboardEvent): void {
 		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
 			e.preventDefault();
-			listSelection.selectAll(entries.map(en => en.name));
+			listSelection.selectAll(sortedEntries.map(en => en.name));
 			updateSelectedEntriesFromList();
 		}
 	}
@@ -246,7 +307,7 @@
 		e.preventDefault();
 		const iconEl = (e.target as HTMLElement).closest('[data-icon-id]');
 		if (iconEl) {
-			const entry = entries.find(en => en.name === (iconEl as HTMLElement).dataset['iconId']);
+			const entry = sortedEntries.find(en => en.name === (iconEl as HTMLElement).dataset['iconId']);
 			if (entry) contextMenu = { x: e.clientX, y: e.clientY, items: getIconMenuItems(entry) };
 		} else contextMenu = { x: e.clientX, y: e.clientY, items: emptySpaceMenuItems };
 	}
@@ -301,7 +362,7 @@
 <div class="file-browser" role="application" tabindex="-1">
 	<FileBrowserToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
-		<FileBrowserSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
+		<FileBrowserSidebar {disks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileBrowserSeparator onresize={onSeparatorResize} />
 		<div class="grid-area" role="region" oncontextmenu={onGridContextMenu}>
 			{#if viewMode === 'grid'}
@@ -310,11 +371,11 @@
 						This directory is empty
 					{/snippet}
 				</IconGrid>
-			{:else if entries.length === 0}
+			{:else if sortedEntries.length === 0}
 				<div class="empty-state">This directory is empty</div>
 			{:else}
 				<div class="list-view" role="listbox" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
-					{#each entries as entry}
+					{#each sortedEntries as entry}
 						<div data-list-index={entry.name}>
 							<ListItem active={listSelection.isSelected(entry.name)}>
 								<IconGridItem icon={entryIcon(entry)} label={entry.name} layout="horizontal" iconSize="20px" iconColor={entryIconColor(entry)} />
@@ -335,7 +396,7 @@
 		</div>
 		{#if showInfo}
 			<FileBrowserSeparator onresize={onInfoSeparatorResize} />
-			<FileBrowserInfo selected={selectedEntries} {currentPath} {entries} width={infoWidth} />
+			<FileBrowserInfo selected={selectedEntries} {currentPath} entries={sortedEntries} width={infoWidth} />
 		{/if}
 	</div>
 	{#if contextMenu}

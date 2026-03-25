@@ -120,7 +120,7 @@
 <div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:opening={win.opening} class:closing={win.closing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{outerWidth}px" style:height="{outerHeight}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
 	<WindowTitlebar {win} />
 	<div class="content">
-		<WindowContent />
+		<WindowContent {...win.props} />
 	</div>
 	{#if !win.maximized && win.resizable}
 		{#each RESIZE_DIRS as dir}

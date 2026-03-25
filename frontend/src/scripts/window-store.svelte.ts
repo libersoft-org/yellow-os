@@ -28,6 +28,7 @@ export interface WindowState {
 	preMaximize: { x: number; y: number; width: number; height: number } | null;
 	snappedZone: SnapZone | null;
 	component: Component;
+	props: Record<string, unknown>;
 	desktopId: number;
 	showInTaskbar: boolean;
 	set position(value: 'default' | 'center');
@@ -81,7 +82,7 @@ export function finishSnapAnimation(id: string): void {
 	delete snapAnimatingIds[id];
 }
 
-export function openWindow(component: Component): string {
+export function openWindow(component: Component, props: Record<string, unknown> = {}): string {
 	const id = crypto.randomUUID();
 	const count = _windows.length;
 	const win: WindowState = {
@@ -109,6 +110,7 @@ export function openWindow(component: Component): string {
 		preMaximize: null,
 		snappedZone: null,
 		component,
+		props,
 		desktopId: desktop.active,
 		showInTaskbar: true,
 		set position(value: 'default' | 'center') {
