@@ -25,6 +25,13 @@
 - Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
 - Add desktop icons (+ grid align)
 - Add system settings app
+- Add factory reset to system settings, this will remove everything on OPFS:
+
+const root = await navigator.storage.getDirectory();
+for await (const name of root.keys()) {
+await root.removeEntry(name, { recursive: true });
+}
+
 - Serverless data synchronization between devices
 - Photo viewer
 - Terminal (for interacting with file system)
