@@ -8,7 +8,6 @@
 ## New features
 
 - Key shortcuts - ALT + F4, ALT + TAB, WIN + left / right (snap) (suppress host system shortcuts!)
-
 - File manager - use ContextMenu for right click (long tap on mobile) to bring up the menu with: copy, cut, paste, rename, delete, open, open in new window (directory only)
 - File manager - add file / directory info in right panel
 - File manager - right click (long tap) on empty space in FileManagerGrid - menu with submenu - Sort by - Name, modification date, type, size (+ asc / desc), new file, new directory
