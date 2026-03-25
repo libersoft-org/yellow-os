@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import type { IconGridItemData } from './icon-grid.ts';
-	import { createSelection } from '../../scripts/selection.svelte';
+	import { createSelection } from '../../scripts/selection.svelte.ts';
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import IconGridItem from './IconGridItem.svelte';
 	interface Props {
@@ -294,7 +294,7 @@
 	.drag-rect {
 		position: absolute;
 		border: 1px solid var(--color-accent);
-		background: rgba(253, 221, 51, 0.1);
+		background: var(--color-selection);
 		pointer-events: none;
 		z-index: 10;
 	}

@@ -3,11 +3,10 @@
 	import Clickable from '../Clickable/Clickable.svelte';
 	interface Props {
 		onclick?: (e: MouseEvent) => void;
-		ondblclick?: () => void;
 		active?: boolean | undefined;
 		children: Snippet;
 	}
-	let { onclick, ondblclick, active = false, children }: Props = $props();
+	let { onclick, active = false, children }: Props = $props();
 </script>
 
 <style>
@@ -32,7 +31,7 @@
 </style>
 
 <Clickable {onclick}>
-	<div class="list-item" class:active {ondblclick}>
+	<div class="list-item" class:active>
 		{@render children()}
 	</div>
 </Clickable>

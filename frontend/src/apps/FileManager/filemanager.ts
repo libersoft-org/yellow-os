@@ -5,6 +5,14 @@ export interface FileEntry {
 	modified?: string;
 }
 
+export function entryIcon(entry: FileEntry): string {
+	return entry.type === 'directory' ? '/img/directory.svg' : '/img/file.svg';
+}
+
+export function entryIconColor(entry: FileEntry): string {
+	return entry.type === 'directory' ? '--color-accent' : '--color-text-dim';
+}
+
 export interface DiskInfo {
 	name: string;
 	path: string;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { FileEntry } from './filemanager.ts';
+	import { entryIcon, entryIconColor } from './filemanager.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import { formatBytes, parseBytes } from '../../scripts/format.ts';
 	interface Props {
@@ -93,7 +94,7 @@
 	{#if selected}
 		<div class="name">{selected.name}</div>
 		<div class="icon-preview">
-			<Icon img={selected.type === 'directory' ? '/img/directory.svg' : '/img/file.svg'} alt={selected.name} size="64px" padding="0" colorVariable={selected.type === 'directory' ? '--color-accent' : '--color-text-dim'} />
+			<Icon img={entryIcon(selected)} alt={selected.name} size="64px" padding="0" colorVariable={entryIconColor(selected)} />
 		</div>
 		<div class="details">
 			<div class="detail-row">

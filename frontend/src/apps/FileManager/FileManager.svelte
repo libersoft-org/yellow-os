@@ -1,14 +1,7 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window-context.ts';
+	import { mockFs, mockDisks, entryIcon, entryIconColor } from './filemanager.ts';
 	import type { FileEntry } from './filemanager.ts';
-	const win = getWindow();
-	win.title = 'File Manager';
-	win.icon = '/img/apps/file-manager.svg';
-	win.width = 800;
-	win.height = 600;
-	win.minWidth = 320;
-	win.minHeight = 240;
-	import { mockFs, mockDisks } from './filemanager.ts';
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';
 	import FileManagerSeparator from './FileManagerSeparator.svelte';
@@ -21,6 +14,14 @@
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
+
+	const win = getWindow();
+	win.title = 'File Manager';
+	win.icon = '/img/apps/file-manager.svg';
+	win.width = 800;
+	win.height = 600;
+	win.minWidth = 320;
+	win.minHeight = 240;
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);
 	let historyIndex = $state(0);
@@ -43,9 +44,9 @@
 	const iconViewItems = $derived<IconGridItemData[]>(
 		entries.map(e => ({
 			id: e.name,
-			icon: e.type === 'directory' ? '/img/directory.svg' : '/img/file.svg',
+			icon: entryIcon(e),
 			label: e.name,
-			iconColor: e.type === 'directory' ? '--color-accent' : '--color-text-dim',
+			iconColor: entryIconColor(e),
 		}))
 	);
 
@@ -134,13 +135,9 @@
 		}
 	}
 
-	function onListItemDblClick(entry: FileEntry): void {
-		openEntry(entry);
-	}
-
 	let listViewEl: HTMLElement | undefined = $state();
-	let listDragStartX = 0;
-	let listDragStartY = 0;
+	let listDragStartX = $state(0);
+	let listDragStartY = $state(0);
 	let listDragCurrentX = $state(0);
 	let listDragCurrentY = $state(0);
 	let listDragActive = $state(false);
@@ -235,6 +232,14 @@
 		}
 	}
 
+	function onListKeydown(e: KeyboardEvent): void {
+		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+			e.preventDefault();
+			listSelection.selectAll(entries.map(en => en.name));
+			updateSelectedEntryFromListSelection();
+		}
+	}
+
 	function onGridContextMenu(e: MouseEvent): void {
 		e.preventDefault();
 		const iconEl = (e.target as HTMLElement).closest('[data-icon-id]');
@@ -307,11 +312,12 @@
 			{:else if entries.length === 0}
 				<div class="empty-state">This directory is empty</div>
 			{:else}
-				<div class="list-view" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }}>
-					{#each entries as entry, i}
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<div class="list-view" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
+					{#each entries as entry}
 						<div data-list-index={entry.name}>
 							<ListItem active={listSelection.isSelected(entry.name)}>
-								<IconGridItem icon={entry.type === 'directory' ? '/img/directory.svg' : '/img/file.svg'} label={entry.name} layout="horizontal" iconSize="20px" iconColor={entry.type === 'directory' ? '--color-accent' : '--color-text-dim'} />
+								<IconGridItem icon={entryIcon(entry)} label={entry.name} layout="horizontal" iconSize="20px" iconColor={entryIconColor(entry)} />
 							</ListItem>
 						</div>
 					{/each}
