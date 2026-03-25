@@ -2,6 +2,7 @@
 	import WindowManager from '../WindowManager/WindowManager.svelte';
 	import Taskbar from '../Taskbar/Taskbar.svelte';
 	import DesktopIcons from './DesktopIcons.svelte';
+	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	import { defocusAll } from '../../scripts/window-store.svelte.ts';
 	import { handleKeyboardShortcut } from '../../scripts/window-shortcuts.ts';
 	import { DESKTOP_COUNT, desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte.ts';
@@ -40,6 +41,19 @@
 
 	function onAnimationEnd(e: AnimationEvent): void {
 		if (e.currentTarget === e.target) clearSlide();
+	}
+
+	let contextMenu = $state<{ x: number; y: number } | null>(null);
+
+	const desktopMenuItems = [
+		{ icon: '/img/file.svg', label: 'New file', onclick: () => {} },
+		{ icon: '/img/directory.svg', label: 'New folder', onclick: () => {} },
+		{ icon: '/img/settings.svg', label: 'Settings', onclick: () => {} },
+	];
+
+	function onContextMenu(e: MouseEvent): void {
+		e.preventDefault();
+		contextMenu = { x: e.clientX, y: e.clientY };
 	}
 </script>
 
@@ -134,10 +148,13 @@
 		{/if}
 	{/key}
 	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" onanimationend={onAnimationEnd}>
-		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown}>
+		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown} oncontextmenu={onContextMenu}>
 			<DesktopIcons />
 			<WindowManager />
 		</div>
 		<Taskbar />
 	</div>
+	{#if contextMenu}
+		<ContextMenu items={desktopMenuItems} x={contextMenu.x} y={contextMenu.y} onclose={() => (contextMenu = null)} />
+	{/if}
 </div>

@@ -11,12 +11,12 @@
 	import Snake from '../../apps/Snake/Snake.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
 	const apps = [
-		{ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', component: About },
 		{ label: 'File Manager', icon: '/img/apps/file-manager.svg', component: FileManager },
 		{ label: 'Calculator', icon: '/img/apps/calculator.svg', component: Calculator },
 		{ label: 'Notepad', icon: '/img/apps/notepad.svg', component: Notepad },
 		{ label: 'Pong', icon: '/img/apps/pong.svg', component: Pong },
 		{ label: 'Snake', icon: '/img/apps/snake.svg', component: Snake },
+		{ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', component: About },
 	];
 	let menuOpen = $state(false);
 

@@ -4,15 +4,13 @@
 
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
-- Unify fonts for the whole OS (mono and non-mono)
 
 ## New features
 
 - Key shortcuts - ALT + F4, ALT + TAB, WIN + left / right (snap) (suppress host system shortcuts!)
 - Click on window title bar icon should show context menu - maximize, minimize, restore, close, double click to close
-- Create a generic list items - use in File manager in left column, in System settings etc.
+- File manager - use ContextMenu for right click (long tap on mobile) to bring up the menu with: copy, cut, paste, rename, delete, open, open in new window (directory only)
 - File manager - add file / directory info in right panel
-- File manager - create a new generic component - ContextMenu a ContextMenuItem - use it for right click (long tap on mobile) to bring up the menu with: copy, cut, paste, rename, delete, open, open in new window (directory only)
 - File manager - right click (long tap) on empty space in FileManagerGrid - menu with submenu - Sort by - Name, modification date, type, size (+ asc / desc), new file, new directory
 - File manager - in top toolbar add switch grid / list view (2 icons)
 - File manager - connect with OPFS
