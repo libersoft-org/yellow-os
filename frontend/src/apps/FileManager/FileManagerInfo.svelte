@@ -78,16 +78,6 @@
 		text-align: right;
 		word-break: break-word;
 	}
-
-	.summary {
-		width: 100%;
-		font-size: 12px;
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		color: var(--color-text-dim);
-		text-align: center;
-	}
 </style>
 
 <div class="info-panel" style:width="{width}px">
@@ -143,9 +133,19 @@
 		<div class="icon-preview">
 			<Icon img="/img/directory.svg" alt="Current directory" size="64px" padding="0" colorVariable="--color-accent" />
 		</div>
-		<div class="summary">
-			<div>{dirCount} {dirCount === 1 ? 'folder' : 'folders'}, {fileCount} {fileCount === 1 ? 'file' : 'files'}</div>
-			<div>Total size: {totalSize}</div>
+		<div class="details">
+			<div class="detail-row">
+				<span class="detail-label">Folders</span>
+				<span class="detail-value">{dirCount}</span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Files</span>
+				<span class="detail-value">{fileCount}</span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Total size</span>
+				<span class="detail-value">{totalSize}</span>
+			</div>
 		</div>
 	{/if}
 </div>
