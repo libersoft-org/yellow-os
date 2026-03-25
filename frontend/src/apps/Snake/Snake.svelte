@@ -27,7 +27,7 @@
 	let snake: Point[] = [];
 	let food: Point = { x: 0, y: 0 };
 	let dir: Dir = 'right';
-	let nextDir: Dir = 'right';
+	let dirQueue: Dir[] = [];
 	let cols = 0;
 	let rows = 0;
 	let lastTick = 0;
@@ -112,7 +112,7 @@
 			{ x: cx - 2, y: cy },
 		];
 		dir = 'right';
-		nextDir = 'right';
+		dirQueue = [];
 		score = 0;
 		spawnFood();
 	}
@@ -132,7 +132,7 @@
 	}
 
 	function tick(): boolean {
-		dir = nextDir;
+		if (dirQueue.length > 0) dir = dirQueue.shift()!;
 		const s = snake[0];
 		if (!s) return false;
 		const head: Point = { x: s.x, y: s.y };
@@ -280,7 +280,8 @@
 		else if (e.key === 'ArrowRight') newDir = 'right';
 		if (newDir) {
 			e.preventDefault();
-			if (newDir !== opposite[dir]) nextDir = newDir;
+			const lastDir = dirQueue.length > 0 ? dirQueue[dirQueue.length - 1]! : dir;
+			if (newDir !== opposite[lastDir] && newDir !== lastDir) dirQueue.push(newDir);
 		}
 	}
 

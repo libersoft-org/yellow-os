@@ -7,7 +7,6 @@
 
 ## New features
 
-- Snake - zpomalene reakce klavesnice
 - File Browser - connect with OPFS
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
