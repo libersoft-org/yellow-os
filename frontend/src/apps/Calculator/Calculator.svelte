@@ -6,6 +6,8 @@
 	win.icon = '/img/apps/calculator.svg';
 	win.width = 280;
 	win.height = 420;
+	win.minWidth = 200;
+	win.minHeight = 280;
 	let display = $state('0');
 	let previousValue = $state<number | null>(null);
 	let operator = $state<string | null>(null);

@@ -6,6 +6,8 @@
 	win.icon = '/img/apps/file-manager.svg';
 	win.width = 640;
 	win.height = 480;
+	win.minWidth = 320;
+	win.minHeight = 240;
 	import { mockFs, mockDisks } from './filemanager.ts';
 	import FileManagerToolbar from './FileManagerToolbar.svelte';
 	import FileManagerSidebar from './FileManagerSidebar.svelte';

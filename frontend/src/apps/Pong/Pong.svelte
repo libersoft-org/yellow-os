@@ -6,6 +6,8 @@
 	win.icon = '/img/apps/pong.svg';
 	win.width = 640;
 	win.height = 480;
+	win.minWidth = 320;
+	win.minHeight = 240;
 	win.position = 'center';
 	type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
 	const PADDLE_W = 10;

@@ -6,6 +6,8 @@
 	win.icon = '/img/apps/snake.svg';
 	win.width = 480;
 	win.height = 480;
+	win.minWidth = 320;
+	win.minHeight = 320;
 	win.position = 'center';
 	type Dir = 'up' | 'down' | 'left' | 'right';
 	type GameState = 'menu' | 'playing' | 'paused' | 'gameover';
