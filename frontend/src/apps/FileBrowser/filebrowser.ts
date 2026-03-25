@@ -22,9 +22,9 @@ export interface DiskInfo {
 }
 
 export const mockDisks: DiskInfo[] = [
-	{ name: 'OPFS drive', path: '/', icon: '/img/apps/file-manager.svg', total: '256 GB', free: '82 GB' },
-	{ name: 'NAS network drive', path: '/aaa', icon: '/img/apps/file-manager.svg', total: '22.18 TB', free: '2.53 TB' },
-	{ name: 'RAM drive', path: '/bbb', icon: '/img/apps/file-manager.svg', total: '1 TB', free: '643 GB' },
+	{ name: 'OPFS drive', path: '/', icon: '/img/apps/file-browser.svg', total: '256 GB', free: '82 GB' },
+	{ name: 'NAS network drive', path: '/aaa', icon: '/img/apps/file-browser.svg', total: '22.18 TB', free: '2.53 TB' },
+	{ name: 'RAM drive', path: '/bbb', icon: '/img/apps/file-browser.svg', total: '1 TB', free: '643 GB' },
 ];
 
 export const mockFs: Record<string, FileEntry[]> = {

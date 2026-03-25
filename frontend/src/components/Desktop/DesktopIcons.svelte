@@ -3,7 +3,7 @@
 	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
-	import FileManager from '../../apps/FileManager/FileManager.svelte';
+	import FileBrowser from '../../apps/FileBrowser/FileBrowser.svelte';
 	interface DesktopShortcut {
 		id: string;
 		label: string;
@@ -19,7 +19,7 @@
 		Array.from({ length: DESKTOP_COUNT }, (_, i) =>
 			i === 0
 				? [
-						{ id: 'file-manager', label: 'File Manager', icon: '/img/apps/file-manager.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, launch: () => openWindow(FileManager) },
+						{ id: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg', iconColor: '--color-accent', gridX: 0, gridY: 0, launch: () => openWindow(FileBrowser) },
 						{ id: 'trash-can', label: 'Trash can', icon: '/img/apps/trash.svg', iconColor: '--color-text-dim', gridX: 0, gridY: 1 },
 					]
 				: []

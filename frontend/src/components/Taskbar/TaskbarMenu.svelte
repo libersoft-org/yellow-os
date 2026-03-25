@@ -5,7 +5,7 @@
 	import Icon from '../Icon/Icon.svelte';
 	import ListItem from '../ListItem/ListItem.svelte';
 	import About from '../../apps/About/About.svelte';
-	import FileManager from '../../apps/FileManager/FileManager.svelte';
+	import FileBrowser from '../../apps/FileBrowser/FileBrowser.svelte';
 	import Calculator from '../../apps/Calculator/Calculator.svelte';
 	import Notepad from '../../apps/Notepad/Notepad.svelte';
 	import Pong from '../../apps/Pong/Pong.svelte';
@@ -32,7 +32,7 @@
 			label: 'Programs',
 			icon: '/img/directory.svg',
 			items: [
-				{ label: 'File Manager', icon: '/img/apps/file-manager.svg', component: FileManager },
+				{ label: 'File Browser', icon: '/img/apps/file-browser.svg', component: FileBrowser },
 				{ label: 'Calculator', icon: '/img/apps/calculator.svg', component: Calculator },
 				{ label: 'Notepad', icon: '/img/apps/notepad.svg', component: Notepad },
 			],

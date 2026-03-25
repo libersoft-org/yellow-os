@@ -8,12 +8,10 @@
 ## New features
 
 - Snake - zpomalene reakce klavesnice
-
-- File manager - rename to File browser (File Manager will be something else - 2 panel like Midnight Commander)
-- File browser - connect with OPFS
-- File browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
-- File browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
-- File browser - drag and drop / upload form from main OS to web OS
+- File Browser - connect with OPFS
+- File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
+- File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
+- File Browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps
 - Trash can
 - Cleanup code
@@ -28,7 +26,7 @@
 - Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
 - Add desktop icons (+ grid align)
 - Add system settings app
-- Create file manager with 2 panels - like Midnight Commander
+- Create File Manager with 2 panels - like Midnight Commander
 - Serverless data synchronization between devices
 - Photo viewer
 - Terminal (for interacting with file system)

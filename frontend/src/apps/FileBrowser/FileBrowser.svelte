@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window-context.ts';
-	import { mockFs, mockDisks, entryIcon, entryIconColor } from './filemanager.ts';
-	import type { FileEntry } from './filemanager.ts';
-	import FileManagerToolbar from './FileManagerToolbar.svelte';
-	import FileManagerSidebar from './FileManagerSidebar.svelte';
-	import FileManagerSeparator from './FileManagerSeparator.svelte';
-	import FileManagerInfo from './FileManagerInfo.svelte';
+	import { mockFs, mockDisks, entryIcon, entryIconColor } from './filebrowser.ts';
+	import type { FileEntry } from './filebrowser.ts';
+	import FileBrowserToolbar from './FileBrowserToolbar.svelte';
+	import FileBrowserSidebar from './FileBrowserSidebar.svelte';
+	import FileBrowserSeparator from './FileBrowserSeparator.svelte';
+	import FileBrowserInfo from './FileBrowserInfo.svelte';
 	import type { IconGridItemData } from '../../components/IconGrid/icon-grid.ts';
 	import IconGrid from '../../components/IconGrid/IconGrid.svelte';
 	import ContextMenu from '../../components/ContextMenu/ContextMenu.svelte';
@@ -16,8 +16,8 @@
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 
 	const win = getWindow();
-	win.title = 'File Manager';
-	win.icon = '/img/apps/file-manager.svg';
+	win.title = 'File Browser';
+	win.icon = '/img/apps/file-browser.svg';
 	win.width = 800;
 	win.height = 600;
 	win.minWidth = 320;
@@ -253,7 +253,7 @@
 </script>
 
 <style>
-	.file-manager {
+	.file-browser {
 		display: flex;
 		flex-direction: column;
 		height: 100%;
@@ -298,11 +298,11 @@
 	}
 </style>
 
-<div class="file-manager" role="application" tabindex="-1">
-	<FileManagerToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
+<div class="file-browser" role="application" tabindex="-1">
+	<FileBrowserToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
-		<FileManagerSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
-		<FileManagerSeparator onresize={onSeparatorResize} />
+		<FileBrowserSidebar disks={mockDisks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
+		<FileBrowserSeparator onresize={onSeparatorResize} />
 		<div class="grid-area" role="region" oncontextmenu={onGridContextMenu}>
 			{#if viewMode === 'grid'}
 				<IconGrid items={iconViewItems} onselectionchange={onGridSelectionChange} ondblclick={onIconDblClick}>
@@ -334,8 +334,8 @@
 			{/if}
 		</div>
 		{#if showInfo}
-			<FileManagerSeparator onresize={onInfoSeparatorResize} />
-			<FileManagerInfo selected={selectedEntries} {currentPath} {entries} width={infoWidth} />
+			<FileBrowserSeparator onresize={onInfoSeparatorResize} />
+			<FileBrowserInfo selected={selectedEntries} {currentPath} {entries} width={infoWidth} />
 		{/if}
 	</div>
 	{#if contextMenu}

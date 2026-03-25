@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DiskInfo } from './filemanager.ts';
+	import type { DiskInfo } from './filebrowser.ts';
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	import ListItem from '../../components/ListItem/ListItem.svelte';
 	interface Props {

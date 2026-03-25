@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { FileEntry } from './filemanager.ts';
-	import { entryIcon, entryIconColor } from './filemanager.ts';
+	import type { FileEntry } from './filebrowser.ts';
+	import { entryIcon, entryIconColor } from './filebrowser.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import { formatBytes, parseBytes } from '../../scripts/format.ts';
 	interface Props {
