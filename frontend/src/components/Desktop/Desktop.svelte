@@ -52,6 +52,7 @@
 	];
 
 	function onContextMenu(e: MouseEvent): void {
+		if ((e.target as HTMLElement).closest('.window')) return;
 		e.preventDefault();
 		contextMenu = { x: e.clientX, y: e.clientY };
 	}

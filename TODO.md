@@ -8,7 +8,7 @@
 ## New features
 
 - Key shortcuts - ALT + F4, ALT + TAB, WIN + left / right (snap) (suppress host system shortcuts!)
-- Click on window title bar icon should show context menu - maximize, minimize, restore, close, double click to close
+
 - File manager - use ContextMenu for right click (long tap on mobile) to bring up the menu with: copy, cut, paste, rename, delete, open, open in new window (directory only)
 - File manager - add file / directory info in right panel
 - File manager - right click (long tap) on empty space in FileManagerGrid - menu with submenu - Sort by - Name, modification date, type, size (+ asc / desc), new file, new directory
@@ -23,7 +23,6 @@
 - Each application should be able to choose initial position - default, center screen, maximized, minimized, tray
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
 - Wallpaper change in settings
-- When right click on icon in Window component - show context menu - maximize / minimize / restore / close
 - Edit README (maybe done) and INSTALL.md
 - Add menu bar and use it in apps (File, Edit, Help etc.)
 - Add logout screen + button in taskbar menu

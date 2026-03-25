@@ -13,15 +13,13 @@
 
 <style>
 	.control {
-		width: 26px;
-		height: 22px;
-		border-radius: 4px;
-		background: transparent;
-		color: var(--color-text);
-		font-size: 13px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		width: 36px;
+		height: 36px;
+		background-color: transparent;
+		color: var(--color-text);
 	}
 
 	.control:hover {
