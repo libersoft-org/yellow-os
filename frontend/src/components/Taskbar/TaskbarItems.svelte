@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, getWindow, reorderWindow } from '../../scripts/window-store.svelte.ts';
+	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, findWindow, reorderWindow } from '../../scripts/window-store.svelte.ts';
 	import { desktop } from '../../scripts/desktop.svelte.ts';
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
@@ -101,7 +101,7 @@
 
 	function handleClick(): void {
 		if (!dragId) return;
-		const win = getWindow(dragId);
+		const win = findWindow(dragId);
 		if (win) onWindowButtonClick(win.id, win.minimized);
 		dragId = null;
 	}

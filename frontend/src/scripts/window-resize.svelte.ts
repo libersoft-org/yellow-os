@@ -1,4 +1,4 @@
-import { getWindow, focusWindow, resizeWindow } from './window-store.svelte.ts';
+import { findWindow, focusWindow, resizeWindow } from './window-store.svelte.ts';
 export type ResizeDir = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
 export const RESIZE_DIRS: readonly ResizeDir[] = ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'];
 
@@ -36,7 +36,7 @@ export function createResizeHandler(getWinId: () => string): ResizeHandler {
 
 	function start(e: PointerEvent, d: ResizeDir): void {
 		const winId = getWinId();
-		const win = getWindow(winId);
+		const win = findWindow(winId);
 		if (!win || win.maximized) return;
 		resizing = true;
 		dir = d;
@@ -54,7 +54,7 @@ export function createResizeHandler(getWinId: () => string): ResizeHandler {
 	function move(e: PointerEvent): void {
 		if (!resizing) return;
 		const winId = getWinId();
-		const win = getWindow(winId);
+		const win = findWindow(winId);
 		if (!win) return;
 		const dx = e.clientX - startX;
 		const dy = e.clientY - startY;

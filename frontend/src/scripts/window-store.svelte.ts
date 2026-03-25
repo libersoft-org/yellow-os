@@ -50,7 +50,7 @@ export function getWindows(): WindowState[] {
 	return _windows;
 }
 
-export function getWindow(id: string): WindowState | undefined {
+export function findWindow(id: string): WindowState | undefined {
 	return _windowMap.get(id);
 }
 

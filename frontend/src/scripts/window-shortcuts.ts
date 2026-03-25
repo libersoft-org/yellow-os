@@ -1,5 +1,5 @@
 import type { SnapZone } from './window-snap.ts';
-import { getWindow, focus, minimizeWindow, restoreWindow, snapWindow } from './window-store.svelte.ts';
+import { findWindow, focus, minimizeWindow, restoreWindow, snapWindow } from './window-store.svelte.ts';
 
 const NUMPAD_SNAP: Record<string, SnapZone> = {
 	Numpad7: 'top-left',
@@ -15,7 +15,7 @@ export function handleKeyboardShortcut(e: KeyboardEvent): void {
 	if (!e.metaKey) return;
 	const id = focus.id;
 	if (!id) return;
-	const win = getWindow(id);
+	const win = findWindow(id);
 	if (!win || win.minimized || win.minimizing) return;
 	const zone = NUMPAD_SNAP[e.code];
 	if (zone) {

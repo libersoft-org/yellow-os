@@ -1,7 +1,7 @@
 export type SnapZone = 'left' | 'right' | 'top' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 const SNAP_RATIO = 0.05;
 
-export function getTaskbarHeight(): number {
+function getTaskbarHeight(): number {
 	return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--taskbar-height')) || 50;
 }
 
