@@ -69,6 +69,7 @@ export async function initOpfs(): Promise<void> {
 			await createDirectory(OS_PATH + '/TaskbarMenu', folderName);
 			for (const link of links) await writeLinkFile(OS_PATH + '/TaskbarMenu/' + folderName, link);
 		}
+		await writeLinkFile(OS_PATH + '/TaskbarMenu', { appId: 'about', label: 'About ' + OS_NAME, icon: '/img/logo.svg' });
 	}
 }
 

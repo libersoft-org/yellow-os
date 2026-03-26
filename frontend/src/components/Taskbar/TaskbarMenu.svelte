@@ -3,7 +3,6 @@
 	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import ListItem from '../ListItem/ListItem.svelte';
-	import About from '../../apps/About/About.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
 	import { readDirectory } from '../../scripts/opfs.ts';
 	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
@@ -33,7 +32,8 @@
 		await ensureOpfsReady();
 		try {
 			const entries = await readDirectory(OS_PATH + '/TaskbarMenu');
-			const items: MenuItem[] = [];
+			const categories: MenuCategory[] = [];
+			const apps: MenuApp[] = [];
 			for (const entry of entries) {
 				if (entry.type === 'directory') {
 					const subEntries = await readDirectory(OS_PATH + '/TaskbarMenu/' + entry.name);
@@ -44,17 +44,20 @@
 							if (linkData) subItems.push({ label: linkData.label, icon: linkData.icon, link: linkData });
 						}
 					}
-					if (subItems.length > 0) items.push({ label: entry.name, icon: '/img/directory.svg', items: subItems });
+					if (subItems.length > 0) {
+						subItems.sort((a, b) => a.label.localeCompare(b.label));
+						categories.push({ label: entry.name, icon: '/img/directory.svg', items: subItems });
+					}
 				} else if (isLinkFile(entry.name)) {
 					const linkData = await readLink(OS_PATH + '/TaskbarMenu', entry.name);
-					if (linkData) items.push({ label: linkData.label, icon: linkData.icon, link: linkData });
+					if (linkData) apps.push({ label: linkData.label, icon: linkData.icon, link: linkData });
 				}
 			}
-			// Always add About at the end
-			items.push({ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', link: { appId: 'about', label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg' } });
-			menuItems = items;
+			categories.sort((a, b) => a.label.localeCompare(b.label));
+			apps.sort((a, b) => a.label.localeCompare(b.label));
+			menuItems = [...categories, ...apps];
 		} catch {
-			menuItems = [{ label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg', link: { appId: 'about', label: `About ${PRODUCT_NAME}`, icon: '/img/logo.svg' } }];
+			menuItems = [];
 		}
 	}
 
@@ -83,7 +86,8 @@
 	}
 
 	function launchBrand(): void {
-		openWindow(About);
+		const resolved = resolveLink({ appId: 'about', label: 'About', icon: '/img/logo.svg' });
+		if (resolved) openWindow(resolved.component, resolved.props);
 		menuOpen = false;
 		openCategory = null;
 	}
