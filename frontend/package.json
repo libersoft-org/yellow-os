@@ -24,8 +24,5 @@
 		"svelte-check": "^4.4.5",
 		"prettier": "^3.8.1",
 		"prettier-plugin-svelte": "^3.5.1"
-	},
-	"dependencies": {
-		"hex-to-css-filter": "^6.0.0"
 	}
 }
