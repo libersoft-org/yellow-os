@@ -12,7 +12,6 @@
 
 ## New features
 
-- Create a loading screen before OPFS, desktop etc. is fully loaded
 - Add system message box and Yes / No dialog and message box
 - Add message box to Settings - factory reset - after clicking on button for Factory reset
 - Add system settings app
