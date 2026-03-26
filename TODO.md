@@ -17,6 +17,7 @@
 - Add system open / save as ... file dialog
 - Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...
+- File Browser - on right click in directory on empty space - there should be Cut, Copy and Paste buttons. If file is coppied / cut, let it paste as a new file with (copy) in name... if it is is (copy) already, then (copy 2) etc.
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
 - Trash can - use it for delete in File Browser and on desktop
