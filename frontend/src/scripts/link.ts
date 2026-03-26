@@ -6,6 +6,7 @@ export interface LinkData {
 	appId: string;
 	label: string;
 	icon: string;
+	props?: Record<string, unknown>;
 }
 
 export function isLinkFile(name: string): boolean {
@@ -31,6 +32,13 @@ export async function writeLink(dirPath: string, fileName: string, data: LinkDat
 	await writeFile(dirPath, fileName, JSON.stringify(data, null, '\t'));
 }
 
-export function resolveLink(data: LinkData): Component | undefined {
-	return getAppComponent(data.appId);
+export interface ResolvedLink {
+	component: Component;
+	props: Record<string, unknown>;
+}
+
+export function resolveLink(data: LinkData): ResolvedLink | undefined {
+	const component = getAppComponent(data.appId);
+	if (!component) return undefined;
+	return { component, props: data.props ?? {} };
 }

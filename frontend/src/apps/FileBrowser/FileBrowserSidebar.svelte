@@ -30,7 +30,7 @@
 <div class="sidebar" style:width="{width}px">
 	<div class="items">
 		{#each disks as disk}
-			<ListItem onclick={() => onnavigate(disk.path)} active={currentPath === disk.path}>
+			<ListItem onclick={() => onnavigate(disk.path)} active={currentPath === disk.path || currentPath.startsWith(disk.path === '/' ? '/' : disk.path + '/')}>
 				<IconGridItem icon={disk.icon} label={disk.name} subtitle="{formatBytes(disk.free)} free of {formatBytes(disk.total)}" layout="horizontal" iconSize="20px" iconColor="--color-accent" />
 			</ListItem>
 		{/each}

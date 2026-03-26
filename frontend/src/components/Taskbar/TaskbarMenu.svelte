@@ -64,8 +64,8 @@
 	let openCategory = $state<string | null>(null);
 
 	function launchApp(item: MenuApp): void {
-		const component = resolveLink(item.link);
-		if (component) openWindow(component);
+		const resolved = resolveLink(item.link);
+		if (resolved) openWindow(resolved.component, resolved.props);
 		menuOpen = false;
 		openCategory = null;
 	}

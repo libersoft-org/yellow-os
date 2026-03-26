@@ -27,6 +27,11 @@
 	win.height = 600;
 	win.minWidth = 320;
 	win.minHeight = 240;
+
+	interface Props {
+		path?: string;
+	}
+	const { path }: Props = $props();
 	let currentPath = $state('/');
 	let history = $state<string[]>(['/']);
 	let historyIndex = $state(0);
@@ -69,10 +74,16 @@
 		disks = [{ name: 'OPFS drive', path: '/', icon: '/img/apps/file-browser.svg', total: estimate.total, free: estimate.total - estimate.used }];
 	}
 
-	if (browser) {
-		loadDiskInfo();
-		loadDirectory('/');
+	function init(): void {
+		const startPath = path ?? '/';
+		currentPath = startPath;
+		history = [startPath];
+		if (browser) {
+			loadDiskInfo();
+			loadDirectory(startPath);
+		}
 	}
+	init();
 
 	const iconViewItems = $derived<IconGridItemData[]>(
 		sortedEntries.map(e => ({
@@ -267,14 +278,12 @@
 		} else if (isLinkFile(entry.name)) {
 			const linkData = await readLink(currentPath, entry.name);
 			if (linkData) {
-				const component = resolveLink(linkData);
-				if (component) openWindow(component);
+				const resolved = resolveLink(linkData);
+				if (resolved) openWindow(resolved.component, resolved.props);
 			}
 		} else {
 			const handler = await getFileHandler(currentPath, entry.name);
-			if (handler) {
-				openWindow(handler.component, handler.props);
-			}
+			if (handler) openWindow(handler.component, handler.props);
 		}
 	}
 

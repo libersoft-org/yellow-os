@@ -5,9 +5,14 @@
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
+## Ideas
+
+- All system settings should be in JSON files on OPFS in YellowOS directory
+- Apps should have their own separate directories for settings etc.
+
 ## New features
 
-- Trash on desktop has an invalid link (Trash.link) - it points to app named Trash, but there is no such app. Instead it should open File Browser with prop path=[path to trash directory] - if links don't support props, add this feature
+- Add line numbers to Text Editor
 - Add system message box and Yes / No dialog
 - Add system open / save as ... file dialog
 - Use yes / no dialog in Text Editor - exit warning if file has changed
@@ -16,7 +21,6 @@
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
 - File Browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps
-- Trash can
 - Cleanup code
 - Tray icons
 - Quick launch

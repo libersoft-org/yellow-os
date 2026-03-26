@@ -22,7 +22,7 @@ const defaultFileTypes: Record<string, string> = {
 
 const defaultDesktopLinks: LinkData[] = [
 	{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' },
-	{ appId: 'trash', label: 'Trash', icon: '/img/apps/trash.svg' },
+	{ appId: 'file-browser', label: 'Trash', icon: '/img/apps/trash.svg', props: { path: '/Trash' } },
 ];
 
 const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {

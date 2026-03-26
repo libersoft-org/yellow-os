@@ -68,8 +68,8 @@
 	function onDblClick(item: IconGridItemData): void {
 		const shortcut = shortcuts.find(s => s.id === item.id);
 		if (shortcut?.link) {
-			const component = resolveLink(shortcut.link);
-			if (component) openWindow(component);
+			const resolved = resolveLink(shortcut.link);
+			if (resolved) openWindow(resolved.component, resolved.props);
 		}
 	}
 
