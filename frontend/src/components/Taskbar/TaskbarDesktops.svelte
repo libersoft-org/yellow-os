@@ -1,6 +1,8 @@
 <script lang="ts">
-	import { DESKTOP_COUNT, desktop, switchDesktop } from '../../scripts/desktop.svelte.ts';
+	import { desktop, switchDesktop } from '../../scripts/desktop.svelte.ts';
+	import { settings, settingsReady } from '../../scripts/settings.svelte.ts';
 	import Clickable from '../Clickable/Clickable.svelte';
+	const count = $derived(settingsReady.value ? settings.desktopCount : 1);
 </script>
 
 <style>
@@ -37,10 +39,12 @@
 	}
 </style>
 
-<div class="desktop-switcher">
-	{#each Array(DESKTOP_COUNT) as _, i}
-		<Clickable onclick={() => switchDesktop(i)}>
-			<div class="desktop-btn" class:active={desktop.active === i}>{i + 1}</div>
-		</Clickable>
-	{/each}
-</div>
+{#if count > 1}
+	<div class="desktop-switcher">
+		{#each Array(count) as _, i}
+			<Clickable onclick={() => switchDesktop(i)}>
+				<div class="desktop-btn" class:active={desktop.active === i}>{i + 1}</div>
+			</Clickable>
+		{/each}
+	</div>
+{/if}

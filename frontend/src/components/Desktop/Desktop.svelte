@@ -5,7 +5,10 @@
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	import { defocusAll } from '../../scripts/window-store.svelte.ts';
 	import { handleKeyboardShortcut, handleKeyUp } from '../../scripts/window-shortcuts.ts';
-	import { DESKTOP_COUNT, desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte.ts';
+	import { desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte.ts';
+	import { settings, settingsReady, wallpaperUrl } from '../../scripts/settings.svelte.ts';
+	const wallpaperCss = $derived(wallpaperUrl.value ? `url('${wallpaperUrl.value}')` : 'none');
+	const desktopCount = $derived(settingsReady.value ? settings.desktopCount : 1);
 	import AppSwitcher from '../AppSwitcher/AppSwitcher.svelte';
 	const sliding = $derived(desktop.slideDirection !== null && desktop.previous !== null);
 	const NUMPAD_DESKTOP: Record<string, number> = {
@@ -13,6 +16,10 @@
 		Numpad2: 1,
 		Numpad3: 2,
 		Numpad4: 3,
+		Numpad5: 4,
+		Numpad6: 5,
+		Numpad7: 6,
+		Numpad8: 7,
 	};
 	function onDesktopPointerDown(e: PointerEvent): void {
 		if (e.target === e.currentTarget) defocusAll();
@@ -27,11 +34,11 @@
 			}
 			if (e.code === 'ArrowRight') {
 				e.preventDefault();
-				if (desktop.active < DESKTOP_COUNT - 1) switchDesktop(desktop.active + 1);
+				if (desktop.active < desktopCount - 1) switchDesktop(desktop.active + 1);
 				return;
 			}
 			const deskIdx = NUMPAD_DESKTOP[e.code];
-			if (deskIdx !== undefined) {
+			if (deskIdx !== undefined && deskIdx < desktopCount) {
 				e.preventDefault();
 				switchDesktop(deskIdx);
 				return;
@@ -73,7 +80,7 @@
 		inset: 0;
 		display: flex;
 		flex-direction: column;
-		background: url('/img/wallpapers/waves-dark.webp') center/cover no-repeat;
+		background: center/cover no-repeat;
 	}
 
 	.desktop.enter-from-right {
@@ -140,7 +147,7 @@
 <div class="viewport">
 	{#key desktop.slideId}
 		{#if sliding}
-			<div class="desktop {desktop.slideDirection === 'left' ? 'leave-to-left' : 'leave-to-right'}">
+			<div class="desktop {desktop.slideDirection === 'left' ? 'leave-to-left' : 'leave-to-right'}" style:background-image={wallpaperCss}>
 				<div class="window-area" role="presentation">
 					<DesktopIcons desktopId={desktop.previous!} />
 					<WindowManager desktopId={desktop.previous!} />
@@ -149,7 +156,7 @@
 			</div>
 		{/if}
 	{/key}
-	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" onanimationend={onAnimationEnd}>
+	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" style:background-image={wallpaperCss} onanimationend={onAnimationEnd}>
 		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown} oncontextmenu={onContextMenu}>
 			<DesktopIcons />
 			<WindowManager />

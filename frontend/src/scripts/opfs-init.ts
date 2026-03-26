@@ -3,9 +3,10 @@ import type { LinkData } from './link.ts';
 
 const OS_NAME = 'YellowOS';
 export const OS_PATH = '/' + OS_NAME;
+export const WALLPAPERS_PATH = OS_PATH + '/Wallpapers';
 
 const ROOT_DIRS = [OS_NAME, 'Trash'];
-const OS_SUBDIRS = ['Desktop', 'TaskbarMenu'];
+const OS_SUBDIRS = ['Desktop', 'TaskbarMenu', 'Wallpapers'];
 
 const defaultFileTypes: Record<string, string> = {
 	txt: 'text-editor',
@@ -23,6 +24,7 @@ const defaultFileTypes: Record<string, string> = {
 const defaultDesktopLinks: LinkData[] = [
 	{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' },
 	{ appId: 'file-browser', label: 'Trash', icon: '/img/apps/trash.svg', props: { path: '/Trash' } },
+	{ appId: 'settings', label: 'Settings', icon: '/img/apps/settings.svg' },
 ];
 
 const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
@@ -36,6 +38,8 @@ const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 		{ appId: 'snake', label: 'Snake', icon: '/img/apps/snake.svg' },
 	],
 };
+
+const defaultWallpapers = ['waves-dark.webp', 'waves-light.webp', 'polygons-dark.webp', 'polygons-light.webp'];
 
 async function writeLinkFile(path: string, data: LinkData): Promise<void> {
 	const fileName = data.label + '.link';
@@ -69,7 +73,21 @@ export async function initOpfs(): Promise<void> {
 			await createDirectory(OS_PATH + '/TaskbarMenu', folderName);
 			for (const link of links) await writeLinkFile(OS_PATH + '/TaskbarMenu/' + folderName, link);
 		}
+		await writeLinkFile(OS_PATH + '/TaskbarMenu', { appId: 'settings', label: 'Settings', icon: '/img/apps/settings.svg' });
 		await writeLinkFile(OS_PATH + '/TaskbarMenu', { appId: 'about', label: 'About ' + OS_NAME, icon: '/img/logo.svg' });
+	}
+
+	const wallpaperEntries = await readDirectory(WALLPAPERS_PATH);
+	if (wallpaperEntries.length === 0) {
+		for (const name of defaultWallpapers) {
+			try {
+				const response = await fetch('/img/wallpapers/' + name);
+				const blob = await response.blob();
+				await writeFile(WALLPAPERS_PATH, name, blob);
+			} catch {
+				/* skip failed downloads */
+			}
+		}
 	}
 }
 

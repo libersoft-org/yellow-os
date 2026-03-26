@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { openWindow, defocusAll } from '../../scripts/window-store.svelte.ts';
-	import { DESKTOP_COUNT, desktop } from '../../scripts/desktop.svelte.ts';
+	import { desktop } from '../../scripts/desktop.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
 	import { readDirectory } from '../../scripts/opfs.ts';
@@ -8,7 +8,6 @@
 	import type { LinkData } from '../../scripts/link.ts';
 	import { ensureOpfsReady, OS_PATH } from '../../scripts/opfs-init.ts';
 	import { browser } from '$app/environment';
-
 	interface DesktopShortcut {
 		id: string;
 		label: string;
@@ -18,10 +17,9 @@
 		gridY: number;
 		link: LinkData | null;
 	}
-
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
-	let perDesktopShortcuts = $state<DesktopShortcut[][]>(Array.from({ length: DESKTOP_COUNT }, () => []));
+	let perDesktopShortcuts = $state<DesktopShortcut[][]>(Array.from({ length: 8 }, () => []));
 
 	async function loadDesktopLinks(): Promise<void> {
 		await ensureOpfsReady();

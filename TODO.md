@@ -12,35 +12,28 @@
 
 ## New features
 
+- Create a loading screen before OPFS, desktop etc. is fully loaded
+- Add system message box and Yes / No dialog and message box
+- Add message box to Settings - factory reset - after clicking on button for Factory reset
+- Add system settings app
 - Move wallpapers to OPFS and select them from settings
-- Add system message box and Yes / No dialog
+- File Browser - drag and drop / upload form from main OS to web OS
+- Run WASM files as apps
 - Add system open / save as ... file dialog
 - Use yes / no dialog in Text Editor - exit warning if file has changed
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
-- File Browser - drag and drop / upload form from main OS to web OS
-- Run WASM files as apps
-- Trash can - use it for delete in File Browser
+- Trash can - use it for delete in File Browser and on desktop
 - Cleanup code
 - Tray icons
 - Quick launch
 - Add win.tray in apps + action on left / right click + double click
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
-- Wallpaper change in settings
 - Edit README (maybe done) and INSTALL.md
 - Add menu bar and use it in apps (File, Edit, Help etc.)
 - Add logout screen + button in taskbar menu
-- Add shortcut links (as Windows .LNK file) - usable for Taskbar menu and desktop icons
 - Add desktop icons (+ grid align)
-- Add system settings app
-- Add factory reset to system settings, this will remove everything on OPFS:
-
-const root = await navigator.storage.getDirectory();
-for await (const name of root.keys()) {
-await root.removeEntry(name, { recursive: true });
-}
-
 - Serverless data synchronization between devices
 - Photo viewer
 - Terminal (for interacting with file system)

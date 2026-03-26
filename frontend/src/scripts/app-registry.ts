@@ -5,6 +5,7 @@ import FileBrowser from '../apps/FileBrowser/FileBrowser.svelte';
 import TextEditor from '../apps/TextEditor/TextEditor.svelte';
 import Pong from '../apps/Pong/Pong.svelte';
 import Snake from '../apps/Snake/Snake.svelte';
+import Settings from '../apps/Settings/Settings.svelte';
 
 const registry: Record<string, Component> = {
 	about: About,
@@ -13,6 +14,7 @@ const registry: Record<string, Component> = {
 	'text-editor': TextEditor,
 	pong: Pong,
 	snake: Snake,
+	settings: Settings,
 };
 
 export function getAppComponent(id: string): Component | undefined {

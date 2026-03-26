@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from '../Icon/Icon.svelte';
+	import { settings } from '../../scripts/settings.svelte.ts';
 	interface Props {
 		icon: string;
 		title: string;
@@ -61,5 +62,7 @@
 
 <div class="window-btn" class:active class:dragging style:transform={dragging ? `translateX(${translateX}px)` : ''} role="tab" tabindex="-1">
 	<Icon img={icon} alt={title} size="16px" padding="0" colorVariable={active ? '--color-text' : '--color-text-dim'} />
-	<span class="window-title">{title}</span>
+	{#if settings.taskbarShowText}
+		<span class="window-title">{title}</span>
+	{/if}
 </div>
