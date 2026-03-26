@@ -28,7 +28,8 @@
 		hoverActive = false;
 	}
 
-	function handleBackdropClick(): void {
+	function handleBackdropClick(e: PointerEvent): void {
+		e.preventDefault();
 		openMenuIndex = null;
 		hoverActive = false;
 	}
@@ -60,6 +61,12 @@
 
 <div class="menubar" role="menubar">
 	{#each menus as menu, i}
-		<MenuBarItem {menu} open={openMenuIndex === i} onlabelclick={() => handleLabelClick(i)} onlabelenter={() => handleLabelEnter(i)} onitemclick={handleItemClick} />
+		<MenuBarItem
+			{menu}
+			open={openMenuIndex === i}
+			onlabelclick={() => handleLabelClick(i)}
+			onlabelenter={() => handleLabelEnter(i)}
+			onitemclick={handleItemClick}
+		/>
 	{/each}
 </div>

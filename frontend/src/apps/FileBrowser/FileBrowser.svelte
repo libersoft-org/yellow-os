@@ -111,13 +111,23 @@
 	];
 
 	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
-		const items: ContextMenuItem[] = [{ icon: '/img/open.svg', label: 'Open', onclick: () => openEntry(entry) }];
+		const items: ContextMenuItem[] = [
+			{ icon: '/img/open.svg', label: 'Open', onclick: () => openEntry(entry) },
+		];
 		if (entry.type === 'directory') {
 			items.push({ icon: '/img/open.svg', label: 'Open in new window', onclick: () => {} });
 		} else {
-			items.push({ icon: '/img/apps/notepad.svg', label: 'Edit', onclick: () => editEntry(entry) });
+			items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
 		}
-		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => {} }, { icon: '/img/trash.svg', label: 'Delete', onclick: () => {} });
+		items.push(
+			{ separator: true },
+			{ icon: '/img/copy.svg', label: 'Copy', onclick: () => {} },
+			{ icon: '/img/cut.svg', label: 'Cut', onclick: () => {} },
+			{ icon: '/img/paste.svg', label: 'Paste', onclick: () => {} },
+			{ separator: true },
+			{ icon: '/img/rename.svg', label: 'Rename', onclick: () => {} },
+			{ icon: '/img/trash.svg', label: 'Delete', onclick: () => {} },
+		);
 		return items;
 	}
 

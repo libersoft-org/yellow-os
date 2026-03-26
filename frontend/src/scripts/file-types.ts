@@ -38,7 +38,7 @@ export async function getFileHandler(filePath: string, fileName: string): Promis
 }
 
 export function getEditHandler(filePath: string, fileName: string): FileTypeHandler {
-	const component = getAppComponent('notepad')!;
+	const component = getAppComponent('text-editor')!;
 	return { component, props: { filePath, fileName } };
 }
 

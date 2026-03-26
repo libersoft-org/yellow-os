@@ -9,6 +9,11 @@
 		onitemclick: (onclick: () => void) => void;
 	}
 	const { menu, open, onlabelclick, onlabelenter, onitemclick }: Props = $props();
+
+	function handleLabelDown(e: PointerEvent): void {
+		e.preventDefault();
+		onlabelclick();
+	}
 </script>
 
 <style>
@@ -31,7 +36,7 @@
 </style>
 
 <div class="menu-item">
-	<div class="menu-label" class:open role="button" tabindex="-1" onpointerdown={onlabelclick} onpointerenter={onlabelenter}>
+	<div class="menu-label" class:open role="button" tabindex="-1" onpointerdown={handleLabelDown} onpointerenter={onlabelenter}>
 		{menu.label}
 	</div>
 	{#if open}

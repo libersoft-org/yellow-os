@@ -8,16 +8,16 @@ const ROOT_DIRS = [OS_NAME, 'Trash'];
 const OS_SUBDIRS = ['Desktop', 'TaskbarMenu'];
 
 const defaultFileTypes: Record<string, string> = {
-	txt: 'notepad',
-	md: 'notepad',
-	json: 'notepad',
-	csv: 'notepad',
-	log: 'notepad',
-	xml: 'notepad',
-	html: 'notepad',
-	css: 'notepad',
-	js: 'notepad',
-	ts: 'notepad',
+	txt: 'text-editor',
+	md: 'text-editor',
+	json: 'text-editor',
+	csv: 'text-editor',
+	log: 'text-editor',
+	xml: 'text-editor',
+	html: 'text-editor',
+	css: 'text-editor',
+	js: 'text-editor',
+	ts: 'text-editor',
 };
 
 const defaultDesktopLinks: LinkData[] = [
@@ -29,7 +29,7 @@ const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 	Programs: [
 		{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' },
 		{ appId: 'calculator', label: 'Calculator', icon: '/img/apps/calculator.svg' },
-		{ appId: 'notepad', label: 'Notepad', icon: '/img/apps/notepad.svg' },
+		{ appId: 'text-editor', label: 'Text Editor', icon: '/img/apps/text-editor.svg' },
 	],
 	Games: [
 		{ appId: 'pong', label: 'Pong', icon: '/img/apps/pong.svg' },

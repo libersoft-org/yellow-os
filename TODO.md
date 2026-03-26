@@ -10,7 +10,7 @@
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
 - File Browser - drag and drop / upload form from main OS to web OS
-- Make file type associations (.txt -> Notepad, .link -> open app, etc.)
+- Make file type associations (.txt -> Text Editor, .link -> open app, etc.)
 - Run WASM files as apps
 - Trash can
 - Cleanup code

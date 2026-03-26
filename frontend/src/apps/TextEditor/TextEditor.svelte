@@ -5,6 +5,8 @@
 	import { browser } from '$app/environment';
 	import MenuBar from '../../components/MenuBar/MenuBar.svelte';
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
+	import StatusBar from '../../components/StatusBar/StatusBar.svelte';
+	import Textarea from '../../components/Textarea/Textarea.svelte';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -12,16 +14,15 @@
 	const { filePath, fileName }: Props = $props();
 
 	const win = getWindow();
-	win.icon = '/img/apps/notepad.svg';
+	win.icon = '/img/apps/text-editor.svg';
 	win.width = 640;
 	win.height = 480;
 	let content = $state('');
 	let savedContent = $state('');
 	let editorEl: HTMLTextAreaElement | undefined = $state();
-	let clipboard = $state('');
 
 	function updateTitle(name: string): void {
-		win.title = 'Notepad' + (name ? ' - ' + name : '');
+		win.title = 'Text Editor' + (name ? ' - ' + name : '');
 	}
 
 	function init(): void {
@@ -36,7 +37,11 @@
 	init();
 
 	const hasChanges = $derived(content !== savedContent);
-	const hasSelection = $derived(editorEl ? editorEl.selectionStart !== editorEl.selectionEnd : false);
+	let hasSelection = $state(false);
+
+	function updateSelection(): void {
+		hasSelection = editorEl ? editorEl.selectionStart !== editorEl.selectionEnd : false;
+	}
 
 	function newFile(): void {
 		content = '';
@@ -95,7 +100,8 @@
 
 	function cut(): void {
 		if (!editorEl) return;
-		clipboard = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd);
+		const text = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd);
+		navigator.clipboard.writeText(text);
 		const start = editorEl.selectionStart;
 		content = content.substring(0, start) + content.substring(editorEl.selectionEnd);
 		editorEl.setSelectionRange(start, start);
@@ -104,21 +110,52 @@
 
 	function copy(): void {
 		if (!editorEl) return;
-		clipboard = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd);
+		const text = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd);
+		navigator.clipboard.writeText(text);
 	}
 
 	function paste(): void {
-		if (!editorEl || !clipboard) return;
-		const start = editorEl.selectionStart;
-		const end = editorEl.selectionEnd;
-		snapshot();
-		content = content.substring(0, start) + clipboard + content.substring(end);
-		const cursorPos = start + clipboard.length;
-		requestAnimationFrame(() => editorEl!.setSelectionRange(cursorPos, cursorPos));
+		if (!editorEl) return;
+		navigator.clipboard.readText().then(text => {
+			if (!editorEl || !text) return;
+			const start = editorEl.selectionStart;
+			const end = editorEl.selectionEnd;
+			snapshot();
+			content = content.substring(0, start) + text + content.substring(end);
+			const cursorPos = start + text.length;
+			requestAnimationFrame(() => editorEl!.setSelectionRange(cursorPos, cursorPos));
+		});
 	}
 
 	function handleInput(): void {
 		snapshot();
+	}
+
+	function handleKeydown(e: KeyboardEvent): void {
+		if (!e.ctrlKey) return;
+		switch (e.key.toLowerCase()) {
+			case 'z':
+				e.preventDefault();
+				undo();
+				break;
+			case 'y':
+				e.preventDefault();
+				redo();
+				break;
+			case 'n':
+				e.preventDefault();
+				newFile();
+				break;
+			case 's':
+				e.preventDefault();
+				if (e.shiftKey) saveAs();
+				else save();
+				break;
+			case 'o':
+				e.preventDefault();
+				open();
+				break;
+		}
 	}
 
 	const menus = $derived<MenuBarMenu[]>([
@@ -128,7 +165,7 @@
 		},
 		{
 			label: 'Edit',
-			items: [{ label: 'Undo', shortcut: 'Ctrl+Z', disabled: undoStack.length === 0, onclick: undo }, { label: 'Redo', shortcut: 'Ctrl+Y', disabled: redoStack.length === 0, onclick: redo }, { separator: true }, { label: 'Cut', shortcut: 'Ctrl+X', disabled: !hasSelection, onclick: cut }, { label: 'Copy', shortcut: 'Ctrl+C', disabled: !hasSelection, onclick: copy }, { label: 'Paste', shortcut: 'Ctrl+V', disabled: clipboard.length === 0, onclick: paste }],
+			items: [{ label: 'Undo', shortcut: 'Ctrl+Z', disabled: undoStack.length === 0, onclick: undo }, { label: 'Redo', shortcut: 'Ctrl+Y', disabled: redoStack.length === 0, onclick: redo }, { separator: true }, { label: 'Cut', shortcut: 'Ctrl+X', disabled: !hasSelection, onclick: cut }, { label: 'Copy', shortcut: 'Ctrl+C', disabled: !hasSelection, onclick: copy }, { label: 'Paste', shortcut: 'Ctrl+V', onclick: paste }],
 		},
 	]);
 
@@ -147,49 +184,28 @@
 </script>
 
 <style>
-	.notepad {
+	.text-editor {
 		display: flex;
 		flex-direction: column;
 		height: 100%;
 	}
 
-	.editor {
-		flex: 1;
-		border: none;
-		outline: none;
-		resize: none;
-		padding: 14px 16px;
-		background: #0e0e20;
-		color: var(--color-text);
-		font-family: var(--font-family-mono);
-		font-size: 14px;
-		line-height: 1.6;
-		tab-size: 4;
-		user-select: text;
-	}
-
-	.editor::placeholder {
-		color: var(--color-text-dim);
-	}
-
-	.statusbar {
+	.statusbar-content {
 		display: flex;
 		justify-content: flex-end;
 		gap: 16px;
 		padding: 4px 12px;
-		background: var(--color-surface-2);
-		border-top: 1px solid var(--color-border);
-		font-size: 11px;
-		color: var(--color-text-dim);
-		flex-shrink: 0;
+		width: 100%;
 	}
 </style>
 
-<div class="notepad">
+<div class="text-editor">
 	<MenuBar {menus} />
-	<textarea class="editor" bind:this={editorEl} bind:value={content} oninput={handleInput} placeholder="Start typing..." spellcheck="false"></textarea>
-	<div class="statusbar">
-		<span>Lines: {lineCount}</span>
-		<span>Characters: {charCount}</span>
-	</div>
+	<Textarea bind:value={content} bind:ref={editorEl} oninput={handleInput} onkeydown={handleKeydown} onselect={updateSelection} onpointerup={updateSelection} onkeyup={updateSelection} placeholder="Start typing..." />
+	<StatusBar>
+		<div class="statusbar-content">
+			<span>Lines: {lineCount}</span>
+			<span>Characters: {charCount}</span>
+		</div>
+	</StatusBar>
 </div>

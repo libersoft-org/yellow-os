@@ -5,6 +5,11 @@
 		onclick: () => void;
 	}
 	const { item, onclick }: Props = $props();
+
+	function handlePointerdown(e: PointerEvent): void {
+		e.preventDefault();
+		onclick();
+	}
 </script>
 
 <style>
@@ -41,7 +46,7 @@
 	}
 </style>
 
-<div class="submenu-item" class:disabled={item.disabled === true} role="menuitem" tabindex="-1" onpointerdown={onclick}>
+<div class="submenu-item" class:disabled={item.disabled === true} role="menuitem" tabindex="-1" onpointerdown={handlePointerdown}>
 	<span>{item.label}</span>
 	{#if item.shortcut}
 		<span class="shortcut">{item.shortcut}</span>
