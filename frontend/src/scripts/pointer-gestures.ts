@@ -43,6 +43,7 @@ export function pointerGestures(node: HTMLElement, options: GestureOptions): Ges
 	function onPointerDown(e: PointerEvent): void {
 		if (active) return;
 		if (opts.onpress && opts.onpress(e) === false) return;
+		if (e.button !== 0) return;
 		active = true;
 		dragging = false;
 		trackedPointerId = e.pointerId;

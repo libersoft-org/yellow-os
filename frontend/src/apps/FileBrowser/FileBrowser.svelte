@@ -1,10 +1,14 @@
 <script lang="ts">
+	import type { Component } from 'svelte';
 	import { getWindow } from '../../scripts/window-context.ts';
 	import { entryIcon, entryIconColor } from './filebrowser.ts';
 	import type { FileEntry, DiskInfo } from './filebrowser.ts';
-	import { readDirectory, getStorageEstimate } from '../../scripts/opfs.ts';
+	import { readDirectory, getStorageEstimate, createFile, createDirectory, deleteEntry, renameEntry, moveToTrash } from '../../scripts/opfs.ts';
+	import NewEntryDialog from './NewEntryDialog.svelte';
+	import RenameDialog from './RenameDialog.svelte';
+	import { showDialog } from '../../scripts/dialog.ts';
 	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
-	import { openWindow } from '../../scripts/window-store.svelte.ts';
+	import { openWindow, findWindow } from '../../scripts/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import FileBrowserToolbar from './FileBrowserToolbar.svelte';
 	import FileBrowserSidebar from './FileBrowserSidebar.svelte';
@@ -117,9 +121,100 @@
 			],
 		},
 		{ separator: true },
-		{ icon: '/img/file.svg', label: 'New file', onclick: () => {} },
-		{ icon: '/img/directory.svg', label: 'New directory', onclick: () => {} },
+		{ icon: '/img/file.svg', label: 'New file', onclick: () => openNewEntryDialog('file') },
+		{ icon: '/img/directory.svg', label: 'New directory', onclick: () => openNewEntryDialog('directory') },
 	];
+
+	function openNewEntryDialog(entryType: 'file' | 'directory'): void {
+		const windowId = openWindow(NewEntryDialog as Component, {
+			entryType,
+			oncreate: async (name: string) => {
+				if (entryType === 'directory') await createDirectory(currentPath, name);
+				else await createFile(currentPath, name);
+				loadDirectory(currentPath);
+			},
+		});
+		const dialogWin = findWindow(windowId);
+		if (dialogWin) {
+			dialogWin.title = entryType === 'directory' ? 'New Directory' : 'New File';
+			dialogWin.icon = entryType === 'directory' ? '/img/directory.svg' : '/img/file.svg';
+			dialogWin.width = 400;
+			dialogWin.height = 180;
+			dialogWin.minWidth = 300;
+			dialogWin.minHeight = 160;
+			dialogWin.position = 'center';
+			dialogWin.canMinimize = false;
+			dialogWin.canMaximize = false;
+			dialogWin.resizable = false;
+			dialogWin.showInTaskbar = false;
+		}
+	}
+
+	function confirmDelete(entry: FileEntry, permanent: boolean): void {
+		const typeLabel = entry.type === 'directory' ? 'directory' : 'file';
+		if (permanent) {
+			showDialog({
+				title: 'Permanently Delete',
+				message: `Are you sure you want to permanently delete ${typeLabel} "${entry.name}"? This action cannot be undone.`,
+				type: 'question',
+				buttons: [
+					{
+						label: 'Delete',
+						backgroundColorVariable: '--color-danger',
+						colorVariable: '--color-accent-fg',
+						onclick: async () => {
+							await deleteEntry(currentPath, entry.name);
+							loadDirectory(currentPath);
+						},
+					},
+					{ label: 'Cancel' },
+				],
+			});
+		} else {
+			showDialog({
+				title: 'Delete',
+				message: `Are you sure you want to move ${typeLabel} "${entry.name}" to Trash?`,
+				type: 'question',
+				buttons: [
+					{
+						label: 'Move to Trash',
+						backgroundColorVariable: '--color-danger',
+						colorVariable: '--color-accent-fg',
+						onclick: async () => {
+							await moveToTrash(currentPath, entry.name);
+							loadDirectory(currentPath);
+						},
+					},
+					{ label: 'Cancel' },
+				],
+			});
+		}
+	}
+
+	function openRenameDialog(entry: FileEntry): void {
+		const windowId = openWindow(RenameDialog as Component, {
+			entryType: entry.type,
+			currentName: entry.name,
+			onrename: async (newName: string) => {
+				await renameEntry(currentPath, entry.name, newName);
+				loadDirectory(currentPath);
+			},
+		});
+		const dialogWin = findWindow(windowId);
+		if (dialogWin) {
+			dialogWin.title = 'Rename';
+			dialogWin.icon = '/img/rename.svg';
+			dialogWin.width = 400;
+			dialogWin.height = 180;
+			dialogWin.minWidth = 300;
+			dialogWin.minHeight = 160;
+			dialogWin.position = 'center';
+			dialogWin.canMinimize = false;
+			dialogWin.canMaximize = false;
+			dialogWin.resizable = false;
+			dialogWin.showInTaskbar = false;
+		}
+	}
 
 	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
 		const items: ContextMenuItem[] = [{ icon: '/img/open.svg', label: 'Open', onclick: () => openEntry(entry) }];
@@ -128,7 +223,7 @@
 		} else {
 			items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
 		}
-		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => {} }, { icon: '/img/trash.svg', label: 'Delete', onclick: () => {} });
+		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(entry) }, { icon: '/img/trash.svg', label: 'Delete', onclick: (e: MouseEvent) => confirmDelete(entry, e.shiftKey) });
 		return items;
 	}
 
@@ -320,6 +415,13 @@
 			if (entry) contextMenu = { x: e.clientX, y: e.clientY, items: getIconMenuItems(entry) };
 		} else contextMenu = { x: e.clientX, y: e.clientY, items: emptySpaceMenuItems };
 	}
+
+	function handleFileBrowserKeydown(e: KeyboardEvent): void {
+		if (e.key === 'Delete' && selectedEntries.length > 0) {
+			e.preventDefault();
+			for (const entry of selectedEntries) confirmDelete(entry, e.shiftKey);
+		}
+	}
 </script>
 
 <style>
@@ -368,7 +470,7 @@
 	}
 </style>
 
-<div class="file-browser" role="application" tabindex="-1">
+<div class="file-browser" role="application" tabindex="-1" onkeydown={handleFileBrowserKeydown}>
 	<FileBrowserToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
 		<FileBrowserSidebar {disks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />

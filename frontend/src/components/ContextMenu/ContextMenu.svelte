@@ -10,7 +10,6 @@
 		onclose: () => void;
 	}
 	const { items, x, y, onclose }: Props = $props();
-
 	let openCategory: string | null = $state(null);
 
 	function adjustPosition(node: HTMLDivElement): void {
@@ -30,8 +29,8 @@
 		onclose();
 	}
 
-	function handleItemClick(item: ContextMenuAction): void {
-		item.onclick();
+	function handleItemClick(item: ContextMenuAction, e: MouseEvent): void {
+		item.onclick(e);
 		onclose();
 	}
 </script>
@@ -98,7 +97,7 @@
 								{#if isSeparator(child)}
 									<ContextMenuSeparator />
 								{:else if !isCategory(child)}
-									<ListItem onclick={() => handleItemClick(child)}>
+									<ListItem onclick={e => handleItemClick(child, e)}>
 										{#if child.icon}<Icon img={child.icon} alt={child.label} size="16px" padding="0" colorVariable="--color-text" />{/if}
 										<div>{child.label}</div>
 									</ListItem>
@@ -108,7 +107,7 @@
 					{/if}
 				</div>
 			{:else}
-				<ListItem onclick={() => handleItemClick(item)}>
+				<ListItem onclick={e => handleItemClick(item, e)}>
 					{#if item.icon}<Icon img={item.icon} alt={item.label} size="16px" padding="0" colorVariable="--color-text" />{/if}
 					<div>{item.label}</div>
 				</ListItem>

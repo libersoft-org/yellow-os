@@ -126,3 +126,41 @@ export async function directoryExists(path: string): Promise<boolean> {
 		return false;
 	}
 }
+
+export async function moveToTrash(path: string, name: string): Promise<void> {
+	const trashDir = await resolveDirectory('/Trash');
+	let targetName = name;
+	let counter = 1;
+	const hasEntry = async (n: string): Promise<boolean> => {
+		try {
+			await trashDir.getDirectoryHandle(n);
+			return true;
+		} catch {
+			try {
+				await trashDir.getFileHandle(n);
+				return true;
+			} catch {
+				return false;
+			}
+		}
+	};
+	while (await hasEntry(targetName)) {
+		const dot = name.lastIndexOf('.');
+		if (dot > 0) targetName = name.slice(0, dot) + ` (${counter})` + name.slice(dot);
+		else targetName = name + ` (${counter})`;
+		counter++;
+	}
+	const sourceDir = await resolveDirectory(path);
+	const sourceHandle = await sourceDir.getDirectoryHandle(name).catch(() => null);
+	if (sourceHandle) {
+		await copyDirectory(sourceHandle, trashDir, targetName);
+	} else {
+		const fileHandle = await sourceDir.getFileHandle(name);
+		const file = await fileHandle.getFile();
+		const newFile = await trashDir.getFileHandle(targetName, { create: true });
+		const writable = await newFile.createWritable();
+		await writable.write(file);
+		await writable.close();
+	}
+	await sourceDir.removeEntry(name, { recursive: true });
+}

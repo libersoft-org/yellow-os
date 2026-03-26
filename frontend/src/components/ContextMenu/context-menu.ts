@@ -1,7 +1,7 @@
 export interface ContextMenuAction {
 	icon?: string | undefined;
 	label: string;
-	onclick: () => void;
+	onclick: (e: MouseEvent) => void;
 }
 
 export interface ContextMenuSeparator {

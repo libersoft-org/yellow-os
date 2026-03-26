@@ -19,6 +19,7 @@ const defaultFileTypes: Record<string, string> = {
 	css: 'text-editor',
 	js: 'text-editor',
 	ts: 'text-editor',
+	yapp: 'app-player',
 };
 
 const defaultDesktopLinks: LinkData[] = [
@@ -30,6 +31,7 @@ const defaultDesktopLinks: LinkData[] = [
 const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 	Programs: [
 		{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' },
+		{ appId: 'app-player', label: 'App Player', icon: '/img/apps/app-player.svg' },
 		{ appId: 'calculator', label: 'Calculator', icon: '/img/apps/calculator.svg' },
 		{ appId: 'text-editor', label: 'Text Editor', icon: '/img/apps/text-editor.svg' },
 	],
@@ -39,7 +41,12 @@ const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 	],
 };
 
-const defaultWallpapers = ['waves-dark.webp', 'waves-light.webp', 'polygons-dark.webp', 'polygons-light.webp'];
+const defaultWallpapers = [
+	'waves-dark.webp',
+	'waves-light.webp',
+	'polygons-dark.webp',
+	'polygons-light.webp',
+];
 
 async function writeLinkFile(path: string, data: LinkData): Promise<void> {
 	const fileName = data.label + '.link';
@@ -84,9 +91,7 @@ export async function initOpfs(): Promise<void> {
 				const response = await fetch('/img/wallpapers/' + name);
 				const blob = await response.blob();
 				await writeFile(WALLPAPERS_PATH, name, blob);
-			} catch {
-				/* skip failed downloads */
-			}
+			} catch { /* skip failed downloads */ }
 		}
 	}
 }

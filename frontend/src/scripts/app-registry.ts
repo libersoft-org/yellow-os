@@ -1,5 +1,6 @@
 import type { Component } from 'svelte';
 import About from '../apps/About/About.svelte';
+import AppPlayer from '../apps/AppPlayer/AppPlayer.svelte';
 import Calculator from '../apps/Calculator/Calculator.svelte';
 import FileBrowser from '../apps/FileBrowser/FileBrowser.svelte';
 import TextEditor from '../apps/TextEditor/TextEditor.svelte';
@@ -9,6 +10,7 @@ import Settings from '../apps/Settings/Settings.svelte';
 
 const registry: Record<string, Component> = {
 	about: About,
+	'app-player': AppPlayer,
 	calculator: Calculator,
 	'file-browser': FileBrowser,
 	'text-editor': TextEditor,
