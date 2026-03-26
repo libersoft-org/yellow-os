@@ -12,7 +12,6 @@
 
 ## New features
 
-- Move wallpapers to OPFS and select them from settings
 - File Browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps
 - Add system open / save as ... file dialog
