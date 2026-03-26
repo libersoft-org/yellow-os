@@ -7,12 +7,12 @@ import Pong from '../apps/Pong/Pong.svelte';
 import Snake from '../apps/Snake/Snake.svelte';
 
 const registry: Record<string, Component> = {
-	'about': About,
-	'calculator': Calculator,
+	about: About,
+	calculator: Calculator,
 	'file-browser': FileBrowser,
 	'text-editor': TextEditor,
-	'pong': Pong,
-	'snake': Snake,
+	pong: Pong,
+	snake: Snake,
 };
 
 export function getAppComponent(id: string): Component | undefined {

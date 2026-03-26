@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Action } from 'svelte/action';
 	interface Props {
 		value: string;
 		placeholder?: string;
@@ -7,9 +8,13 @@
 		onselect?: () => void;
 		onpointerup?: () => void;
 		onkeyup?: () => void;
-		ref?: HTMLTextAreaElement | undefined;
+		onmount?: (el: HTMLTextAreaElement) => void;
 	}
-	let { value = $bindable(), placeholder = '', oninput, onkeydown, onselect, onpointerup, onkeyup, ref = $bindable() }: Props = $props();
+	let { value = $bindable(), placeholder = '', oninput, onkeydown, onselect, onpointerup, onkeyup, onmount }: Props = $props();
+
+	const mount: Action<HTMLTextAreaElement> = node => {
+		onmount?.(node);
+	};
 </script>
 
 <style>
@@ -32,4 +37,4 @@
 	}
 </style>
 
-<textarea class="textarea" bind:this={ref} bind:value {placeholder} {oninput} {onkeydown} {onselect} {onpointerup} {onkeyup} spellcheck="false"></textarea>
+<textarea class="textarea" use:mount bind:value {placeholder} {oninput} {onkeydown} {onselect} {onpointerup} {onkeyup} spellcheck="false"></textarea>

@@ -7,10 +7,14 @@
 
 ## New features
 
+- Trash on desktop has an invalid link (Trash.link) - it points to app named Trash, but there is no such app. Instead it should open File Browser with prop path=[path to trash directory] - if links don't support props, add this feature
+- Add system message box and Yes / No dialog
+- Add system open / save as ... file dialog
+- Use yes / no dialog in Text Editor - exit warning if file has changed
+- Use open / save as ... file dialog in Text Editor for opening and saving file as ...
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
 - File Browser - drag and drop / upload form from main OS to web OS
-- Make file type associations (.txt -> Text Editor, .link -> open app, etc.)
 - Run WASM files as apps
 - Trash can
 - Cleanup code

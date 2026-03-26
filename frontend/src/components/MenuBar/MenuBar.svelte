@@ -61,12 +61,6 @@
 
 <div class="menubar" role="menubar">
 	{#each menus as menu, i}
-		<MenuBarItem
-			{menu}
-			open={openMenuIndex === i}
-			onlabelclick={() => handleLabelClick(i)}
-			onlabelenter={() => handleLabelEnter(i)}
-			onitemclick={handleItemClick}
-		/>
+		<MenuBarItem {menu} open={openMenuIndex === i} onlabelclick={() => handleLabelClick(i)} onlabelenter={() => handleLabelEnter(i)} onitemclick={handleItemClick} />
 	{/each}
 </div>

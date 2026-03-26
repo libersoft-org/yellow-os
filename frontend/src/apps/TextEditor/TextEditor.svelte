@@ -20,13 +20,20 @@
 	let content = $state('');
 	let savedContent = $state('');
 	let editorEl: HTMLTextAreaElement | undefined = $state();
+	let currentFileName = $state('');
 
-	function updateTitle(name: string): void {
-		win.title = 'Text Editor' + (name ? ' - ' + name : '');
+	function updateTitle(): void {
+		const dirty = content !== savedContent;
+		win.title = 'Text Editor' + (currentFileName ? ' - ' + currentFileName : '') + (dirty ? ' *' : '');
+	}
+
+	function handleEditorMount(el: HTMLTextAreaElement): void {
+		editorEl = el;
 	}
 
 	function init(): void {
-		updateTitle(fileName ?? '');
+		currentFileName = fileName ?? '';
+		updateTitle();
 		if (browser && filePath && fileName) {
 			readFileText(filePath, fileName).then(text => {
 				content = text;
@@ -46,7 +53,8 @@
 	function newFile(): void {
 		content = '';
 		savedContent = '';
-		updateTitle('');
+		currentFileName = '';
+		updateTitle();
 	}
 
 	function open(): void {
@@ -58,6 +66,7 @@
 		if (filePath && fileName) {
 			writeFile(filePath, fileName, content).then(() => {
 				savedContent = content;
+				updateTitle();
 			});
 		}
 	}
@@ -79,6 +88,7 @@
 			undoStack = [...undoStack, lastSnapshot];
 			redoStack = [];
 			lastSnapshot = content;
+			updateTitle();
 		}
 	}
 
@@ -88,6 +98,7 @@
 		content = undoStack[undoStack.length - 1]!;
 		undoStack = undoStack.slice(0, -1);
 		lastSnapshot = content;
+		updateTitle();
 	}
 
 	function redo(): void {
@@ -96,6 +107,7 @@
 		content = redoStack[redoStack.length - 1]!;
 		redoStack = redoStack.slice(0, -1);
 		lastSnapshot = content;
+		updateTitle();
 	}
 
 	function cut(): void {
@@ -201,7 +213,7 @@
 
 <div class="text-editor">
 	<MenuBar {menus} />
-	<Textarea bind:value={content} bind:ref={editorEl} oninput={handleInput} onkeydown={handleKeydown} onselect={updateSelection} onpointerup={updateSelection} onkeyup={updateSelection} placeholder="Start typing..." />
+	<Textarea bind:value={content} onmount={handleEditorMount} oninput={handleInput} onkeydown={handleKeydown} onselect={updateSelection} onpointerup={updateSelection} onkeyup={updateSelection} placeholder="Start typing..." />
 	<StatusBar>
 		<div class="statusbar-content">
 			<span>Lines: {lineCount}</span>
