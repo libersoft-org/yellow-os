@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Icon from '../Icon/Icon.svelte';
 	import Spinner from '../Spinner/Spinner.svelte';
 	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
 </script>
@@ -15,20 +16,6 @@
 		height: 100%;
 		gap: 24px;
 		background: #000;
-	}
-
-	.logo {
-		width: 96px;
-		height: 96px;
-		background-color: var(--color-accent);
-		mask-image: url('/img/logo.svg');
-		mask-size: contain;
-		mask-repeat: no-repeat;
-		mask-position: center;
-		-webkit-mask-image: url('/img/logo.svg');
-		-webkit-mask-size: contain;
-		-webkit-mask-repeat: no-repeat;
-		-webkit-mask-position: center;
 	}
 
 	.name {
@@ -48,6 +35,6 @@
 <div class="loading-screen">
 	<div class="name">{PRODUCT_NAME}</div>
 	<div class="version">v{PRODUCT_VERSION}</div>
-	<div class="logo"></div>
+	<Icon img="/img/logo.svg" alt={PRODUCT_NAME} size="96px" padding="0" colorVariable="--color-accent" />
 	<Spinner size="128px" />
 </div>
