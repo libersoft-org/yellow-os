@@ -18,7 +18,7 @@
 	const sections: { id: Section; label: string; icon: string }[] = [
 		{ id: 'desktop', label: 'Desktop', icon: '/img/settings/desktop.svg' },
 		{ id: 'taskbar', label: 'Taskbar', icon: '/img/settings/taskbar.svg' },
-		{ id: 'reset', label: 'Factory Reset', icon: '/img/settings/reset.svg' },
+		{ id: 'reset', label: 'Factory reset', icon: '/img/settings/reset.svg' },
 	];
 
 	function selectSection(id: Section): void {

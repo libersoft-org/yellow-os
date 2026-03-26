@@ -12,14 +12,11 @@
 
 ## New features
 
-- Add system message box and Yes / No dialog and message box
-- Add message box to Settings - factory reset - after clicking on button for Factory reset
-- Add system settings app
 - Move wallpapers to OPFS and select them from settings
 - File Browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps
 - Add system open / save as ... file dialog
-- Use yes / no dialog in Text Editor - exit warning if file has changed
+- Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move

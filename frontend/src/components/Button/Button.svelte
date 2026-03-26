@@ -4,10 +4,12 @@
 	interface Props {
 		children?: Snippet;
 		onclick?: ((e: MouseEvent) => void) | undefined;
-		variant?: 'default' | 'danger';
+		colorVariable?: string | undefined;
+		backgroundColorVariable?: string | undefined;
 		enabled?: boolean | undefined;
 	}
-	let { children, onclick, variant = 'default', enabled = true }: Props = $props();
+	let { children, onclick, colorVariable, backgroundColorVariable, enabled = true }: Props = $props();
+	const hasCustomColors = $derived(!!colorVariable || !!backgroundColorVariable);
 </script>
 
 <style>
@@ -17,7 +19,8 @@
 		gap: 6px;
 		padding: 6px 16px;
 		border-radius: 6px;
-		font-size: 13px;
+		font-size: 14px;
+		font-weight: bold;
 		cursor: pointer;
 		user-select: none;
 		border: 1px solid var(--color-border);
@@ -33,24 +36,25 @@
 		background: var(--color-hover);
 	}
 
-	.button.danger {
-		background: #b91c1c;
-		border-color: #991b1b;
-		color: #fff;
+	.button.colored {
+		background: var(--btn-bg);
+		border-color: var(--btn-bg);
+		color: var(--btn-fg);
 	}
 
-	.button.danger:hover {
-		background: #dc2626;
+	.button.colored:hover {
+		filter: brightness(1.15);
 	}
 
 	.button.disabled {
-		opacity: 0.5;
+		background-color: var(--color-surface-2);
+		color: var(--color-text-dim);
 		cursor: default;
 	}
 </style>
 
 <Clickable {onclick} {enabled}>
-	<div class="button" class:danger={variant === 'danger'} class:disabled={enabled === false}>
+	<div class="button" class:colored={hasCustomColors} class:disabled={enabled === false} style:--btn-bg={backgroundColorVariable ? `var(${backgroundColorVariable})` : undefined} style:--btn-fg={colorVariable ? `var(${colorVariable})` : undefined}>
 		{#if children}
 			{@render children()}
 		{/if}

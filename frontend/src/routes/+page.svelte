@@ -1,7 +1,10 @@
 <script lang="ts">
 	import Desktop from '../components/Desktop/Desktop.svelte';
 	import LoadingScreen from '../components/LoadingScreen/LoadingScreen.svelte';
+	import Dialog from '../components/Dialog/Dialog.svelte';
+	import { registerDialogComponent } from '../scripts/dialog.ts';
 	import { settingsReady } from '../scripts/settings.svelte.ts';
+	registerDialogComponent(Dialog);
 </script>
 
 {#if !settingsReady.value}
