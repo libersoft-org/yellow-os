@@ -21,6 +21,7 @@
 - File Browser - allow drag and drop directories and files from one folder to another, right click and drag = context menu copy / move
 - File Browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps
+- Trash can - use it for delete in File Browser
 - Cleanup code
 - Tray icons
 - Quick launch
