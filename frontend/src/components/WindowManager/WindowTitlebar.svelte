@@ -171,7 +171,7 @@
 		pointer-events: auto;
 		cursor: pointer;
 		flex-shrink: 0;
-		padding: 10px;
+		padding: 8px;
 	}
 
 	.title {

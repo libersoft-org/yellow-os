@@ -38,6 +38,6 @@
 
 <Clickable {onclick} {enabled} {title}>
 	<div class="toolbar-btn" class:active>
-		<Icon {img} {alt} size="16px" padding="0" colorVariable="--color-text" />
+		<Icon {img} {alt} size="20px" padding="0" colorVariable={enabled ? '--color-text' : '--color-text-dim'} />
 	</div>
 </Clickable>

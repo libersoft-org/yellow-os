@@ -17,7 +17,7 @@
 		display: flex;
 		align-items: center;
 		gap: 2px;
-		padding: 0 8px;
+
 		margin-left: 8px;
 		flex: 1;
 		min-width: 0;

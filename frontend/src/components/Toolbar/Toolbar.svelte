@@ -11,7 +11,7 @@
 		display: flex;
 		align-items: center;
 		gap: 2px;
-		padding: 6px 8px;
+		padding: 4px;
 		background: var(--color-surface-2);
 		border-bottom: 1px solid var(--color-border);
 		flex-shrink: 0;
