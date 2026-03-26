@@ -21,6 +21,8 @@
 	let savedContent = $state('');
 	let editorEl: HTMLTextAreaElement | undefined = $state();
 	let currentFileName = $state('');
+	let showLineNumbers = $state(true);
+	let wordWrap = $state(false);
 
 	function updateTitle(): void {
 		const dirty = content !== savedContent;
@@ -143,6 +145,14 @@
 		snapshot();
 	}
 
+	function toggleLineNumbers(): void {
+		showLineNumbers = !showLineNumbers;
+	}
+
+	function toggleWordWrap(): void {
+		wordWrap = !wordWrap;
+	}
+
 	function handleKeydown(e: KeyboardEvent): void {
 		if (!e.ctrlKey) return;
 		switch (e.key.toLowerCase()) {
@@ -167,6 +177,14 @@
 				e.preventDefault();
 				open();
 				break;
+			case 'l':
+				e.preventDefault();
+				toggleLineNumbers();
+				break;
+			case 'm':
+				e.preventDefault();
+				toggleWordWrap();
+				break;
 		}
 	}
 
@@ -178,6 +196,13 @@
 		{
 			label: 'Edit',
 			items: [{ label: 'Undo', shortcut: 'Ctrl+Z', disabled: undoStack.length === 0, onclick: undo }, { label: 'Redo', shortcut: 'Ctrl+Y', disabled: redoStack.length === 0, onclick: redo }, { separator: true }, { label: 'Cut', shortcut: 'Ctrl+X', disabled: !hasSelection, onclick: cut }, { label: 'Copy', shortcut: 'Ctrl+C', disabled: !hasSelection, onclick: copy }, { label: 'Paste', shortcut: 'Ctrl+V', onclick: paste }],
+		},
+		{
+			label: 'View',
+			items: [
+				{ label: 'Word Wrap', shortcut: 'Ctrl+M', checked: wordWrap, onclick: toggleWordWrap },
+				{ label: 'Line Numbers', shortcut: 'Ctrl+L', checked: showLineNumbers, onclick: toggleLineNumbers },
+			],
 		},
 	]);
 
@@ -213,7 +238,7 @@
 
 <div class="text-editor">
 	<MenuBar {menus} />
-	<Textarea bind:value={content} onmount={handleEditorMount} oninput={handleInput} onkeydown={handleKeydown} onselect={updateSelection} onpointerup={updateSelection} onkeyup={updateSelection} placeholder="Start typing..." />
+	<Textarea bind:value={content} lineNumbers={showLineNumbers} {wordWrap} onmount={handleEditorMount} oninput={handleInput} onkeydown={handleKeydown} onselect={updateSelection} onpointerup={updateSelection} onkeyup={updateSelection} placeholder="Start typing..." />
 	<StatusBar>
 		<div class="statusbar-content">
 			<span>Lines: {lineCount}</span>

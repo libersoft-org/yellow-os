@@ -12,7 +12,6 @@
 
 ## New features
 
-- Add line numbers to Text Editor
 - Add system message box and Yes / No dialog
 - Add system open / save as ... file dialog
 - Use yes / no dialog in Text Editor - exit warning if file has changed

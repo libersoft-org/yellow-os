@@ -2,6 +2,7 @@ export interface MenuBarAction {
 	label: string;
 	shortcut?: string;
 	disabled?: boolean;
+	checked?: boolean;
 	onclick: () => void;
 }
 
