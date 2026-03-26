@@ -15,7 +15,7 @@
 		background: rgba(255, 221, 51, 0.15);
 		border: 2px solid var(--color-accent);
 		border-radius: var(--border-radius);
-		z-index: 999999;
+		z-index: 2000;
 		pointer-events: none;
 		transition:
 			left 0.15s ease,

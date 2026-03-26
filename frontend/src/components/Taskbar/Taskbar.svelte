@@ -9,7 +9,7 @@
 
 <style>
 	.taskbar {
-		z-index: 99999;
+		z-index: 998;
 		display: flex;
 		align-items: center;
 		gap: 5px;
