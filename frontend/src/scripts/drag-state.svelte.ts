@@ -26,13 +26,27 @@ let _ghostCellHeight = $state(90);
 let _ghostIconSize = $state('40px');
 
 export const globalGhost = {
-	get items(): DragGhostItem[] { return _ghostItems; },
-	get x(): number { return _ghostX; },
-	get y(): number { return _ghostY; },
-	get active(): boolean { return _ghostActive; },
-	get cellWidth(): number { return _ghostCellWidth; },
-	get cellHeight(): number { return _ghostCellHeight; },
-	get iconSize(): string { return _ghostIconSize; },
+	get items(): DragGhostItem[] {
+		return _ghostItems;
+	},
+	get x(): number {
+		return _ghostX;
+	},
+	get y(): number {
+		return _ghostY;
+	},
+	get active(): boolean {
+		return _ghostActive;
+	},
+	get cellWidth(): number {
+		return _ghostCellWidth;
+	},
+	get cellHeight(): number {
+		return _ghostCellHeight;
+	},
+	get iconSize(): string {
+		return _ghostIconSize;
+	},
 };
 
 export function startGlobalDrag(srcEl: HTMLElement): void {

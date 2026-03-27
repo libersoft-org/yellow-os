@@ -149,7 +149,9 @@
 						idx,
 						items.map(i => i.id),
 						e
-					);					emitSelectionChange();					return false;
+					);
+					emitSelectionChange();
+					return false;
 				}
 				pendingDeselect = id;
 			} else {
@@ -254,21 +256,9 @@
 						if (!selection.isSelected(item.id)) continue;
 						const itemPos = itemPositions.get(item.id);
 						if (!itemPos) continue;
-						ghostItems.push({						id: item.id,							icon: item.icon,
-							label: item.label,
-							iconColor: item.iconColor,
-							offsetX: (itemPos.gridX - origPos.gridX) * cellWidth,
-							offsetY: (itemPos.gridY - origPos.gridY) * cellHeight,
-						});
+						ghostItems.push({ id: item.id, icon: item.icon, label: item.label, iconColor: item.iconColor, offsetX: (itemPos.gridX - origPos.gridX) * cellWidth, offsetY: (itemPos.gridY - origPos.gridY) * cellHeight });
 					}
-					updateGlobalGhost(
-						ghostItems,
-						e.clientX - dragMoveOffset.x,
-						e.clientY - dragMoveOffset.y,
-						cellWidth,
-						cellHeight,
-						iconSize,
-					);
+					updateGlobalGhost(ghostItems, e.clientX - dragMoveOffset.x, e.clientY - dragMoveOffset.y, cellWidth, cellHeight, iconSize);
 				}
 			}
 		}
