@@ -151,7 +151,11 @@
 		if (entry.type === 'file') {
 			items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
 		}
-		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(path, entry.name, entry.type, handleRenamed) }, { icon: '/img/trash.svg', label: 'Delete', onclick: (e: MouseEvent) => confirmDelete(path, entry.name, entry.type, e.shiftKey) });
+		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true });
+		if (selectedEntries.length <= 1) {
+			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(path, entry.name, entry.type, handleRenamed) });
+		}
+		items.push({ icon: '/img/trash.svg', label: 'Delete', onclick: (e: MouseEvent) => confirmDelete(path, entry.name, entry.type, e.shiftKey) });
 		return items;
 	}
 

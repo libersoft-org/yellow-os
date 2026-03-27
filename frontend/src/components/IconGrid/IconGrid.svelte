@@ -161,6 +161,7 @@
 	function handlePress(e: PointerEvent): boolean | void {
 		validateSelection();
 		e.preventDefault();
+		containerEl?.focus();
 		pendingDeselect = null;
 
 		const cell = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;

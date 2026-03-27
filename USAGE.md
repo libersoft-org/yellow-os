@@ -41,7 +41,8 @@ These shortcuts require a focused (selected) window. Hold **Meta** (Win / Cmd) a
 
 ### General
 
-| Shortcut  | Action           |
-| --------- | ---------------- |
-| Meta + F4 | Close window     |
-| Ctrl + A  | Select all icons |
+| Shortcut  | Action                                          |
+| --------- | ----------------------------------------------- |
+| Meta + F4 | Close window                                    |
+| Ctrl + A  | Select all icons                                |
+| F2        | Rename selected file or directory (single item) |
