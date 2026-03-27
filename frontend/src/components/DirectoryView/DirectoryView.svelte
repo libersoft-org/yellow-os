@@ -321,8 +321,8 @@
 </style>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<div class="directory-view" role="application" tabindex="-1" oncontextmenu={onContextMenu} onkeydown={handleKeydown} use:dropZone>
-	<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove}>
+<div class="directory-view" role="application" tabindex="-1" oncontextmenu={onContextMenu} use:dropZone>
+	<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
 		{#snippet empty()}
 			{#if !hideEmptyLabel}
 				This directory is empty

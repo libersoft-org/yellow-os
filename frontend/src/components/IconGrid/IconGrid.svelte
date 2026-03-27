@@ -16,11 +16,12 @@
 		onselectionchange?: ((selectedIds: Set<string>) => void) | undefined;
 		onitemsmove?: ((moves: { id: string; gridX: number; gridY: number }[]) => void) | undefined;
 		ondrop?: ((draggedIds: string[], targetId: string | null, e: PointerEvent) => void) | undefined;
+		onkeyaction?: ((e: KeyboardEvent) => void) | undefined;
 		externalDragOverId?: string | null | undefined;
 		columnFirst?: boolean | undefined;
 		empty?: Snippet | undefined;
 	}
-	let { items, dirPath, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onselectionchange, onitemsmove, ondrop, externalDragOverId, columnFirst, empty }: Props = $props();
+	let { items, dirPath, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onselectionchange, onitemsmove, ondrop, onkeyaction, externalDragOverId, columnFirst, empty }: Props = $props();
 	const selection = createSelection();
 
 	function emitSelectionChange(): void {
@@ -380,6 +381,7 @@
 			selection.selectAll(items.map(i => i.id));
 			emitSelectionChange();
 		}
+		onkeyaction?.(e);
 	}
 
 	export function clearSelection(): void {
