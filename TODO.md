@@ -7,7 +7,6 @@
 - File browser - right click in list view mode on folder doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why??
-- File browser and desktop - right click on empty space -> new directory / file - the new icon should appear on the spot where I right clicked
 - File browser - right click dragging some folder or directory doesn't show context menu (Move here, Copy here)
 - When moving the file with the same name from one folder to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Pong -> Click on maximize button -> then press space - it restores it instead of playing... it looks like there is a focus on window control buttons, which should not be, it's for mouse only

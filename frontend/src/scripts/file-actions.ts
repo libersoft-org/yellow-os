@@ -73,13 +73,14 @@ export function openRenameDialog(dirPath: string, entryName: string, entryType: 
 	}
 }
 
-export function openNewEntryDialog(dirPath: string, entryType: 'file' | 'directory'): void {
+export function openNewEntryDialog(dirPath: string, entryType: 'file' | 'directory', oncreated?: (finalName: string) => void): void {
 	const windowId = openWindow(NewEntryDialog as Component, {
 		entryType,
 		oncreate: async (name: string) => {
 			const finalName = await uniqueName(dirPath, name);
 			if (entryType === 'directory') await createDirectory(dirPath, finalName);
 			else await createFile(dirPath, finalName);
+			oncreated?.(finalName);
 			notifyDirectoryChange(dirPath);
 		},
 	});

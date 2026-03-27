@@ -151,18 +151,6 @@
 		return items;
 	}
 
-	const emptySpaceMenuItems = $derived<ContextMenuItem[]>([
-		{
-			icon: '/img/settings.svg',
-			label: 'Sort by',
-			children: [{ icon: '/img/check.svg', label: 'Name', onclick: () => {} }, { label: 'Modification date', onclick: () => {} }, { label: 'Extension', onclick: () => {} }, { label: 'Size', onclick: () => {} }, { separator: true }, { icon: '/img/check.svg', label: 'Ascending', onclick: () => {} }, { label: 'Descending', onclick: () => {} }],
-		},
-		{ separator: true },
-		{ icon: '/img/file.svg', label: 'New file', onclick: () => openNewEntryDialog(path, 'file') },
-		{ icon: '/img/directory.svg', label: 'New directory', onclick: () => openNewEntryDialog(path, 'directory') },
-		...(extraEmptySpaceMenuItems ?? []),
-	]);
-
 	function onContextMenu(e: MouseEvent): void {
 		e.preventDefault();
 		e.stopPropagation();
@@ -171,7 +159,28 @@
 			const entry = sortedEntries.find(en => en.name === (iconEl as HTMLElement).dataset['iconId']);
 			if (entry) contextMenu = { x: e.clientX, y: e.clientY, items: getIconMenuItems(entry) };
 		} else {
-			contextMenu = { x: e.clientX, y: e.clientY, items: emptySpaceMenuItems };
+			const clickX = e.clientX;
+			const clickY = e.clientY;
+			const placeAtClick = (finalName: string): void => {
+				if (!iconGrid) return;
+				const gridPos = iconGrid.screenToGrid(clickX, clickY);
+				iconGrid.schedulePositions(new Map([[finalName, gridPos]]));
+			};
+			contextMenu = {
+				x: e.clientX,
+				y: e.clientY,
+				items: [
+					{
+						icon: '/img/settings.svg',
+						label: 'Sort by',
+						children: [{ icon: '/img/check.svg', label: 'Name', onclick: () => {} }, { label: 'Modification date', onclick: () => {} }, { label: 'Extension', onclick: () => {} }, { label: 'Size', onclick: () => {} }, { separator: true }, { icon: '/img/check.svg', label: 'Ascending', onclick: () => {} }, { label: 'Descending', onclick: () => {} }],
+					},
+					{ separator: true },
+					{ icon: '/img/file.svg', label: 'New file', onclick: () => openNewEntryDialog(path, 'file', placeAtClick) },
+					{ icon: '/img/directory.svg', label: 'New directory', onclick: () => openNewEntryDialog(path, 'directory', placeAtClick) },
+					...(extraEmptySpaceMenuItems ?? []),
+				],
+			};
 		}
 	}
 
