@@ -261,22 +261,28 @@
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
 		const destPath = targetEntry ? (path === '/' ? '/' + targetEntry.name : path + '/' + targetEntry.name) : path;
 
-		if (!targetEntry && iconGrid) {
+		function computeDropPositions(finalNames: Map<string, string>): Map<string, { gridX: number; gridY: number }> | null {
+			if (targetEntry || !iconGrid) return null;
 			const basePos = iconGrid.screenToGrid(x, y);
 			const positions = new Map<string, { gridX: number; gridY: number }>();
-			for (let i = 0; i < fileNames.length; i++) {
-				const name = fileNames[i]!;
-				const rel = offsets.get(name);
-				positions.set(name, {
+			let i = 0;
+			for (const [origName, actualName] of finalNames) {
+				const rel = offsets.get(origName);
+				positions.set(actualName, {
 					gridX: Math.max(0, basePos.gridX + (rel?.dx ?? i)),
 					gridY: Math.max(0, basePos.gridY + (rel?.dy ?? 0)),
 				});
+				i++;
 			}
-			iconGrid.schedulePositions(positions);
+			return positions;
 		}
+
 		if (button === 0) {
 			(async (): Promise<void> => {
-				for (const name of fileNames) await moveEntry(sourcePath, name, destPath);
+				const nameMap = new Map<string, string>();
+				for (const name of fileNames) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+				const positions = computeDropPositions(nameMap);
+				if (positions) iconGrid?.schedulePositions(positions);
 				notifyDirectoryChange(sourcePath);
 				notifyDirectoryChange(destPath);
 				if (destPath !== path) notifyDirectoryChange(path);
@@ -290,7 +296,10 @@
 						icon: '/img/cut.svg',
 						label: 'Move here',
 						onclick: async () => {
-							for (const name of fileNames) await moveEntry(sourcePath, name, destPath);
+							const nameMap = new Map<string, string>();
+							for (const name of fileNames) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+							const positions = computeDropPositions(nameMap);
+							if (positions) iconGrid?.schedulePositions(positions);
 							notifyDirectoryChange(sourcePath);
 							notifyDirectoryChange(destPath);
 							if (destPath !== path) notifyDirectoryChange(path);
@@ -300,7 +309,10 @@
 						icon: '/img/copy.svg',
 						label: 'Copy here',
 						onclick: async () => {
-							for (const name of fileNames) await copyEntryTo(sourcePath, name, destPath);
+							const nameMap = new Map<string, string>();
+							for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
+							const positions = computeDropPositions(nameMap);
+							if (positions) iconGrid?.schedulePositions(positions);
 							notifyDirectoryChange(destPath);
 							if (destPath !== path) notifyDirectoryChange(path);
 						},

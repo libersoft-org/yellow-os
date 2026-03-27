@@ -149,7 +149,7 @@ export async function uniqueName(path: string, name: string): Promise<string> {
 	return findUniqueName(dir, name);
 }
 
-export async function copyEntryTo(sourcePath: string, name: string, destPath: string): Promise<void> {
+export async function copyEntryTo(sourcePath: string, name: string, destPath: string): Promise<string> {
 	const sourceDir = await resolveDirectory(sourcePath);
 	const destDir = await resolveDirectory(destPath);
 	const targetName = await findUniqueName(destDir, name);
@@ -164,13 +164,15 @@ export async function copyEntryTo(sourcePath: string, name: string, destPath: st
 		await writable.write(file);
 		await writable.close();
 	}
+	return targetName;
 }
 
-export async function moveEntry(sourcePath: string, name: string, destPath: string): Promise<void> {
-	if (isSystemEntry(sourcePath, name)) return;
-	await copyEntryTo(sourcePath, name, destPath);
+export async function moveEntry(sourcePath: string, name: string, destPath: string): Promise<string> {
+	if (isSystemEntry(sourcePath, name)) return name;
+	const finalName = await copyEntryTo(sourcePath, name, destPath);
 	const sourceDir = await resolveDirectory(sourcePath);
 	await sourceDir.removeEntry(name, { recursive: true });
+	return finalName;
 }
 
 export async function exists(path: string, name: string): Promise<boolean> {
