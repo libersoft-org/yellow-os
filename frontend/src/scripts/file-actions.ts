@@ -8,7 +8,7 @@ import RenameDialog from '../apps/FileBrowser/RenameDialog.svelte';
 
 export function confirmDelete(dirPath: string, entryName: string, entryType: 'file' | 'directory', permanent: boolean, onclosed?: () => void): void {
 	if (isSystemEntry(dirPath, entryName)) {
-		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be deleted.`, type: 'warning', buttons: [{ label: 'OK' }] });
+		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be deleted.`, type: 'warning', buttons: [{ label: 'OK' }], ...(onclosed ? { onclosed } : {}) });
 		return;
 	}
 	const typeLabel = entryType === 'directory' ? 'directory' : 'file';
@@ -56,7 +56,7 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 
 export function openRenameDialog(dirPath: string, entryName: string, entryType: 'file' | 'directory', onrenamed?: (oldName: string, newName: string) => void, onclosed?: () => void): void {
 	if (isSystemEntry(dirPath, entryName)) {
-		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be renamed.`, type: 'warning', buttons: [{ label: 'OK' }] });
+		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be renamed.`, type: 'warning', buttons: [{ label: 'OK' }], ...(onclosed ? { onclosed } : {}) });
 		return;
 	}
 	const windowId = openWindow(RenameDialog as Component, {
