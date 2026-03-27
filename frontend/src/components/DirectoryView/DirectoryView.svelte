@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onDestroy, onMount } from 'svelte';
 	import type { FileEntry } from '../../scripts/file-entry.ts';
 	import { entryIcon, entryIconColor, loadDirectoryEntries } from '../../scripts/file-entry.ts';
 	import { moveEntry, copyEntryTo } from '../../scripts/opfs.ts';
@@ -8,12 +8,11 @@
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/opfs-notify.ts';
 	import { confirmDelete, openRenameDialog, openNewEntryDialog } from '../../scripts/file-actions.ts';
-	import { registerDropZone } from '../../scripts/drag-state.svelte.ts';
+	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
-	import { browser } from '$app/environment';
 	interface Props {
 		path: string;
 		columnFirst?: boolean;
@@ -67,12 +66,27 @@
 		unsubscribeDir = onDirectoryChange(path, () => loadDirectory());
 	}
 
-	if (browser) {
-		loadDirectory();
-		subscribeToDirectory();
+	let externalDragOverId = $state<string | null>(null);
+
+	function onGlobalPointerMove(e: PointerEvent): void {
+		if (!isGlobalDragActive()) {
+			if (externalDragOverId) externalDragOverId = null;
+			return;
+		}
+		const hit = iconGrid?.getItemAtScreen(e.clientX, e.clientY);
+		externalDragOverId = hit?.droppable ? hit.id : null;
 	}
 
-	onDestroy(() => unsubscribeDir?.());
+	onMount(() => {
+		loadDirectory();
+		subscribeToDirectory();
+		document.addEventListener('pointermove', onGlobalPointerMove);
+	});
+
+	onDestroy(() => {
+		unsubscribeDir?.();
+		if (typeof document !== 'undefined') document.removeEventListener('pointermove', onGlobalPointerMove);
+	});
 
 	function onGridSelectionChange(selectedIds: Set<string>): void {
 		selectedEntries = sortedEntries.filter(e => selectedIds.has(e.name));
@@ -215,7 +229,13 @@
 
 	function handleExternalDrop(sourcePath: string, fileNames: string[], button: number, x: number, y: number, offsets: Map<string, { dx: number; dy: number }>): void {
 		if (sourcePath === path) return;
-		if (iconGrid) {
+
+		// Check if drop landed on a directory icon → move into that subdirectory
+		const hitItem = iconGrid?.getItemAtScreen(x, y);
+		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
+		const destPath = targetEntry ? (path === '/' ? '/' + targetEntry.name : path + '/' + targetEntry.name) : path;
+
+		if (!targetEntry && iconGrid) {
 			const basePos = iconGrid.screenToGrid(x, y);
 			const positions = new Map<string, { gridX: number; gridY: number }>();
 			for (let i = 0; i < fileNames.length; i++) {
@@ -230,9 +250,10 @@
 		}
 		if (button === 0) {
 			(async (): Promise<void> => {
-				for (const name of fileNames) await moveEntry(sourcePath, name, path);
+				for (const name of fileNames) await moveEntry(sourcePath, name, destPath);
 				notifyDirectoryChange(sourcePath);
-				notifyDirectoryChange(path);
+				notifyDirectoryChange(destPath);
+				if (destPath !== path) notifyDirectoryChange(path);
 			})();
 		} else if (button === 2) {
 			contextMenu = {
@@ -243,17 +264,19 @@
 						icon: '/img/cut.svg',
 						label: 'Move here',
 						onclick: async () => {
-							for (const name of fileNames) await moveEntry(sourcePath, name, path);
+							for (const name of fileNames) await moveEntry(sourcePath, name, destPath);
 							notifyDirectoryChange(sourcePath);
-							notifyDirectoryChange(path);
+							notifyDirectoryChange(destPath);
+							if (destPath !== path) notifyDirectoryChange(path);
 						},
 					},
 					{
 						icon: '/img/copy.svg',
 						label: 'Copy here',
 						onclick: async () => {
-							for (const name of fileNames) await copyEntryTo(sourcePath, name, path);
-							notifyDirectoryChange(path);
+							for (const name of fileNames) await copyEntryTo(sourcePath, name, destPath);
+							notifyDirectoryChange(destPath);
+							if (destPath !== path) notifyDirectoryChange(path);
 						},
 					},
 					{ separator: true },
@@ -279,7 +302,7 @@
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="directory-view" role="application" tabindex="-1" oncontextmenu={onContextMenu} onkeydown={handleKeydown} use:dropZone>
-	<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove}>
+	<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove}>
 		{#snippet empty()}
 			This directory is empty
 		{/snippet}

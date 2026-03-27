@@ -16,10 +16,11 @@
 		onselectionchange?: ((selectedIds: Set<string>) => void) | undefined;
 		onitemsmove?: ((moves: { id: string; gridX: number; gridY: number }[]) => void) | undefined;
 		ondrop?: ((draggedIds: string[], targetId: string | null, e: PointerEvent) => void) | undefined;
+		externalDragOverId?: string | null | undefined;
 		columnFirst?: boolean | undefined;
 		empty?: Snippet | undefined;
 	}
-	let { items, dirPath, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onselectionchange, onitemsmove, ondrop, columnFirst, empty }: Props = $props();
+	let { items, dirPath, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onselectionchange, onitemsmove, ondrop, externalDragOverId, columnFirst, empty }: Props = $props();
 	const selection = createSelection();
 
 	function emitSelectionChange(): void {
@@ -403,6 +404,22 @@
 			gridY: Math.max(0, Math.floor(localY / cellHeight)),
 		};
 	}
+
+	/** Return the item at the given screen coordinates, or null. */
+	export function getItemAtScreen(screenX: number, screenY: number): IconGridItemData | null {
+		if (!containerEl) return null;
+		const rect = containerEl.getBoundingClientRect();
+		const cx = screenX - rect.left + (containerEl.scrollLeft || 0);
+		const cy = screenY - rect.top + (containerEl.scrollTop || 0);
+		for (const [id, pos] of itemPositions) {
+			const left = pos.gridX * cellWidth;
+			const top = pos.gridY * cellHeight;
+			if (cx >= left && cx < left + cellWidth && cy >= top && cy < top + cellHeight) {
+				return items.find(i => i.id === id) ?? null;
+			}
+		}
+		return null;
+	}
 </script>
 
 <style>
@@ -477,7 +494,7 @@
 	{#each items as item (item.id)}
 		{@const pos = itemPositions.get(item.id)}
 		{#if pos}
-			<div class="icon-cell" class:selected={isItemSelected(item.id)} class:is-dragging={dragMode === 'move' && isItemSelected(item.id)} class:drop-target={dragOverId === item.id} data-icon-id={item.id} style="left: {pos.gridX * cellWidth}px; top: {pos.gridY * cellHeight}px; width: {cellWidth}px; height: {cellHeight}px;">
+			<div class="icon-cell" class:selected={isItemSelected(item.id)} class:is-dragging={dragMode === 'move' && isItemSelected(item.id)} class:drop-target={dragOverId === item.id || externalDragOverId === item.id} data-icon-id={item.id} style="left: {pos.gridX * cellWidth}px; top: {pos.gridY * cellHeight}px; width: {cellWidth}px; height: {cellHeight}px;">
 				<IconGridItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
 			</div>
 		{/if}

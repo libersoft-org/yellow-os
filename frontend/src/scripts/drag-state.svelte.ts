@@ -39,6 +39,10 @@ export function startGlobalDrag(srcEl: HTMLElement): void {
 	sourceEl = srcEl;
 }
 
+export function isGlobalDragActive(): boolean {
+	return sourceEl !== null;
+}
+
 export function updateGlobalGhost(items: DragGhostItem[], x: number, y: number, cellWidth: number, cellHeight: number, iconSize: string): void {
 	_ghostItems = items;
 	_ghostX = x;
