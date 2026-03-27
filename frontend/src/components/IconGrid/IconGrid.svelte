@@ -28,30 +28,20 @@
 	let containerEl: HTMLElement | undefined = $state();
 	let containerWidth = $state(0);
 	let containerHeight = $state(0);
-	const itemSignature = $derived(items.map(i => i.id).join('\0'));
-	let _overrides = $state({ sig: '', map: new Map<string, { gridX: number; gridY: number }>() });
-	let _selSig = $state('');
-	const _pendingOverrides = new Map<string, { gridX: number; gridY: number }>();
-	const positionOverrides = $derived(_overrides.sig === itemSignature ? _overrides.map : new Map<string, { gridX: number; gridY: number }>());
+	let _positions = $state({ map: new Map<string, { gridX: number; gridY: number }>() });
 
 	function isItemSelected(id: string): boolean {
-		return _selSig === itemSignature && selection.isSelected(id);
+		return selection.isSelected(id);
 	}
 
-	function resetIfItemsChanged(): void {
-		if (_selSig !== itemSignature) {
-			_selSig = itemSignature;
-			const mergedOverrides = new Map<string, { gridX: number; gridY: number }>();
-			const itemIds = new Set(items.map(i => i.id));
-			for (const [id, pos] of _pendingOverrides) {
-				if (itemIds.has(id)) {
-					mergedOverrides.set(id, pos);
-					_pendingOverrides.delete(id);
-				}
+	function validateSelection(): void {
+		const itemIds = new Set(items.map(i => i.id));
+		for (const id of selection.selected) {
+			if (!itemIds.has(id)) {
+				selection.clear();
+				emitSelectionChange();
+				return;
 			}
-			_overrides = { sig: itemSignature, map: mergedOverrides };
-			selection.clear();
-			emitSelectionChange();
 		}
 	}
 
@@ -59,10 +49,8 @@
 	const rows = $derived(Math.max(1, Math.floor((containerHeight || 400) / cellHeight)));
 
 	function getPosition(item: IconGridItemData, index: number): { gridX: number; gridY: number } {
-		const pending = _pendingOverrides.get(item.id);
-		if (pending) return pending;
-		const override = positionOverrides.get(item.id);
-		if (override) return override;
+		const pos = _positions.map.get(item.id);
+		if (pos) return pos;
 		if (item.gridX != null && item.gridY != null) return { gridX: item.gridX, gridY: item.gridY };
 		if (columnFirst) return { gridX: Math.floor(index / rows), gridY: index % rows };
 		return { gridX: index % cols, gridY: Math.floor(index / cols) };
@@ -114,7 +102,7 @@
 	}
 
 	function handlePress(e: PointerEvent): boolean | void {
-		resetIfItemsChanged();
+		validateSelection();
 		e.preventDefault();
 		pendingDeselect = null;
 
@@ -131,9 +119,7 @@
 						idx,
 						items.map(i => i.id),
 						e
-					);
-					emitSelectionChange();
-					return false;
+					);					emitSelectionChange();					return false;
 				}
 				pendingDeselect = id;
 			} else {
@@ -246,7 +232,14 @@
 							offsetY: (itemPos.gridY - origPos.gridY) * cellHeight,
 						});
 					}
-					updateGlobalGhost(ghostItems, e.clientX - dragMoveOffset.x, e.clientY - dragMoveOffset.y, cellWidth, cellHeight, iconSize);
+					updateGlobalGhost(
+						ghostItems,
+						e.clientX - dragMoveOffset.x,
+						e.clientY - dragMoveOffset.y,
+						cellWidth,
+						cellHeight,
+						iconSize,
+					);
 				}
 			}
 		}
@@ -282,6 +275,13 @@
 			if (dirPath) {
 				handled = endGlobalDrag(dirPath, [...selection.selected], dragButton, e.clientX, e.clientY);
 			}
+			if (handled) {
+				// Cross-window drop: freeze current positions so remaining items
+				// don't shift when the dragged file disappears from this directory.
+				const next = new Map(_positions.map);
+				for (const [id, pos] of itemPositions) next.set(id, pos);
+				_positions = { map: next };
+			}
 			if (!handled) {
 				if (ondrop && (dragOverId || e.button === 2)) {
 					const draggedIds = [...selection.selected];
@@ -316,13 +316,13 @@
 						}
 
 						if (valid) {
-							const nextOverrides = new Map(positionOverrides);
+							const next = new Map(_positions.map);
 							const moves: { id: string; gridX: number; gridY: number }[] = [];
 							for (const [id, pos] of newPositions) {
-								nextOverrides.set(id, pos);
+								next.set(id, pos);
 								moves.push({ id, ...pos });
 							}
-							_overrides = { sig: itemSignature, map: nextOverrides };
+							_positions = { map: next };
 							onitemsmove?.(moves);
 						}
 					}
@@ -340,7 +340,6 @@
 	function onKeydown(e: KeyboardEvent): void {
 		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
 			e.preventDefault();
-			_selSig = itemSignature;
 			selection.selectAll(items.map(i => i.id));
 			emitSelectionChange();
 		}
@@ -351,9 +350,12 @@
 	}
 
 	export function schedulePositions(positions: Map<string, { gridX: number; gridY: number }>): void {
-		for (const [id, pos] of positions) {
-			_pendingOverrides.set(id, pos);
+		const next = new Map(_positions.map);
+		for (const [id, pos] of itemPositions) {
+			if (!next.has(id) && !positions.has(id)) next.set(id, pos);
 		}
+		for (const [id, pos] of positions) next.set(id, pos);
+		_positions = { map: next };
 	}
 
 	export function screenToGrid(screenX: number, screenY: number): { gridX: number; gridY: number } {
