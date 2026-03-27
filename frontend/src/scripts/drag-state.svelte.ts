@@ -1,4 +1,4 @@
-type DropHandler = (sourcePath: string, fileNames: string[], button: number, x: number, y: number) => void;
+type DropHandler = (sourcePath: string, fileNames: string[], button: number, x: number, y: number, offsets: Map<string, { dx: number; dy: number }>) => void;
 
 interface DropZone {
 	el: HTMLElement;
@@ -6,6 +6,7 @@ interface DropZone {
 }
 
 export interface DragGhostItem {
+	id: string;
 	icon: string;
 	label: string;
 	iconColor?: string | undefined;
@@ -25,27 +26,13 @@ let _ghostCellHeight = $state(90);
 let _ghostIconSize = $state('40px');
 
 export const globalGhost = {
-	get items(): DragGhostItem[] {
-		return _ghostItems;
-	},
-	get x(): number {
-		return _ghostX;
-	},
-	get y(): number {
-		return _ghostY;
-	},
-	get active(): boolean {
-		return _ghostActive;
-	},
-	get cellWidth(): number {
-		return _ghostCellWidth;
-	},
-	get cellHeight(): number {
-		return _ghostCellHeight;
-	},
-	get iconSize(): string {
-		return _ghostIconSize;
-	},
+	get items(): DragGhostItem[] { return _ghostItems; },
+	get x(): number { return _ghostX; },
+	get y(): number { return _ghostY; },
+	get active(): boolean { return _ghostActive; },
+	get cellWidth(): number { return _ghostCellWidth; },
+	get cellHeight(): number { return _ghostCellHeight; },
+	get iconSize(): string { return _ghostIconSize; },
 };
 
 export function startGlobalDrag(srcEl: HTMLElement): void {
@@ -70,6 +57,17 @@ export function clearGlobalGhost(): void {
 export function endGlobalDrag(sourcePath: string, fileNames: string[], button: number, x: number, y: number): boolean {
 	const src = sourceEl;
 	sourceEl = null;
+
+	// Capture relative grid offsets from ghost before clearing.
+	const offsets = new Map<string, { dx: number; dy: number }>();
+	if (_ghostItems.length > 0 && _ghostCellWidth > 0 && _ghostCellHeight > 0) {
+		for (const ghost of _ghostItems) {
+			offsets.set(ghost.id, {
+				dx: Math.round(ghost.offsetX / _ghostCellWidth),
+				dy: Math.round(ghost.offsetY / _ghostCellHeight),
+			});
+		}
+	}
 	clearGlobalGhost();
 
 	// Use elementsFromPoint to find the topmost zone in visual stacking order.
@@ -82,7 +80,7 @@ export function endGlobalDrag(sourcePath: string, fileNames: string[], button: n
 				if (src && zone.el.contains(src)) {
 					return false;
 				}
-				zone.handler(sourcePath, fileNames, button, x, y);
+				zone.handler(sourcePath, fileNames, button, x, y, offsets);
 				return true;
 			}
 		}

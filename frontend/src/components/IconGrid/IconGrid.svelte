@@ -58,6 +58,35 @@
 
 	const itemPositions = $derived(new Map(items.map((item, i) => [item.id, getPosition(item, i)])));
 
+	/** Find the nearest free grid cell starting from (startX, startY), skipping occupied cells. */
+	function findFreePosition(startX: number, startY: number, occupied: Set<string>): { gridX: number; gridY: number } {
+		const isOccupied = (gx: number, gy: number): boolean => occupied.has(gx + ',' + gy);
+		if (!isOccupied(startX, startY)) return { gridX: startX, gridY: startY };
+		// Spiral outward from the start position
+		for (let radius = 1; radius < 100; radius++) {
+			for (let dy = -radius; dy <= radius; dy++) {
+				for (let dx = -radius; dx <= radius; dx++) {
+					if (Math.abs(dx) !== radius && Math.abs(dy) !== radius) continue;
+					const gx = startX + dx;
+					const gy = startY + dy;
+					if (gx < 0 || gy < 0) continue;
+					if (!isOccupied(gx, gy)) return { gridX: gx, gridY: gy };
+				}
+			}
+		}
+		return { gridX: startX, gridY: startY };
+	}
+
+	/** Build a set of "x,y" strings for all occupied cells, excluding given ids. */
+	function getOccupiedSet(excludeIds: Set<string>): Set<string> {
+		const occupied = new Set<string>();
+		for (const [id, pos] of itemPositions) {
+			if (excludeIds.has(id)) continue;
+			occupied.add(pos.gridX + ',' + pos.gridY);
+		}
+		return occupied;
+	}
+
 	const contentHeight = $derived.by(() => {
 		let maxRow = 0;
 		for (const pos of itemPositions.values()) maxRow = Math.max(maxRow, pos.gridY);
@@ -224,8 +253,7 @@
 						if (!selection.isSelected(item.id)) continue;
 						const itemPos = itemPositions.get(item.id);
 						if (!itemPos) continue;
-						ghostItems.push({
-							icon: item.icon,
+						ghostItems.push({						id: item.id,							icon: item.icon,
 							label: item.label,
 							iconColor: item.iconColor,
 							offsetX: (itemPos.gridX - origPos.gridX) * cellWidth,
@@ -295,36 +323,25 @@
 
 					if (deltaX !== 0 || deltaY !== 0) {
 						const selectedIds = [...selection.selected];
+						const selectedSet = new Set(selectedIds);
+						const occupied = getOccupiedSet(selectedSet);
 						const newPositions = new Map<string, { gridX: number; gridY: number }>();
 						for (const id of selectedIds) {
 							const pos = itemPositions.get(id)!;
-							newPositions.set(id, { gridX: Math.max(0, pos.gridX + deltaX), gridY: Math.max(0, pos.gridY + deltaY) });
+							const wanted = { gridX: Math.max(0, pos.gridX + deltaX), gridY: Math.max(0, pos.gridY + deltaY) };
+							const free = findFreePosition(wanted.gridX, wanted.gridY, occupied);
+							newPositions.set(id, free);
+							occupied.add(free.gridX + ',' + free.gridY);
 						}
 
-						const selectedSet = new Set(selectedIds);
-						let valid = true;
-						for (const [, newPos] of newPositions) {
-							for (const item of items) {
-								if (selectedSet.has(item.id)) continue;
-								const itemPos = itemPositions.get(item.id)!;
-								if (itemPos.gridX === newPos.gridX && itemPos.gridY === newPos.gridY) {
-									valid = false;
-									break;
-								}
-							}
-							if (!valid) break;
+						const next = new Map(_positions.map);
+						const moves: { id: string; gridX: number; gridY: number }[] = [];
+						for (const [id, pos] of newPositions) {
+							next.set(id, pos);
+							moves.push({ id, ...pos });
 						}
-
-						if (valid) {
-							const next = new Map(_positions.map);
-							const moves: { id: string; gridX: number; gridY: number }[] = [];
-							for (const [id, pos] of newPositions) {
-								next.set(id, pos);
-								moves.push({ id, ...pos });
-							}
-							_positions = { map: next };
-							onitemsmove?.(moves);
-						}
+						_positions = { map: next };
+						onitemsmove?.(moves);
 					}
 				}
 			}
@@ -351,10 +368,28 @@
 
 	export function schedulePositions(positions: Map<string, { gridX: number; gridY: number }>): void {
 		const next = new Map(_positions.map);
+		// Freeze existing items at their current positions
 		for (const [id, pos] of itemPositions) {
 			if (!next.has(id) && !positions.has(id)) next.set(id, pos);
 		}
-		for (const [id, pos] of positions) next.set(id, pos);
+		// Build occupied set from all existing items (excluding incoming ones)
+		const incomingIds = new Set(positions.keys());
+		const occupied = new Set<string>();
+		for (const [id, pos] of itemPositions) {
+			if (incomingIds.has(id)) continue;
+			occupied.add(pos.gridX + ',' + pos.gridY);
+		}
+		// Also include frozen positions from `next`
+		for (const [id, pos] of next) {
+			if (incomingIds.has(id)) continue;
+			occupied.add(pos.gridX + ',' + pos.gridY);
+		}
+		// Place incoming items, resolving collisions
+		for (const [id, pos] of positions) {
+			const free = findFreePosition(pos.gridX, pos.gridY, occupied);
+			next.set(id, free);
+			occupied.add(free.gridX + ',' + free.gridY);
+		}
 		_positions = { map: next };
 	}
 

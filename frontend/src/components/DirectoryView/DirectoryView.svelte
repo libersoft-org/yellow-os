@@ -213,13 +213,18 @@
 		return { destroy: registerDropZone(el, handleExternalDrop) };
 	}
 
-	function handleExternalDrop(sourcePath: string, fileNames: string[], button: number, x: number, y: number): void {
+	function handleExternalDrop(sourcePath: string, fileNames: string[], button: number, x: number, y: number, offsets: Map<string, { dx: number; dy: number }>): void {
 		if (sourcePath === path) return;
 		if (iconGrid) {
 			const basePos = iconGrid.screenToGrid(x, y);
 			const positions = new Map<string, { gridX: number; gridY: number }>();
 			for (let i = 0; i < fileNames.length; i++) {
-				positions.set(fileNames[i]!, { gridX: basePos.gridX + i, gridY: basePos.gridY });
+				const name = fileNames[i]!;
+				const rel = offsets.get(name);
+				positions.set(name, {
+					gridX: Math.max(0, basePos.gridX + (rel?.dx ?? i)),
+					gridY: Math.max(0, basePos.gridY + (rel?.dy ?? 0)),
+				});
 			}
 			iconGrid.schedulePositions(positions);
 		}

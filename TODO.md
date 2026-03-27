@@ -2,9 +2,7 @@
 
 ## Bugs / changes
 
-- When dragging 2 items from file browser to desktop and they are aligned vertically or randomly, then when i drop them to desktop, the desktop sorts them in a row
 - When moved directory from desktop to file browser directory or back, other icons move one place to the right (file browser) or down (desktop) - seems like before putting it to some specific place, it moves it from the automatic place
-- If dragging folder from desktop to file browser on other directory, it doesnt move it inside this directory but rather put 2 icons over each other. This should never happen - 2 items should never be on the same grid spot
 - If dragging icon over something non-dropable (not a <DirectoryView> or some dropable area as in App Player) add extra no-go subicon on dragged item (folder, file etc.) and do nothing when dropped. Right now when I drop it on non dropable area it moves to desktop which is wrong
 - Remove "this directory is empty" label from <DirectoryView>
 - File browser - when I double click on any folder, it doesnt enter into it (only breadcrumb looks like it, but icons dont change)
