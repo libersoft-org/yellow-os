@@ -3,7 +3,7 @@
 	import type { IconGridItemData } from './icon-grid.ts';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
-	import { startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem } from '../../scripts/drag-state.svelte.ts';
+	import { startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem, type DropResult } from '../../scripts/drag-state.svelte.ts';
 	import IconGridItem from './IconGridItem.svelte';
 	interface Props {
 		items: IconGridItemData[];
@@ -258,7 +258,7 @@
 						if (!itemPos) continue;
 						ghostItems.push({ id: item.id, icon: item.icon, label: item.label, iconColor: item.iconColor, offsetX: (itemPos.gridX - origPos.gridX) * cellWidth, offsetY: (itemPos.gridY - origPos.gridY) * cellHeight });
 					}
-					updateGlobalGhost(ghostItems, e.clientX - dragMoveOffset.x, e.clientY - dragMoveOffset.y, cellWidth, cellHeight, iconSize);
+					updateGlobalGhost(ghostItems, e.clientX - dragMoveOffset.x, e.clientY - dragMoveOffset.y, cellWidth, cellHeight, iconSize, e.clientX, e.clientY);
 				}
 			}
 		}
@@ -290,18 +290,18 @@
 
 	function handleDragEnd(e: PointerEvent): void {
 		if (dragMode === 'move' && dragMoveItemId) {
-			let handled = false;
+			let dropResult: DropResult | null = null;
 			if (dirPath) {
-				handled = endGlobalDrag(dirPath, [...selection.selected], dragButton, e.clientX, e.clientY);
+				dropResult = endGlobalDrag(dirPath, [...selection.selected], dragButton, e.clientX, e.clientY);
 			}
-			if (handled) {
+			if (dropResult === 'handled') {
 				// Cross-window drop: freeze current positions so remaining items
 				// don't shift when the dragged file disappears from this directory.
 				const next = new Map(_positions.map);
 				for (const [id, pos] of itemPositions) next.set(id, pos);
 				_positions = { map: next };
-			}
-			if (!handled) {
+			} else if (dropResult !== 'blocked') {
+				// Same source or no dirPath – do local move
 				if (ondrop && (dragOverId || e.button === 2)) {
 					const draggedIds = [...selection.selected];
 					ondrop(draggedIds, dragOverId, e);
@@ -336,6 +336,7 @@
 					}
 				}
 			}
+			// If 'blocked' – do nothing, items snap back to original positions
 		}
 
 		cancelGlobalDrag();

@@ -1,5 +1,7 @@
 type DropHandler = (sourcePath: string, fileNames: string[], button: number, x: number, y: number, offsets: Map<string, { dx: number; dy: number }>) => void;
 
+export type DropResult = 'handled' | 'same-source' | 'blocked';
+
 interface DropZone {
 	el: HTMLElement;
 	handler: DropHandler;
@@ -24,6 +26,7 @@ let _ghostActive = $state(false);
 let _ghostCellWidth = $state(90);
 let _ghostCellHeight = $state(90);
 let _ghostIconSize = $state('40px');
+let _canDrop = $state(true);
 
 export const globalGhost = {
 	get items(): DragGhostItem[] {
@@ -47,7 +50,34 @@ export const globalGhost = {
 	get iconSize(): string {
 		return _ghostIconSize;
 	},
+	get canDrop(): boolean {
+		return _canDrop;
+	},
 };
+
+type ZoneSearchResult = { type: 'target'; zone: DropZone } | { type: 'source' } | { type: 'blocked' };
+
+/** Find the topmost drop zone at (x, y) using visual stacking order.
+ *  Windows without a drop zone above them block drops to zones beneath. */
+function findTargetZone(x: number, y: number, src: HTMLElement | null): ZoneSearchResult {
+	const elements = document.elementsFromPoint(x, y);
+	for (const el of elements) {
+		for (const zone of zones) {
+			if (zone.el === el || zone.el.contains(el)) {
+				if (src && zone.el.contains(src)) return { type: 'source' };
+				return { type: 'target', zone };
+			}
+		}
+		// A window that has no matching drop zone at this point blocks
+		// zones beneath it — even if the drag source lives in this window.
+		// (If the cursor were over the zone inside the window, the zone
+		// check above would have matched before we reached here.)
+		if (el.classList.contains('window')) {
+			return { type: 'blocked' };
+		}
+	}
+	return { type: 'blocked' };
+}
 
 export function startGlobalDrag(srcEl: HTMLElement): void {
 	sourceEl = srcEl;
@@ -57,7 +87,7 @@ export function isGlobalDragActive(): boolean {
 	return sourceEl !== null;
 }
 
-export function updateGlobalGhost(items: DragGhostItem[], x: number, y: number, cellWidth: number, cellHeight: number, iconSize: string): void {
+export function updateGlobalGhost(items: DragGhostItem[], x: number, y: number, cellWidth: number, cellHeight: number, iconSize: string, cursorX: number, cursorY: number): void {
 	_ghostItems = items;
 	_ghostX = x;
 	_ghostY = y;
@@ -65,14 +95,16 @@ export function updateGlobalGhost(items: DragGhostItem[], x: number, y: number, 
 	_ghostCellHeight = cellHeight;
 	_ghostIconSize = iconSize;
 	_ghostActive = true;
+	_canDrop = findTargetZone(cursorX, cursorY, sourceEl).type !== 'blocked';
 }
 
 export function clearGlobalGhost(): void {
 	_ghostActive = false;
 	_ghostItems = [];
+	_canDrop = true;
 }
 
-export function endGlobalDrag(sourcePath: string, fileNames: string[], button: number, x: number, y: number): boolean {
+export function endGlobalDrag(sourcePath: string, fileNames: string[], button: number, x: number, y: number): DropResult {
 	const src = sourceEl;
 	sourceEl = null;
 
@@ -88,22 +120,12 @@ export function endGlobalDrag(sourcePath: string, fileNames: string[], button: n
 	}
 	clearGlobalGhost();
 
-	// Use elementsFromPoint to find the topmost zone in visual stacking order.
-	// This correctly handles overlapping zones (e.g. FileBrowser window over Desktop)
-	// regardless of zone registration order.
-	const elements = document.elementsFromPoint(x, y);
-	for (const el of elements) {
-		for (const zone of zones) {
-			if (zone.el === el || zone.el.contains(el)) {
-				if (src && zone.el.contains(src)) {
-					return false;
-				}
-				zone.handler(sourcePath, fileNames, button, x, y, offsets);
-				return true;
-			}
-		}
+	const result = findTargetZone(x, y, src);
+	if (result.type === 'target') {
+		result.zone.handler(sourcePath, fileNames, button, x, y, offsets);
+		return 'handled';
 	}
-	return false;
+	return result.type === 'source' ? 'same-source' : 'blocked';
 }
 
 export function cancelGlobalDrag(): void {

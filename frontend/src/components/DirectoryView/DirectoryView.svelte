@@ -8,6 +8,7 @@
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/opfs-notify.ts';
 	import { confirmDelete, openRenameDialog, openNewEntryDialog } from '../../scripts/file-actions.ts';
+	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
@@ -17,13 +18,14 @@
 		path: string;
 		columnFirst?: boolean;
 		hideLinkExtension?: boolean;
+		hideEmptyLabel?: boolean;
 		extraEmptySpaceMenuItems?: ContextMenuItem[];
 		onnavigate?: (path: string) => void;
 		onselectionchange?: (entries: FileEntry[]) => void;
 		onitemsmove?: (moves: { id: string; gridX: number; gridY: number }[]) => void;
 		onentrieschange?: (entries: FileEntry[]) => void;
 	}
-	let { path, columnFirst, hideLinkExtension, extraEmptySpaceMenuItems, onnavigate, onselectionchange, onitemsmove, onentrieschange }: Props = $props();
+	let { path, columnFirst, hideLinkExtension, hideEmptyLabel, extraEmptySpaceMenuItems, onnavigate, onselectionchange, onitemsmove, onentrieschange }: Props = $props();
 	let entries = $state<FileEntry[]>([]);
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let selectedEntries: FileEntry[] = [];
@@ -51,6 +53,7 @@
 	);
 
 	async function loadDirectory(): Promise<void> {
+		await ensureOpfsReady();
 		try {
 			entries = await loadDirectoryEntries(path);
 		} catch {
@@ -304,7 +307,9 @@
 <div class="directory-view" role="application" tabindex="-1" oncontextmenu={onContextMenu} onkeydown={handleKeydown} use:dropZone>
 	<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove}>
 		{#snippet empty()}
-			This directory is empty
+			{#if !hideEmptyLabel}
+				This directory is empty
+			{/if}
 		{/snippet}
 	</IconGrid>
 	{#if contextMenu}
