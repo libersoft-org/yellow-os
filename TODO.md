@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- When dialog window is closed, focus back to element (window) that created it
 - All dialogs should have main button focused and react on arrow keys to switch button and then enter to confirm
 - Add delete button functionality on selected file(s) or directory(ies) - it doesnt work anymore
 - When I move the directory from File Browser to Desktop with the same name as already is on Desktop, it moves the original directory to the place where I put the new directory - this should not happen, the original directory should stay on the same spot in grid and the new one should appear where I put it

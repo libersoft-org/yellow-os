@@ -394,6 +394,12 @@
 		const next = new Map(_positions.map);
 		next.set(newId, pos);
 		_positions = { map: next };
+		if (selection.isSelected(oldId)) {
+			const sel = new Set(selection.selected);
+			sel.delete(oldId);
+			sel.add(newId);
+			selection.set(sel);
+		}
 	}
 
 	export function schedulePositions(positions: Map<string, { gridX: number; gridY: number }>): void {
