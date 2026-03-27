@@ -10,6 +10,14 @@ export interface OpfsStorageInfo {
 	used: number;
 }
 
+const SYSTEM_ENTRIES: Record<string, Set<string>> = {
+	'/': new Set(['Trash', 'YellowOS']),
+};
+
+export function isSystemEntry(dirPath: string, name: string): boolean {
+	return SYSTEM_ENTRIES[dirPath]?.has(name) ?? false;
+}
+
 async function resolveDirectory(path: string): Promise<FileSystemDirectoryHandle> {
 	const root = await navigator.storage.getDirectory();
 	if (path === '/') return root;
@@ -72,11 +80,13 @@ export async function readFileBlob(path: string, name: string): Promise<File> {
 }
 
 export async function deleteEntry(path: string, name: string): Promise<void> {
+	if (isSystemEntry(path, name)) return;
 	const dir = await resolveDirectory(path);
 	await dir.removeEntry(name, { recursive: true });
 }
 
 export async function renameEntry(path: string, oldName: string, newName: string): Promise<void> {
+	if (isSystemEntry(path, oldName)) return;
 	const dir = await resolveDirectory(path);
 	const oldHandle = await dir.getDirectoryHandle(oldName).catch(() => null);
 	if (oldHandle) {
@@ -126,7 +136,9 @@ async function findUniqueName(dir: FileSystemDirectoryHandle, name: string): Pro
 	let counter = 2;
 	const dot = name.lastIndexOf('.');
 	while (true) {
-		const candidate = dot > 0 ? name.slice(0, dot) + ` (${counter})` + name.slice(dot) : name + ` (${counter})`;
+		const candidate = dot > 0
+			? name.slice(0, dot) + ` (${counter})` + name.slice(dot)
+			: name + ` (${counter})`;
 		if (!(await hasEntry(candidate))) return candidate;
 		counter++;
 	}
@@ -155,6 +167,7 @@ export async function copyEntryTo(sourcePath: string, name: string, destPath: st
 }
 
 export async function moveEntry(sourcePath: string, name: string, destPath: string): Promise<void> {
+	if (isSystemEntry(sourcePath, name)) return;
 	await copyEntryTo(sourcePath, name, destPath);
 	const sourceDir = await resolveDirectory(sourcePath);
 	await sourceDir.removeEntry(name, { recursive: true });

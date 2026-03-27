@@ -2,15 +2,21 @@
 
 ## Bugs / changes
 
+- File Browser - When a directory is created on some random empty space and then renamed, it throws him on the first grid spot where some other folder already is. This means 2 bugs:
+
+1. 2 icons cannot be on the same spot by design
+2. when directory is renamed, it should not change its spot
+   Start with the first bug only.
+
 - When I move the directory from File Browser to Desktop with the same name as already is on Desktop, it moves the original directory to the place where I put the new directory - this should not happen, the original directory should stay on the same spot in grid and the new one should appear where I put it
-- Test what happens when Trash folder and YellowOS folder are deleted
+- Test what happens when settings.json file is deleted
 - Describe how .yapp files should look like in USAGE.md
 - In directory view - when selected multiple icons and then right click - delete - it deletes one item only - should delete them all and the message should be like if i really want to delete xx items. Do it for trash and permanent delete too.
-- File browser - right click in list view mode on folder doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
+- File browser - right click in list view mode on directory doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why?? Instead it show standard menu with "Sort by, New file, New directory"
-- File browser - right click dragging some folder or directory doesn't show context menu (Move here, Copy here)
-- When moving the file with the same name from one folder to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
+- File browser - right click dragging some directory or directory doesn't show context menu (Move here, Copy here)
+- When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 

@@ -22,7 +22,11 @@ export function confirmFactoryReset(): void {
 async function factoryReset(): Promise<void> {
 	const root = await navigator.storage.getDirectory();
 	for await (const [name] of (root as any).entries() as AsyncIterable<[string, FileSystemHandle]>) {
-		await root.removeEntry(name, { recursive: true });
+		try {
+			await root.removeEntry(name, { recursive: true });
+		} catch {
+			/* skip entries that fail to delete */
+		}
 	}
 	localStorage.clear();
 	const dbs = await indexedDB.databases();

@@ -1,5 +1,5 @@
 import type { Component } from 'svelte';
-import { deleteEntry, renameEntry, moveToTrash, createFile, createDirectory, uniqueName } from './opfs.ts';
+import { deleteEntry, renameEntry, moveToTrash, createFile, createDirectory, uniqueName, isSystemEntry } from './opfs.ts';
 import { showDialog } from './dialog.ts';
 import { openWindow, findWindow } from './window-store.svelte.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
@@ -7,6 +7,10 @@ import NewEntryDialog from '../apps/FileBrowser/NewEntryDialog.svelte';
 import RenameDialog from '../apps/FileBrowser/RenameDialog.svelte';
 
 export function confirmDelete(dirPath: string, entryName: string, entryType: 'file' | 'directory', permanent: boolean): void {
+	if (isSystemEntry(dirPath, entryName)) {
+		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be deleted.`, type: 'warning', buttons: [{ label: 'OK' }] });
+		return;
+	}
 	const typeLabel = entryType === 'directory' ? 'directory' : 'file';
 	if (permanent) {
 		showDialog({
@@ -49,6 +53,10 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 }
 
 export function openRenameDialog(dirPath: string, entryName: string, entryType: 'file' | 'directory'): void {
+	if (isSystemEntry(dirPath, entryName)) {
+		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be renamed.`, type: 'warning', buttons: [{ label: 'OK' }] });
+		return;
+	}
 	const windowId = openWindow(RenameDialog as Component, {
 		entryType,
 		currentName: entryName,
