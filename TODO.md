@@ -2,11 +2,10 @@
 
 ## Bugs / changes
 
+- When all icons are deleted on desktop, the next browser reload put standard ones again. This should not happen - this should happen only after factory reset
 - In directory view - when selected multiple icons and then right click - delete - it deletes one item only - should delete them all and the message should be like if i really want to delete xx items. Do it for trash and permanent delete too.
-- Remove "this directory is empty" label from <DirectoryView>
 - File browser - right click in list view mode on folder doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
-- AppPlayer - should not use UTF8 icon - <div class="drop-icon">📦</div>, use <Icon> - app icon instead
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why??
 - File browser and desktop - right click on empty space -> new directory / file - the new icon should appear on the spot where I right clicked
 - File browser - right click dragging some folder or directory doesn't show context menu (Move here, Copy here)
@@ -22,7 +21,7 @@
 
 ## New features
 
-- when some icon in directory list is selected, keyboard arrow keys and enter should work too (it doesnt now)
+- When some icon in directory list is selected, keyboard arrow keys and enter should work too (it doesnt now)
 - Forbid moving / renaming / deleting Trash directory
 - Forbid dragging windows outside of screen
 - File Browser - drag and drop / upload form from main OS to web OS

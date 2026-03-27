@@ -4,6 +4,7 @@
 	import type { YappManifest } from './app-player.ts';
 	import { registerDropZone } from '../../scripts/drag-state.svelte.ts';
 	import Spinner from '../../components/Spinner/Spinner.svelte';
+	import Icon from '../../components/Icon/Icon.svelte';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -157,11 +158,6 @@
 		background-color: color-mix(in srgb, var(--color-accent) 10%, transparent);
 	}
 
-	.drop-icon {
-		font-size: 48px;
-		margin-bottom: 8px;
-	}
-
 	.hint {
 		font-size: 0.85em;
 		opacity: 0.6;
@@ -183,7 +179,7 @@
 	<iframe src={iframeSrc} title={win.title} sandbox="allow-scripts" class="app-frame"></iframe>
 {:else}
 	<div class="center drop-zone" class:dragging role="button" tabindex="0" ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop} use:appPlayerDropZone>
-		<div class="drop-icon">📦</div>
+		<Icon img="/img/apps/app-player.svg" size="48px" padding="0" colorVariable="--color-text" />
 		<p>Open a <strong>.yapp</strong> file</p>
 		<p class="hint">Double-click a .yapp file in File Browser<br />or drag & drop it here</p>
 	</div>
