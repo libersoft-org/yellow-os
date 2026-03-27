@@ -1,4 +1,4 @@
-import { createDirectory, directoryExists, writeFile, readDirectory, exists } from './opfs.ts';
+import { createDirectory, directoryExists, writeFile, exists } from './opfs.ts';
 import type { LinkData } from './link.ts';
 const OS_NAME = 'YellowOS';
 export const OS_PATH = '/' + OS_NAME;

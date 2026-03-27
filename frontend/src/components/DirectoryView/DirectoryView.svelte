@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileEntry } from '../../scripts/file-entry.ts';
 	import { entryIcon, entryIconColor, loadDirectoryEntries } from '../../scripts/file-entry.ts';
-	import { moveEntry, copyEntryTo, isSystemEntry } from '../../scripts/opfs.ts';
+	import { moveEntry, copyEntryTo } from '../../scripts/opfs.ts';
 	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
