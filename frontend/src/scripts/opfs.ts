@@ -136,9 +136,7 @@ async function findUniqueName(dir: FileSystemDirectoryHandle, name: string): Pro
 	let counter = 2;
 	const dot = name.lastIndexOf('.');
 	while (true) {
-		const candidate = dot > 0
-			? name.slice(0, dot) + ` (${counter})` + name.slice(dot)
-			: name + ` (${counter})`;
+		const candidate = dot > 0 ? name.slice(0, dot) + ` (${counter})` + name.slice(dot) : name + ` (${counter})`;
 		if (!(await hasEntry(candidate))) return candidate;
 		counter++;
 	}

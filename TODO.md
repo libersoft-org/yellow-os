@@ -8,6 +8,8 @@
 2. when directory is renamed, it should not change its spot
    Start with the first bug only.
 
+- F2 to rename a file or a directory in <DirectoryView> - add this information to USAGE.md too
+- Add delete button functionality on selected file(s) or directory(ies) - it doesnt work anymore
 - When I move the directory from File Browser to Desktop with the same name as already is on Desktop, it moves the original directory to the place where I put the new directory - this should not happen, the original directory should stay on the same spot in grid and the new one should appear where I put it
 - Test what happens when settings.json file is deleted
 - Describe how .yapp files should look like in USAGE.md

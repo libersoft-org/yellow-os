@@ -49,15 +49,42 @@
 	const cols = $derived(Math.max(1, Math.floor((containerWidth || 400) / cellWidth)));
 	const rows = $derived(Math.max(1, Math.floor((containerHeight || 400) / cellHeight)));
 
-	function getPosition(item: IconGridItemData, index: number): { gridX: number; gridY: number } {
-		const pos = _positions.map.get(item.id);
-		if (pos) return pos;
-		if (item.gridX != null && item.gridY != null) return { gridX: item.gridX, gridY: item.gridY };
-		if (columnFirst) return { gridX: Math.floor(index / rows), gridY: index % rows };
-		return { gridX: index % cols, gridY: Math.floor(index / cols) };
-	}
+	const itemPositions = $derived.by(() => {
+		const result = new Map<string, { gridX: number; gridY: number }>();
+		const occupied = new Set<string>();
 
-	const itemPositions = $derived(new Map(items.map((item, i) => [item.id, getPosition(item, i)])));
+		// First pass: items with explicit positions (stored or from data)
+		for (const item of items) {
+			const pos = _positions.map.get(item.id);
+			if (pos) {
+				result.set(item.id, pos);
+				occupied.add(pos.gridX + ',' + pos.gridY);
+			} else if (item.gridX != null && item.gridY != null) {
+				result.set(item.id, { gridX: item.gridX, gridY: item.gridY });
+				occupied.add(item.gridX + ',' + item.gridY);
+			}
+		}
+
+		// Second pass: fallback positions with collision resolution
+		for (let i = 0; i < items.length; i++) {
+			const item = items[i]!;
+			if (result.has(item.id)) continue;
+			let fallbackX: number;
+			let fallbackY: number;
+			if (columnFirst) {
+				fallbackX = Math.floor(i / rows);
+				fallbackY = i % rows;
+			} else {
+				fallbackX = i % cols;
+				fallbackY = Math.floor(i / cols);
+			}
+			const free = findFreePosition(fallbackX, fallbackY, occupied);
+			result.set(item.id, free);
+			occupied.add(free.gridX + ',' + free.gridY);
+		}
+
+		return result;
+	});
 
 	/** Find the nearest free grid cell starting from (startX, startY), skipping occupied cells. */
 	function findFreePosition(startX: number, startY: number, occupied: Set<string>): { gridX: number; gridY: number } {
