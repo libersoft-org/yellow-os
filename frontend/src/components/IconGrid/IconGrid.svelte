@@ -385,6 +385,14 @@
 		selection.clear();
 	}
 
+	export function renamePosition(oldId: string, newId: string): void {
+		const pos = _positions.map.get(oldId) ?? itemPositions.get(oldId);
+		if (!pos) return;
+		const next = new Map(_positions.map);
+		next.set(newId, pos);
+		_positions = { map: next };
+	}
+
 	export function schedulePositions(positions: Map<string, { gridX: number; gridY: number }>): void {
 		const next = new Map(_positions.map);
 		// Freeze existing items at their current positions

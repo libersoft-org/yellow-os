@@ -52,7 +52,7 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 	}
 }
 
-export function openRenameDialog(dirPath: string, entryName: string, entryType: 'file' | 'directory'): void {
+export function openRenameDialog(dirPath: string, entryName: string, entryType: 'file' | 'directory', onrenamed?: (oldName: string, newName: string) => void): void {
 	if (isSystemEntry(dirPath, entryName)) {
 		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be renamed.`, type: 'warning', buttons: [{ label: 'OK' }] });
 		return;
@@ -62,6 +62,7 @@ export function openRenameDialog(dirPath: string, entryName: string, entryType: 
 		currentName: entryName,
 		onrename: async (newName: string) => {
 			await renameEntry(dirPath, entryName, newName);
+			onrenamed?.(entryName, newName);
 			notifyDirectoryChange(dirPath);
 		},
 	});

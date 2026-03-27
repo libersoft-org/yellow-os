@@ -2,12 +2,6 @@
 
 ## Bugs / changes
 
-- File Browser - When a directory is created on some random empty space and then renamed, it throws him on the first grid spot where some other folder already is. This means 2 bugs:
-
-1. 2 icons cannot be on the same spot by design
-2. when directory is renamed, it should not change its spot
-   Start with the first bug only.
-
 - F2 to rename a file or a directory in <DirectoryView> - add this information to USAGE.md too
 - Add delete button functionality on selected file(s) or directory(ies) - it doesnt work anymore
 - When I move the directory from File Browser to Desktop with the same name as already is on Desktop, it moves the original directory to the place where I put the new directory - this should not happen, the original directory should stay on the same spot in grid and the new one should appear where I put it
@@ -29,6 +23,7 @@
 
 ## New features
 
+- System directories (Trash, YellowOS) should have special icon
 - When some icon in directory list is selected, keyboard arrow keys and enter should work too (it doesnt now)
 - Forbid moving / renaming / deleting Trash directory
 - Forbid dragging windows outside of screen
