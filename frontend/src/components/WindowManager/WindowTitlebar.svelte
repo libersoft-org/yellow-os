@@ -8,8 +8,9 @@
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	interface Props {
 		win: WindowState;
+		onfocuscontent?: () => void;
 	}
-	const { win }: Props = $props();
+	const { win, onfocuscontent }: Props = $props();
 	const focused = $derived(focus.id === win.id);
 	let dragRefX = 0;
 	let dragRefY = 0;
@@ -202,10 +203,26 @@
 	</div>
 	<div class="window-controls">
 		{#if win.canMinimize}
-			<WindowControl img="/img/window/minimize.svg" alt="Minimize" onclick={() => minimizeWindow(win.id)} {focused} />
+			<WindowControl
+				img="/img/window/minimize.svg"
+				alt="Minimize"
+				onclick={() => {
+					minimizeWindow(win.id);
+					onfocuscontent?.();
+				}}
+				{focused}
+			/>
 		{/if}
 		{#if win.canMaximize}
-			<WindowControl img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'} alt={win.maximized ? 'Restore' : 'Maximize'} onclick={() => toggleMaximize(win.id)} {focused} />
+			<WindowControl
+				img={win.maximized ? '/img/window/restore.svg' : '/img/window/maximize.svg'}
+				alt={win.maximized ? 'Restore' : 'Maximize'}
+				onclick={() => {
+					toggleMaximize(win.id);
+					onfocuscontent?.();
+				}}
+				{focused}
+			/>
 		{/if}
 		<WindowControl img="/img/window/close.svg" alt="Close" onclick={() => closeWindow(win.id)} {focused} variant="close" />
 	</div>

@@ -40,7 +40,7 @@
 	}
 </style>
 
-<Clickable {onclick}>
+<Clickable {onclick} tabindex={-1} onpointerdown={(e: PointerEvent) => e.preventDefault()}>
 	<div class="control" class:focused class:close={variant === 'close'}>
 		<Icon {img} {alt} size="14px" padding="0" colorVariable={focused ? '--color-accent-fg' : '--color-text'} />
 	</div>

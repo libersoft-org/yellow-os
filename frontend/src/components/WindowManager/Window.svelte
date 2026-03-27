@@ -20,8 +20,16 @@
 	const winId = $derived(win.id);
 	const resize = createResizeHandler(() => winId);
 
+	let contentEl: HTMLDivElement | undefined = $state();
+
 	function onWindowPointerDown(): void {
 		focusWindow(win.id);
+	}
+
+	function focusContent(): void {
+		const first = contentEl?.querySelector<HTMLElement>('[tabindex], [role="application"], canvas, iframe');
+		if (first) first.focus();
+		else contentEl?.focus();
 	}
 
 	function onWindowTransitionEnd(e: TransitionEvent): void {
@@ -118,8 +126,8 @@
 </style>
 
 <div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:opening={win.opening} class:closing={win.closing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{outerWidth}px" style:height="{outerHeight}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
-	<WindowTitlebar {win} />
-	<div class="content">
+	<WindowTitlebar {win} onfocuscontent={focusContent} />
+	<div class="content" bind:this={contentEl} tabindex="-1">
 		<WindowContent {...win.props} />
 	</div>
 	{#if !win.maximized && win.resizable}
