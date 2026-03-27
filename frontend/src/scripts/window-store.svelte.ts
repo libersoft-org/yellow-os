@@ -172,6 +172,10 @@ export function finishClose(id: string): void {
 	_windows.splice(idx, 1);
 	_windowMap.delete(id);
 	compactZIndexes();
+	if (focus.id === null) {
+		const top = _windows.filter(w => !w.minimized && !w.closing && w.desktopId === desktop.active).sort((a, b) => b.zIndex - a.zIndex)[0];
+		if (top) focus.id = top.id;
+	}
 }
 
 export function focusWindow(id: string): void {
@@ -259,7 +263,7 @@ export function cycleWindow(direction: 1 | -1): void {
 	if (visible.length === 0) return;
 	const sorted = [...visible].sort((a, b) => b.zIndex - a.zIndex);
 	const currentIdx = sorted.findIndex(w => w.id === focus.id);
-	const nextIdx = currentIdx === -1 ? 0 : (currentIdx + direction + sorted.length) % sorted.length;
+	const nextIdx = currentIdx === -1 ? 0 : ((currentIdx + direction + sorted.length) % sorted.length);
 	focusWindow(sorted[nextIdx]!.id);
 }
 
