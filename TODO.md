@@ -2,11 +2,13 @@
 
 ## Bugs / changes
 
-- When moved directory from desktop to File browser and then tried to move it to empty space in the same file browser, it doesnt move (other icons that were in the same directory are movable OK)
+- When moved directory from desktop to file browser directory or back, other icons move one place to the right (file browser) or down (desktop) - seems like before putting it to some specific place, it moves it from the automatic place
+- If dragging icon over something non-dropable add extra no-go subicon on dragged item (folder, file etc.)
+- File browser - when I double click on any folder, it doesnt enter into it (only breadcrumb looks like it, but icons dont change)
+- File browser - right click in list view mode on folder doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - AppPlayer - should not use UTF8 icon - <div class="drop-icon">📦</div>, use <Icon> - app icon instead
 - After factory reset the system reloads and shows desktop with no icons. on next reload it appears correctly
-- If dragging icon over something non-dropable add extra no-go subicon on dragged item (folder, file etc.)
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why??
 - File browser and desktop - right click on empty space -> new directory / file - the new icon should appear on the spot where I right clicked
 - File browser - right click dragging some folder or directory doesn't show context menu (Move here, Copy here)

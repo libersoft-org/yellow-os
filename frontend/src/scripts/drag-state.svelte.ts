@@ -72,15 +72,19 @@ export function endGlobalDrag(sourcePath: string, fileNames: string[], button: n
 	sourceEl = null;
 	clearGlobalGhost();
 
-	for (let i = zones.length - 1; i >= 0; i--) {
-		const zone = zones[i]!;
-		const rect = zone.el.getBoundingClientRect();
-		if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-			if (src && zone.el.contains(src)) {
-				return false;
+	// Use elementsFromPoint to find the topmost zone in visual stacking order.
+	// This correctly handles overlapping zones (e.g. FileBrowser window over Desktop)
+	// regardless of zone registration order.
+	const elements = document.elementsFromPoint(x, y);
+	for (const el of elements) {
+		for (const zone of zones) {
+			if (zone.el === el || zone.el.contains(el)) {
+				if (src && zone.el.contains(src)) {
+					return false;
+				}
+				zone.handler(sourcePath, fileNames, button, x, y);
+				return true;
 			}
-			zone.handler(sourcePath, fileNames, button, x, y);
-			return true;
 		}
 	}
 	return false;
