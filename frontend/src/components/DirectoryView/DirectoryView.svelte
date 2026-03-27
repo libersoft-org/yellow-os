@@ -29,7 +29,6 @@
 	let entries = $state<FileEntry[]>([]);
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let _selectedIds = $state(new Set<string>());
-	const selectedEntries = $derived(sortedEntries.filter(e => _selectedIds.has(e.name)));
 	let iconGrid = $state<IconGrid>();
 	const sortedEntries = $derived(
 		entries.toSorted((a, b) => {
@@ -37,6 +36,7 @@
 			return a.name.localeCompare(b.name);
 		})
 	);
+	const selectedEntries = $derived(sortedEntries.filter(e => _selectedIds.has(e.name)));
 
 	function displayLabel(name: string): string {
 		if (hideLinkExtension && isLinkFile(name)) return name.slice(0, -5);
@@ -100,7 +100,10 @@
 
 	function handleRenamed(oldName: string, newName: string): void {
 		iconGrid?.renamePosition(oldName, newName);
-		requestAnimationFrame(() => iconGrid?.focus());
+	}
+
+	function focusGrid(): void {
+		iconGrid?.focus();
 	}
 
 	function onDblClick(item: IconGridItemData): void {
@@ -156,9 +159,9 @@
 		}
 		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true });
 		if (selectedEntries.length <= 1) {
-			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(path, entry.name, entry.type, handleRenamed) });
+			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(path, entry.name, entry.type, handleRenamed, focusGrid) });
 		}
-		items.push({ icon: '/img/trash.svg', label: 'Delete', onclick: (e: MouseEvent) => confirmDelete(path, entry.name, entry.type, e.shiftKey) });
+		items.push({ icon: '/img/trash.svg', label: 'Delete', onclick: (e: MouseEvent) => confirmDelete(path, entry.name, entry.type, e.shiftKey, focusGrid) });
 		return items;
 	}
 
@@ -198,11 +201,11 @@
 	function handleKeydown(e: KeyboardEvent): void {
 		if (e.key === 'Delete' && selectedEntries.length > 0) {
 			e.preventDefault();
-			for (const entry of selectedEntries) confirmDelete(path, entry.name, entry.type, e.shiftKey);
+			for (const entry of selectedEntries) confirmDelete(path, entry.name, entry.type, e.shiftKey, focusGrid);
 		}
 		if (e.key === 'F2' && selectedEntries.length === 1) {
 			e.preventDefault();
-			openRenameDialog(path, selectedEntries[0]!.name, selectedEntries[0]!.type, handleRenamed);
+			openRenameDialog(path, selectedEntries[0]!.name, selectedEntries[0]!.type, handleRenamed, focusGrid);
 		}
 	}
 

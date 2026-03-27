@@ -1,12 +1,12 @@
 import type { Component } from 'svelte';
 import { deleteEntry, renameEntry, moveToTrash, createFile, createDirectory, uniqueName, isSystemEntry } from './opfs.ts';
 import { showDialog } from './dialog.ts';
-import { openWindow, findWindow } from './window-store.svelte.ts';
+import { openWindow, findWindow, onWindowClosed } from './window-store.svelte.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
 import NewEntryDialog from '../apps/FileBrowser/NewEntryDialog.svelte';
 import RenameDialog from '../apps/FileBrowser/RenameDialog.svelte';
 
-export function confirmDelete(dirPath: string, entryName: string, entryType: 'file' | 'directory', permanent: boolean): void {
+export function confirmDelete(dirPath: string, entryName: string, entryType: 'file' | 'directory', permanent: boolean, onclosed?: () => void): void {
 	if (isSystemEntry(dirPath, entryName)) {
 		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be deleted.`, type: 'warning', buttons: [{ label: 'OK' }] });
 		return;
@@ -29,6 +29,7 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 				},
 				{ label: 'Cancel' },
 			],
+			...(onclosed ? { onclosed } : {}),
 		});
 	} else {
 		showDialog({
@@ -48,11 +49,12 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 				},
 				{ label: 'Cancel' },
 			],
+			...(onclosed ? { onclosed } : {}),
 		});
 	}
 }
 
-export function openRenameDialog(dirPath: string, entryName: string, entryType: 'file' | 'directory', onrenamed?: (oldName: string, newName: string) => void): void {
+export function openRenameDialog(dirPath: string, entryName: string, entryType: 'file' | 'directory', onrenamed?: (oldName: string, newName: string) => void, onclosed?: () => void): void {
 	if (isSystemEntry(dirPath, entryName)) {
 		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be renamed.`, type: 'warning', buttons: [{ label: 'OK' }] });
 		return;
@@ -80,6 +82,7 @@ export function openRenameDialog(dirPath: string, entryName: string, entryType: 
 		dialogWin.resizable = false;
 		dialogWin.showInTaskbar = false;
 	}
+	if (onclosed) onWindowClosed(windowId, onclosed);
 }
 
 export function openNewEntryDialog(dirPath: string, entryType: 'file' | 'directory', oncreated?: (finalName: string) => void): void {

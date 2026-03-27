@@ -53,6 +53,20 @@ const _windowMap = new Map<string, WindowState>();
 export const focus: { id: string | null } = $state({ id: null });
 export const snapPreview: { zone: SnapZone | null } = $state({ zone: null });
 export const snapAnimatingIds: Record<string, boolean> = $state({});
+const _focusCallbacks = new Map<string, () => void>();
+const _closeCallbacks = new Map<string, () => void>();
+
+export function registerFocusCallback(id: string, callback: () => void): void {
+	_focusCallbacks.set(id, callback);
+}
+
+export function unregisterFocusCallback(id: string): void {
+	_focusCallbacks.delete(id);
+}
+
+export function onWindowClosed(id: string, callback: () => void): void {
+	_closeCallbacks.set(id, callback);
+}
 
 export function getWindows(): WindowState[] {
 	return _windows;
@@ -169,13 +183,21 @@ export function closeWindow(id: string): void {
 export function finishClose(id: string): void {
 	const idx = _windows.findIndex(w => w.id === id);
 	if (idx === -1) return;
+	const closeCb = _closeCallbacks.get(id);
 	_windows.splice(idx, 1);
 	_windowMap.delete(id);
+	_focusCallbacks.delete(id);
+	_closeCallbacks.delete(id);
 	compactZIndexes();
 	if (focus.id === null) {
 		const top = _windows.filter(w => !w.minimized && !w.closing && w.desktopId === desktop.active).sort((a, b) => b.zIndex - a.zIndex)[0];
-		if (top) focus.id = top.id;
+		if (top) {
+			focus.id = top.id;
+			const cb = _focusCallbacks.get(top.id);
+			if (cb) requestAnimationFrame(() => requestAnimationFrame(() => cb()));
+		}
 	}
+	if (closeCb) requestAnimationFrame(() => requestAnimationFrame(() => closeCb()));
 }
 
 export function focusWindow(id: string): void {

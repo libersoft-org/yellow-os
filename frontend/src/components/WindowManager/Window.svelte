@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { WindowState } from '../../scripts/window-store.svelte.ts';
-	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds, getChrome } from '../../scripts/window-store.svelte.ts';
+	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds, getChrome, registerFocusCallback, unregisterFocusCallback } from '../../scripts/window-store.svelte.ts';
 	import { RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window-resize.svelte.ts';
-	import { setContext } from 'svelte';
+	import { onMount, onDestroy, setContext } from 'svelte';
 	import { WINDOW_KEY } from '../../scripts/window-context.ts';
 	import WindowTitlebar from './WindowTitlebar.svelte';
 	interface Props {
@@ -27,10 +27,13 @@
 	}
 
 	function focusContent(): void {
-		const first = contentEl?.querySelector<HTMLElement>('[tabindex], [role="application"], canvas, iframe');
-		if (first) first.focus();
+		const el = contentEl?.querySelector<HTMLElement>('[role="grid"], [role="application"], canvas, iframe') ?? contentEl?.querySelector<HTMLElement>('[tabindex]');
+		if (el) el.focus();
 		else contentEl?.focus();
 	}
+
+	onMount(() => registerFocusCallback(win.id, focusContent));
+	onDestroy(() => unregisterFocusCallback(win.id));
 
 	function onWindowTransitionEnd(e: TransitionEvent): void {
 		if (e.propertyName === 'transform' && win.minimizing) finishMinimize(win.id);

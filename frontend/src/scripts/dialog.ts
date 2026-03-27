@@ -1,5 +1,5 @@
 import type { Component } from 'svelte';
-import { openWindow, findWindow } from './window-store.svelte.ts';
+import { openWindow, findWindow, onWindowClosed } from './window-store.svelte.ts';
 export type DialogType = 'info' | 'warning' | 'error' | 'question';
 export interface DialogButton {
 	label: string;
@@ -12,6 +12,7 @@ export interface DialogOptions {
 	message: string;
 	type?: DialogType;
 	buttons?: DialogButton[];
+	onclosed?: () => void;
 }
 const DEFAULT_BUTTONS: DialogButton[] = [{ label: 'OK', backgroundColorVariable: '--color-accent', colorVariable: '--color-accent-fg' }];
 const TYPE_ICONS: Record<DialogType, string> = {
@@ -66,4 +67,5 @@ export function showDialog(options: DialogOptions): void {
 		win.resizable = false;
 		win.showInTaskbar = false;
 	}
+	if (options.onclosed) onWindowClosed(windowId, options.onclosed);
 }

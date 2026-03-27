@@ -2,8 +2,6 @@
 
 ## Bugs / changes
 
-- All dialogs should have main button focused and react on arrow keys to switch button and then enter to confirm
-- Add delete button functionality on selected file(s) or directory(ies) - it doesnt work anymore
 - When I move the directory from File Browser to Desktop with the same name as already is on Desktop, it moves the original directory to the place where I put the new directory - this should not happen, the original directory should stay on the same spot in grid and the new one should appear where I put it
 - Test what happens when settings.json file is deleted
 - Describe how .yapp files should look like in USAGE.md
@@ -15,6 +13,7 @@
 - When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
+- Trash on desktop should be a special type of icon - it should contain empty trash in context menu and should not be deleted in classic way - it should be turned off and on in settings - Desktop - special icons
 
 ## Ideas
 
