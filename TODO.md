@@ -2,7 +2,10 @@
 
 ## Bugs / changes
 
+- When I move the directory from File Browser to Desktop with the same name as already is on Desktop, it moves the original directory to the place where I put the new directory - this should not happen, the original directory should stay on the same spot in grid and the new one should appear where I put it
 - When all icons are deleted on desktop, the next browser reload put standard ones again. This should not happen - this should happen only after factory reset
+- Test what happens when Trash folder and YellowOS folder are deleted
+- Right click on desktop -> Settings doesnt work
 - In directory view - when selected multiple icons and then right click - delete - it deletes one item only - should delete them all and the message should be like if i really want to delete xx items. Do it for trash and permanent delete too.
 - File browser - right click in list view mode on folder doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
@@ -23,7 +26,7 @@
 - Forbid moving / renaming / deleting Trash directory
 - Forbid dragging windows outside of screen
 - File Browser - drag and drop / upload form from main OS to web OS
-- Run WASM files as apps
+- Run WASM files as apps (test the App Player application)
 - Add system open / save as ... file dialog
 - Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...

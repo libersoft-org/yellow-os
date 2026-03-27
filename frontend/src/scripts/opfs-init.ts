@@ -50,12 +50,16 @@ export async function initOpfs(): Promise<void> {
 	for (const dir of ROOT_DIRS) {
 		if (!(await directoryExists('/' + dir))) await createDirectory('/', dir);
 	}
+
+	const freshDirs = new Set<string>();
 	for (const dir of OS_SUBDIRS) {
-		if (!(await directoryExists(OS_PATH + '/' + dir))) await createDirectory(OS_PATH, dir);
+		if (!(await directoryExists(OS_PATH + '/' + dir))) {
+			await createDirectory(OS_PATH, dir);
+			freshDirs.add(dir);
+		}
 	}
 
-	const desktopEntries = await readDirectory(OS_PATH + '/Desktop');
-	if (desktopEntries.length === 0) {
+	if (freshDirs.has('Desktop')) {
 		for (const link of defaultDesktopLinks) await writeLinkFile(OS_PATH + '/Desktop', link);
 	}
 
@@ -63,8 +67,7 @@ export async function initOpfs(): Promise<void> {
 		await writeFile(OS_PATH, 'file-types.json', JSON.stringify(defaultFileTypes, null, '\t'));
 	}
 
-	const taskbarEntries = await readDirectory(OS_PATH + '/TaskbarMenu');
-	if (taskbarEntries.length === 0) {
+	if (freshDirs.has('TaskbarMenu')) {
 		for (const [directoryName, links] of Object.entries(defaultTaskbarMenuStructure)) {
 			await createDirectory(OS_PATH + '/TaskbarMenu', directoryName);
 			for (const link of links) await writeLinkFile(OS_PATH + '/TaskbarMenu/' + directoryName, link);
@@ -73,8 +76,7 @@ export async function initOpfs(): Promise<void> {
 		await writeLinkFile(OS_PATH + '/TaskbarMenu', { appId: 'about', label: 'About ' + OS_NAME, icon: '/img/logo.svg' });
 	}
 
-	const wallpaperEntries = await readDirectory(WALLPAPERS_PATH);
-	if (wallpaperEntries.length === 0) {
+	if (freshDirs.has('Wallpapers')) {
 		for (const name of defaultWallpapers) {
 			try {
 				const response = await fetch('/img/wallpapers/' + name);
