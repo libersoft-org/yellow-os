@@ -2,10 +2,8 @@
 
 ## Bugs / changes
 
-- When moved directory from desktop to file browser directory or back, other icons move one place to the right (file browser) or down (desktop) - seems like before putting it to some specific place, it moves it from the automatic place
 - If dragging icon over something non-dropable (not a <DirectoryView> or some dropable area as in App Player) add extra no-go subicon on dragged item (folder, file etc.) and do nothing when dropped. Right now when I drop it on non dropable area it moves to desktop which is wrong
 - Remove "this directory is empty" label from <DirectoryView>
-- File browser - when I double click on any folder, it doesnt enter into it (only breadcrumb looks like it, but icons dont change)
 - File browser - right click in list view mode on folder doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - AppPlayer - should not use UTF8 icon - <div class="drop-icon">📦</div>, use <Icon> - app icon instead

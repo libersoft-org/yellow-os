@@ -325,7 +325,9 @@
 		<FileBrowserSeparator onresize={onSeparatorResize} />
 		<div class="grid-area">
 			{#if viewMode === 'grid'}
-				<DirectoryView path={currentPath} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
+				{#key currentPath}
+					<DirectoryView path={currentPath} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
+				{/key}
 			{:else if sortedEntries.length === 0}
 				<div class="empty-state">This directory is empty</div>
 			{:else}
