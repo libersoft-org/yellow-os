@@ -388,6 +388,10 @@
 		selection.clear();
 	}
 
+	export function focus(): void {
+		containerEl?.focus();
+	}
+
 	export function renamePosition(oldId: string, newId: string): void {
 		const pos = _positions.map.get(oldId) ?? itemPositions.get(oldId);
 		if (!pos) return;
@@ -399,6 +403,7 @@
 			sel.delete(oldId);
 			sel.add(newId);
 			selection.set(sel);
+			emitSelectionChange();
 		}
 	}
 

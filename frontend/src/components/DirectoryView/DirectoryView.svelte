@@ -28,7 +28,8 @@
 	let { path, columnFirst, hideLinkExtension, hideEmptyLabel, extraEmptySpaceMenuItems, onnavigate, onselectionchange, onitemsmove, onentrieschange }: Props = $props();
 	let entries = $state<FileEntry[]>([]);
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
-	let selectedEntries: FileEntry[] = [];
+	let _selectedIds = $state(new Set<string>());
+	const selectedEntries = $derived(sortedEntries.filter(e => _selectedIds.has(e.name)));
 	let iconGrid = $state<IconGrid>();
 	const sortedEntries = $derived(
 		entries.toSorted((a, b) => {
@@ -60,6 +61,7 @@
 			entries = [];
 		}
 		onentrieschange?.(entries);
+		if (_selectedIds.size > 0) onselectionchange?.(selectedEntries);
 	}
 
 	let unsubscribeDir: (() => void) | null = null;
@@ -92,12 +94,13 @@
 	});
 
 	function onGridSelectionChange(selectedIds: Set<string>): void {
-		selectedEntries = sortedEntries.filter(e => selectedIds.has(e.name));
+		_selectedIds = selectedIds;
 		onselectionchange?.(selectedEntries);
 	}
 
 	function handleRenamed(oldName: string, newName: string): void {
 		iconGrid?.renamePosition(oldName, newName);
+		requestAnimationFrame(() => iconGrid?.focus());
 	}
 
 	function onDblClick(item: IconGridItemData): void {
