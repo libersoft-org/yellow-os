@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Very long directory / file name moves icon up and the label overflows the grid - icon should stay on its spot and text should enlarge the grid so there is enough space for text
 - Add delete button functionality on selected file(s) or directory(ies) - it doesnt work anymore
 - When I move the directory from File Browser to Desktop with the same name as already is on Desktop, it moves the original directory to the place where I put the new directory - this should not happen, the original directory should stay on the same spot in grid and the new one should appear where I put it
 - Test what happens when settings.json file is deleted

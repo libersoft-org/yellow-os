@@ -458,12 +458,15 @@
 	.icon-cell {
 		position: absolute;
 		display: flex;
-		align-items: center;
+		align-items: start;
 		justify-content: center;
+		padding-top: 6px;
+		box-sizing: border-box;
 		border-radius: 8px;
 		cursor: default;
 		user-select: none;
 		transition: background 0.3s linear;
+		overflow: hidden;
 	}
 
 	.icon-cell:hover {
