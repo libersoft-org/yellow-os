@@ -10,8 +10,10 @@ export interface OpfsStorageInfo {
 	used: number;
 }
 
+export const OS_NAME = 'YellowOS';
+
 const SYSTEM_ENTRIES: Record<string, Set<string>> = {
-	'/': new Set(['Trash', 'YellowOS']),
+	'/': new Set(['Trash', OS_NAME]),
 };
 
 export function isSystemEntry(dirPath: string, name: string): boolean {

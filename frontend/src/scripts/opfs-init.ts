@@ -1,6 +1,5 @@
-import { createDirectory, directoryExists, writeFile, exists } from './opfs.ts';
+import { createDirectory, directoryExists, writeFile, exists, OS_NAME } from './opfs.ts';
 import type { LinkData } from './link.ts';
-const OS_NAME = 'YellowOS';
 export const OS_PATH = '/' + OS_NAME;
 export const WALLPAPERS_PATH = OS_PATH + '/Wallpapers';
 const ROOT_DIRS = [OS_NAME, 'Trash'];

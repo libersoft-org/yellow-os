@@ -2,13 +2,19 @@ import type { OpfsEntry } from './opfs.ts';
 import { readDirectory } from './opfs.ts';
 import { isLinkFile, readLink } from './link.ts';
 import { isYappFile } from '../apps/AppPlayer/app-player.ts';
+import { OS_NAME } from './opfs.ts';
 
 export interface FileEntry extends OpfsEntry {
 	linkIcon?: string;
 }
 
+const SYSTEM_DIR_ICONS: Record<string, string> = {
+	Trash: '/img/apps/trash.svg',
+	[OS_NAME]: '/img/logo.svg',
+};
+
 export function entryIcon(entry: FileEntry): string {
-	if (entry.type === 'directory') return '/img/directory.svg';
+	if (entry.type === 'directory') return SYSTEM_DIR_ICONS[entry.name] ?? '/img/directory.svg';
 	if (isLinkFile(entry.name)) return entry.linkIcon ?? '/img/shortcut.svg';
 	if (isYappFile(entry.name)) return '/img/apps/app-player.svg';
 	return '/img/file.svg';
