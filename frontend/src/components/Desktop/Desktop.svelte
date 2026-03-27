@@ -55,7 +55,7 @@
 
 	const desktopMenuItems = [
 		{ icon: '/img/file.svg', label: 'New file', onclick: () => {} },
-		{ icon: '/img/directory.svg', label: 'New folder', onclick: () => {} },
+		{ icon: '/img/directory.svg', label: 'New directory', onclick: () => {} },
 		{ icon: '/img/settings.svg', label: 'Settings', onclick: () => {} },
 	];
 

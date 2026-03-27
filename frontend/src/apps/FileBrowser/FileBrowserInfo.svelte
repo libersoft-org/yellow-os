@@ -1,6 +1,6 @@
 <script lang="ts">
-	import type { FileEntry } from './filebrowser.ts';
-	import { entryIcon, entryIconColor } from './filebrowser.ts';
+	import type { FileEntry } from '../../scripts/file-entry.ts';
+	import { entryIcon, entryIconColor } from '../../scripts/file-entry.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import { formatBytes } from '../../scripts/format.ts';
 	interface Props {
@@ -89,7 +89,7 @@
 		<div class="details">
 			{#if selDirs > 0}
 				<div class="detail-row">
-					<span class="detail-label">Folders</span>
+					<span class="detail-label">Directories</span>
 					<span class="detail-value">{selDirs}</span>
 				</div>
 			{/if}
@@ -135,7 +135,7 @@
 		</div>
 		<div class="details">
 			<div class="detail-row">
-				<span class="detail-label">Folders</span>
+				<span class="detail-label">Directories</span>
 				<span class="detail-value">{dirCount}</span>
 			</div>
 			<div class="detail-row">

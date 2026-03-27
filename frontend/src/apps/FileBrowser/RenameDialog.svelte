@@ -11,9 +11,13 @@
 	}
 	const { entryType, currentName, onrename }: Props = $props();
 	const win = getWindow();
-	let name = $state(currentName);
+	let name = $state(initialName());
 	let errorMessage = $state('');
 	const icon = $derived(entryType === 'directory' ? '/img/directory.svg' : '/img/file.svg');
+
+	function initialName(): string {
+		return currentName;
+	}
 
 	function validate(value: string): boolean {
 		if (!value.trim()) {

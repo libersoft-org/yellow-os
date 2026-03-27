@@ -10,9 +10,13 @@
 	}
 	const { entryType, oncreate }: Props = $props();
 	const win = getWindow();
-	let name = $state(entryType === 'file' ? 'New file.txt' : 'New directory');
+	let name = $state(initialName());
 	let errorMessage = $state('');
 	const icon = $derived(entryType === 'directory' ? '/img/directory.svg' : '/img/file.svg');
+
+	function initialName(): string {
+		return entryType === 'file' ? 'New file.txt' : 'New directory';
+	}
 
 	function validate(value: string): boolean {
 		if (!value.trim()) {

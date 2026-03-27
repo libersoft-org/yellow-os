@@ -1,29 +1,24 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
 	import { getWindow } from '../../scripts/window-context.ts';
-	import { entryIcon, entryIconColor } from './filebrowser.ts';
-	import type { FileEntry, DiskInfo } from './filebrowser.ts';
-	import { readDirectory, getStorageEstimate, createFile, createDirectory, deleteEntry, renameEntry, moveToTrash } from '../../scripts/opfs.ts';
-	import NewEntryDialog from './NewEntryDialog.svelte';
-	import RenameDialog from './RenameDialog.svelte';
-	import { showDialog } from '../../scripts/dialog.ts';
+	import { entryIcon, entryIconColor, loadDirectoryEntries } from '../../scripts/file-entry.ts';
+	import type { FileEntry } from '../../scripts/file-entry.ts';
+	import type { DiskInfo } from './filebrowser.ts';
+	import { getStorageEstimate } from '../../scripts/opfs.ts';
+	import { openWindow } from '../../scripts/window-store.svelte.ts';
+	import { getFileHandler } from '../../scripts/file-types.ts';
+	import { onDirectoryChange } from '../../scripts/opfs-notify.ts';
+	import { confirmDelete } from '../../scripts/file-actions.ts';
 	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
-	import { openWindow, findWindow } from '../../scripts/window-store.svelte.ts';
-	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import FileBrowserToolbar from './FileBrowserToolbar.svelte';
 	import FileBrowserSidebar from './FileBrowserSidebar.svelte';
 	import FileBrowserSeparator from './FileBrowserSeparator.svelte';
 	import FileBrowserInfo from './FileBrowserInfo.svelte';
-	import type { IconGridItemData } from '../../components/IconGrid/icon-grid.ts';
-	import IconGrid from '../../components/IconGrid/IconGrid.svelte';
-	import ContextMenu from '../../components/ContextMenu/ContextMenu.svelte';
-	import type { ContextMenuItem } from '../../components/ContextMenu/context-menu.ts';
+	import DirectoryView from '../../components/DirectoryView/DirectoryView.svelte';
 	import ListItem from '../../components/ListItem/ListItem.svelte';
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
 	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import { browser } from '$app/environment';
-
 	const win = getWindow();
 	win.title = 'File Browser';
 	win.icon = '/img/apps/file-browser.svg';
@@ -31,7 +26,6 @@
 	win.height = 600;
 	win.minWidth = 320;
 	win.minHeight = 240;
-
 	interface Props {
 		path?: string;
 	}
@@ -44,33 +38,29 @@
 	let showInfo = $state(true);
 	let selectedEntries = $state<FileEntry[]>([]);
 	const listSelection = createSelection();
-	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let entries = $state<FileEntry[]>([]);
 	let disks = $state<DiskInfo[]>([]);
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
 	const canGoUp = $derived(currentPath !== '/');
-
 	const sortedEntries = $derived(
 		entries.toSorted((a, b) => {
 			if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
 			return a.name.localeCompare(b.name);
 		})
 	);
-
-	async function loadDirectory(path: string): Promise<void> {
+	async function loadDirectory(dirPath: string): Promise<void> {
 		try {
-			const raw = await readDirectory(path);
-			for (const entry of raw) {
-				if (entry.type === 'file' && isLinkFile(entry.name)) {
-					const linkData = await readLink(path, entry.name);
-					if (linkData?.icon) (entry as FileEntry).linkIcon = linkData.icon;
-				}
-			}
-			entries = raw as FileEntry[];
+			entries = await loadDirectoryEntries(dirPath);
 		} catch {
 			entries = [];
 		}
+	}
+	let unsubscribeDir: (() => void) | null = null;
+
+	function subscribeToDirectory(): void {
+		unsubscribeDir?.();
+		unsubscribeDir = onDirectoryChange(currentPath, () => loadDirectory(currentPath));
 	}
 
 	async function loadDiskInfo(): Promise<void> {
@@ -85,18 +75,10 @@
 		if (browser) {
 			loadDiskInfo();
 			loadDirectory(startPath);
+			subscribeToDirectory();
 		}
 	}
 	init();
-
-	const iconViewItems = $derived<IconGridItemData[]>(
-		sortedEntries.map(e => ({
-			id: e.name,
-			icon: entryIcon(e),
-			label: e.name,
-			iconColor: entryIconColor(e),
-		}))
-	);
 
 	const breadcrumbSegments = $derived.by(() => {
 		if (currentPath === '/') return [{ name: 'Root', path: '/' }];
@@ -105,127 +87,6 @@
 		for (let i = 0; i < parts.length; i++) segments.push({ name: parts[i]!, path: '/' + parts.slice(0, i + 1).join('/') });
 		return segments;
 	});
-
-	const emptySpaceMenuItems: ContextMenuItem[] = [
-		{
-			icon: '/img/settings.svg',
-			label: 'Sort by',
-			children: [{ icon: '/img/check.svg', label: 'Name', onclick: () => {} }, { label: 'Modification date', onclick: () => {} }, { label: 'Extension', onclick: () => {} }, { label: 'Size', onclick: () => {} }, { separator: true }, { icon: '/img/check.svg', label: 'Ascending', onclick: () => {} }, { label: 'Descending', onclick: () => {} }],
-		},
-		{
-			icon: '/img/settings.svg',
-			label: 'View',
-			children: [
-				{ icon: '/img/check.svg', label: 'Grid', onclick: () => {} },
-				{ label: 'List', onclick: () => {} },
-			],
-		},
-		{ separator: true },
-		{ icon: '/img/file.svg', label: 'New file', onclick: () => openNewEntryDialog('file') },
-		{ icon: '/img/directory.svg', label: 'New directory', onclick: () => openNewEntryDialog('directory') },
-	];
-
-	function openNewEntryDialog(entryType: 'file' | 'directory'): void {
-		const windowId = openWindow(NewEntryDialog as Component, {
-			entryType,
-			oncreate: async (name: string) => {
-				if (entryType === 'directory') await createDirectory(currentPath, name);
-				else await createFile(currentPath, name);
-				loadDirectory(currentPath);
-			},
-		});
-		const dialogWin = findWindow(windowId);
-		if (dialogWin) {
-			dialogWin.title = entryType === 'directory' ? 'New Directory' : 'New File';
-			dialogWin.icon = entryType === 'directory' ? '/img/directory.svg' : '/img/file.svg';
-			dialogWin.width = 400;
-			dialogWin.height = 180;
-			dialogWin.minWidth = 300;
-			dialogWin.minHeight = 160;
-			dialogWin.position = 'center';
-			dialogWin.canMinimize = false;
-			dialogWin.canMaximize = false;
-			dialogWin.resizable = false;
-			dialogWin.showInTaskbar = false;
-		}
-	}
-
-	function confirmDelete(entry: FileEntry, permanent: boolean): void {
-		const typeLabel = entry.type === 'directory' ? 'directory' : 'file';
-		if (permanent) {
-			showDialog({
-				title: 'Permanently Delete',
-				message: `Are you sure you want to permanently delete ${typeLabel} "${entry.name}"? This action cannot be undone.`,
-				type: 'question',
-				buttons: [
-					{
-						label: 'Delete',
-						backgroundColorVariable: '--color-danger',
-						colorVariable: '--color-accent-fg',
-						onclick: async () => {
-							await deleteEntry(currentPath, entry.name);
-							loadDirectory(currentPath);
-						},
-					},
-					{ label: 'Cancel' },
-				],
-			});
-		} else {
-			showDialog({
-				title: 'Delete',
-				message: `Are you sure you want to move ${typeLabel} "${entry.name}" to Trash?`,
-				type: 'question',
-				buttons: [
-					{
-						label: 'Move to Trash',
-						backgroundColorVariable: '--color-danger',
-						colorVariable: '--color-accent-fg',
-						onclick: async () => {
-							await moveToTrash(currentPath, entry.name);
-							loadDirectory(currentPath);
-						},
-					},
-					{ label: 'Cancel' },
-				],
-			});
-		}
-	}
-
-	function openRenameDialog(entry: FileEntry): void {
-		const windowId = openWindow(RenameDialog as Component, {
-			entryType: entry.type,
-			currentName: entry.name,
-			onrename: async (newName: string) => {
-				await renameEntry(currentPath, entry.name, newName);
-				loadDirectory(currentPath);
-			},
-		});
-		const dialogWin = findWindow(windowId);
-		if (dialogWin) {
-			dialogWin.title = 'Rename';
-			dialogWin.icon = '/img/rename.svg';
-			dialogWin.width = 400;
-			dialogWin.height = 180;
-			dialogWin.minWidth = 300;
-			dialogWin.minHeight = 160;
-			dialogWin.position = 'center';
-			dialogWin.canMinimize = false;
-			dialogWin.canMaximize = false;
-			dialogWin.resizable = false;
-			dialogWin.showInTaskbar = false;
-		}
-	}
-
-	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
-		const items: ContextMenuItem[] = [{ icon: '/img/open.svg', label: 'Open', onclick: () => openEntry(entry) }];
-		if (entry.type === 'directory') {
-			items.push({ icon: '/img/open.svg', label: 'Open in new window', onclick: () => {} });
-		} else {
-			items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
-		}
-		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true }, { icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(entry) }, { icon: '/img/trash.svg', label: 'Delete', onclick: (e: MouseEvent) => confirmDelete(entry, e.shiftKey) });
-		return items;
-	}
 
 	function onSeparatorResize(dx: number): void {
 		sidebarWidth = Math.max(120, Math.min(400, sidebarWidth + dx));
@@ -237,15 +98,16 @@
 		infoWidth = Math.max(150, Math.min(400, infoWidth - dx));
 	}
 
-	function navigateTo(path: string): void {
-		if (path === currentPath) return;
+	function navigateTo(navPath: string): void {
+		if (navPath === currentPath) return;
 		history = history.slice(0, historyIndex + 1);
-		history.push(path);
+		history.push(navPath);
 		historyIndex = history.length - 1;
-		currentPath = path;
+		currentPath = navPath;
 		selectedEntries = [];
 		listSelection.clear();
-		loadDirectory(path);
+		loadDirectory(navPath);
+		subscribeToDirectory();
 	}
 
 	function goBack(): void {
@@ -253,6 +115,7 @@
 		historyIndex--;
 		currentPath = history[historyIndex]!;
 		loadDirectory(currentPath);
+		subscribeToDirectory();
 	}
 
 	function goForward(): void {
@@ -260,6 +123,7 @@
 		historyIndex++;
 		currentPath = history[historyIndex]!;
 		loadDirectory(currentPath);
+		subscribeToDirectory();
 	}
 
 	function goUp(): void {
@@ -268,8 +132,12 @@
 		navigateTo(parent);
 	}
 
-	function onGridSelectionChange(selectedIds: Set<string>): void {
-		selectedEntries = sortedEntries.filter(e => selectedIds.has(e.name));
+	function onDirectoryViewSelectionChange(selected: FileEntry[]): void {
+		selectedEntries = selected;
+	}
+
+	function onDirectoryViewEntriesChange(newEntries: FileEntry[]): void {
+		entries = newEntries;
 	}
 
 	function updateSelectedEntriesFromList(): void {
@@ -361,15 +229,10 @@
 	let listLastTapTime = 0;
 	let listLastTapName: string | null = null;
 
-	function onIconDblClick(item: IconGridItemData): void {
-		const entry = sortedEntries.find(e => e.name === item.id);
-		if (entry) openEntry(entry);
-	}
-
 	async function openEntry(entry: FileEntry): Promise<void> {
 		if (entry.type === 'directory') {
-			const path = currentPath === '/' ? '/' + entry.name : currentPath + '/' + entry.name;
-			navigateTo(path);
+			const entryPath = currentPath === '/' ? '/' + entry.name : currentPath + '/' + entry.name;
+			navigateTo(entryPath);
 		} else if (isLinkFile(entry.name)) {
 			const linkData = await readLink(currentPath, entry.name);
 			if (linkData) {
@@ -379,13 +242,6 @@
 		} else {
 			const handler = await getFileHandler(currentPath, entry.name);
 			if (handler) openWindow(handler.component, handler.props);
-		}
-	}
-
-	function editEntry(entry: FileEntry): void {
-		if (entry.type === 'file') {
-			const handler = getEditHandler(currentPath, entry.name);
-			openWindow(handler.component, handler.props);
 		}
 	}
 
@@ -407,19 +263,10 @@
 		listSelection.clear();
 	}
 
-	function onGridContextMenu(e: MouseEvent): void {
-		e.preventDefault();
-		const iconEl = (e.target as HTMLElement).closest('[data-icon-id]');
-		if (iconEl) {
-			const entry = sortedEntries.find(en => en.name === (iconEl as HTMLElement).dataset['iconId']);
-			if (entry) contextMenu = { x: e.clientX, y: e.clientY, items: getIconMenuItems(entry) };
-		} else contextMenu = { x: e.clientX, y: e.clientY, items: emptySpaceMenuItems };
-	}
-
 	function handleFileBrowserKeydown(e: KeyboardEvent): void {
-		if (e.key === 'Delete' && selectedEntries.length > 0) {
+		if (viewMode === 'list' && e.key === 'Delete' && selectedEntries.length > 0) {
 			e.preventDefault();
-			for (const entry of selectedEntries) confirmDelete(entry, e.shiftKey);
+			for (const entry of selectedEntries) confirmDelete(currentPath, entry.name, entry.type, e.shiftKey);
 		}
 	}
 </script>
@@ -470,18 +317,15 @@
 	}
 </style>
 
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="file-browser" role="application" tabindex="-1" onkeydown={handleFileBrowserKeydown}>
 	<FileBrowserToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
 		<FileBrowserSidebar {disks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<FileBrowserSeparator onresize={onSeparatorResize} />
-		<div class="grid-area" role="region" oncontextmenu={onGridContextMenu}>
+		<div class="grid-area">
 			{#if viewMode === 'grid'}
-				<IconGrid items={iconViewItems} onselectionchange={onGridSelectionChange} ondblclick={onIconDblClick}>
-					{#snippet empty()}
-						This directory is empty
-					{/snippet}
-				</IconGrid>
+				<DirectoryView path={currentPath} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
 			{:else if sortedEntries.length === 0}
 				<div class="empty-state">This directory is empty</div>
 			{:else}
@@ -510,7 +354,4 @@
 			<FileBrowserInfo selected={selectedEntries} {currentPath} entries={sortedEntries} width={infoWidth} />
 		{/if}
 	</div>
-	{#if contextMenu}
-		<ContextMenu items={contextMenu.items} x={contextMenu.x} y={contextMenu.y} onclose={() => (contextMenu = null)} />
-	{/if}
 </div>

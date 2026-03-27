@@ -1,22 +1,22 @@
 export interface GestureCallbacks {
-	/** Fires on every pointerdown. Return false to ignore this interaction. */
+	// Fires on every pointerdown. Return false to ignore this interaction.
 	onpress?: (e: PointerEvent) => boolean | void;
-	/** Fires on pointerup without drag (single click/tap). */
+	// Fires on pointerup without drag (single click/tap).
 	onclick?: (e: PointerEvent) => void;
-	/** Fires on second click/tap within doubleTapMs (on pointerup). */
+	// Fires on second click/tap within doubleTapMs (on pointerup).
 	ondblclick?: (e: PointerEvent) => void;
-	/** Fires when drag threshold is exceeded. */
+	// Fires when drag threshold is exceeded.
 	ondragstart?: (e: PointerEvent, startX: number, startY: number) => void;
-	/** Fires during active drag. */
+	// Fires during active drag.
 	ondragmove?: (e: PointerEvent, dx: number, dy: number) => void;
-	/** Fires on pointerup after drag. */
+	// Fires on pointerup after drag.
 	ondragend?: (e: PointerEvent) => void;
 }
 
 export interface GestureOptions extends GestureCallbacks {
-	/** Minimum pixel movement to start drag. Default: 4 */
+	// Minimum pixel movement to start drag. Default: 4
 	dragThreshold?: number;
-	/** Max ms between taps for double-tap. Default: 300 */
+	// Max ms between taps for double-tap. Default: 300
 	doubleTapMs?: number;
 }
 
@@ -33,6 +33,8 @@ export function pointerGestures(node: HTMLElement, options: GestureOptions): Ges
 	let startY = 0;
 	let trackedPointerId = -1;
 	let lastTapTime = 0;
+	let activeButton = 0;
+	let suppressNextContextMenu = false;
 
 	function hasDragCallbacks(): boolean {
 		return !!(opts.ondragstart || opts.ondragmove || opts.ondragend);
@@ -43,9 +45,10 @@ export function pointerGestures(node: HTMLElement, options: GestureOptions): Ges
 	function onPointerDown(e: PointerEvent): void {
 		if (active) return;
 		if (opts.onpress && opts.onpress(e) === false) return;
-		if (e.button !== 0) return;
+		if (e.button !== 0 && e.button !== 2) return;
 		active = true;
 		dragging = false;
+		activeButton = e.button;
 		trackedPointerId = e.pointerId;
 		startX = e.clientX;
 		startY = e.clientY;
@@ -71,10 +74,12 @@ export function pointerGestures(node: HTMLElement, options: GestureOptions): Ges
 		active = false;
 		trackedPointerId = -1;
 		if (dragging) {
+			if (activeButton === 2) suppressNextContextMenu = true;
 			dragging = false;
 			opts.ondragend?.(e);
 			return;
 		}
+		if (activeButton !== 0) return;
 		if (opts.ondblclick) {
 			const now = Date.now();
 			if (now - lastTapTime < (opts.doubleTapMs ?? 300)) {
@@ -94,10 +99,19 @@ export function pointerGestures(node: HTMLElement, options: GestureOptions): Ges
 		trackedPointerId = -1;
 	}
 
+	function onContextMenu(e: Event): void {
+		if (suppressNextContextMenu) {
+			e.preventDefault();
+			e.stopPropagation();
+			suppressNextContextMenu = false;
+		}
+	}
+
 	node.addEventListener('pointerdown', onPointerDown);
 	node.addEventListener('pointermove', onPointerMove);
 	node.addEventListener('pointerup', onPointerUp);
 	node.addEventListener('pointercancel', onPointerCancel);
+	node.addEventListener('contextmenu', onContextMenu);
 
 	return {
 		update(newOpts: GestureOptions) {
@@ -109,6 +123,7 @@ export function pointerGestures(node: HTMLElement, options: GestureOptions): Ges
 			node.removeEventListener('pointermove', onPointerMove);
 			node.removeEventListener('pointerup', onPointerUp);
 			node.removeEventListener('pointercancel', onPointerCancel);
+			node.removeEventListener('contextmenu', onContextMenu);
 		},
 	};
 }

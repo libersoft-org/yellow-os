@@ -108,6 +108,58 @@ async function copyDirectory(source: FileSystemDirectoryHandle, parentDir: FileS
 	}
 }
 
+async function findUniqueName(dir: FileSystemDirectoryHandle, name: string): Promise<string> {
+	const hasEntry = async (n: string): Promise<boolean> => {
+		try {
+			await dir.getDirectoryHandle(n);
+			return true;
+		} catch {
+			try {
+				await dir.getFileHandle(n);
+				return true;
+			} catch {
+				return false;
+			}
+		}
+	};
+	if (!(await hasEntry(name))) return name;
+	let counter = 2;
+	const dot = name.lastIndexOf('.');
+	while (true) {
+		const candidate = dot > 0 ? name.slice(0, dot) + ` (${counter})` + name.slice(dot) : name + ` (${counter})`;
+		if (!(await hasEntry(candidate))) return candidate;
+		counter++;
+	}
+}
+
+export async function uniqueName(path: string, name: string): Promise<string> {
+	const dir = await resolveDirectory(path);
+	return findUniqueName(dir, name);
+}
+
+export async function copyEntryTo(sourcePath: string, name: string, destPath: string): Promise<void> {
+	const sourceDir = await resolveDirectory(sourcePath);
+	const destDir = await resolveDirectory(destPath);
+	const targetName = await findUniqueName(destDir, name);
+	const dirHandle = await sourceDir.getDirectoryHandle(name).catch(() => null);
+	if (dirHandle) {
+		await copyDirectory(dirHandle, destDir, targetName);
+	} else {
+		const fileHandle = await sourceDir.getFileHandle(name);
+		const file = await fileHandle.getFile();
+		const newFile = await destDir.getFileHandle(targetName, { create: true });
+		const writable = await newFile.createWritable();
+		await writable.write(file);
+		await writable.close();
+	}
+}
+
+export async function moveEntry(sourcePath: string, name: string, destPath: string): Promise<void> {
+	await copyEntryTo(sourcePath, name, destPath);
+	const sourceDir = await resolveDirectory(sourcePath);
+	await sourceDir.removeEntry(name, { recursive: true });
+}
+
 export async function exists(path: string, name: string): Promise<boolean> {
 	try {
 		const dir = await resolveDirectory(path);
@@ -128,39 +180,5 @@ export async function directoryExists(path: string): Promise<boolean> {
 }
 
 export async function moveToTrash(path: string, name: string): Promise<void> {
-	const trashDir = await resolveDirectory('/Trash');
-	let targetName = name;
-	let counter = 1;
-	const hasEntry = async (n: string): Promise<boolean> => {
-		try {
-			await trashDir.getDirectoryHandle(n);
-			return true;
-		} catch {
-			try {
-				await trashDir.getFileHandle(n);
-				return true;
-			} catch {
-				return false;
-			}
-		}
-	};
-	while (await hasEntry(targetName)) {
-		const dot = name.lastIndexOf('.');
-		if (dot > 0) targetName = name.slice(0, dot) + ` (${counter})` + name.slice(dot);
-		else targetName = name + ` (${counter})`;
-		counter++;
-	}
-	const sourceDir = await resolveDirectory(path);
-	const sourceHandle = await sourceDir.getDirectoryHandle(name).catch(() => null);
-	if (sourceHandle) {
-		await copyDirectory(sourceHandle, trashDir, targetName);
-	} else {
-		const fileHandle = await sourceDir.getFileHandle(name);
-		const file = await fileHandle.getFile();
-		const newFile = await trashDir.getFileHandle(targetName, { create: true });
-		const writable = await newFile.createWritable();
-		await writable.write(file);
-		await writable.close();
-	}
-	await sourceDir.removeEntry(name, { recursive: true });
+	await moveEntry(path, name, '/Trash');
 }

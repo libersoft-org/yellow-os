@@ -2,6 +2,7 @@
 	import { getWindow } from '../../scripts/window-context.ts';
 	import { readYappManifest, buildBlobUrl, isYappFile } from './app-player.ts';
 	import type { YappManifest } from './app-player.ts';
+	import { registerDropZone } from '../../scripts/drag-state.svelte.ts';
 	import Spinner from '../../components/Spinner/Spinner.svelte';
 	interface Props {
 		filePath?: string;
@@ -40,7 +41,7 @@
 	}
 
 	function applyManifest(manifest: YappManifest): void {
-		win.title = manifest.name + ' — App Player';
+		win.title = manifest.name + ' - App Player';
 		const w = manifest.window;
 		if (!w) return;
 		if (w.width !== undefined) win.width = w.width;
@@ -57,9 +58,10 @@
 		if (w.state !== undefined) win.state = w.state;
 	}
 
-	if (hasFile) {
-		loadYapp(filePath!, fileName!);
+	function initFromProps(): void {
+		if (filePath && fileName) loadYapp(filePath, fileName);
 	}
+	initFromProps();
 
 	function handleDragOver(e: DragEvent): void {
 		e.preventDefault();
@@ -98,6 +100,17 @@
 			error = 'Failed to read dropped file.';
 			loading = false;
 		}
+	}
+
+	function appPlayerDropZone(el: HTMLElement): { destroy(): void } {
+		return { destroy: registerDropZone(el, handleOPFSDrop) };
+	}
+
+	function handleOPFSDrop(sourcePath: string, fileNames: string[]): void {
+		if (fileNames.length !== 1) return;
+		const name = fileNames[0]!;
+		if (!isYappFile(name)) return;
+		loadYapp(sourcePath, name);
 	}
 </script>
 
@@ -169,7 +182,7 @@
 {:else if iframeSrc}
 	<iframe src={iframeSrc} title={win.title} sandbox="allow-scripts" class="app-frame"></iframe>
 {:else}
-	<div class="center drop-zone" class:dragging role="button" tabindex="0" ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop}>
+	<div class="center drop-zone" class:dragging role="button" tabindex="0" ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop} use:appPlayerDropZone>
 		<div class="drop-icon">📦</div>
 		<p>Open a <strong>.yapp</strong> file</p>
 		<p class="hint">Double-click a .yapp file in File Browser<br />or drag & drop it here</p>

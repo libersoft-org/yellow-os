@@ -5,4 +5,5 @@ export interface IconGridItemData {
 	iconColor?: string | undefined;
 	gridX?: number | undefined;
 	gridY?: number | undefined;
+	droppable?: boolean | undefined;
 }
