@@ -21,7 +21,6 @@ const defaultFileTypes: Record<string, string> = {
 const defaultDesktopLinks: LinkData[] = [
 	{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' },
 	{ appId: 'file-browser', label: 'Trash', icon: '/img/apps/trash.svg', props: { path: '/Trash' } },
-	{ appId: 'settings', label: 'Settings', icon: '/img/apps/settings.svg' },
 ];
 const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 	Programs: [
@@ -46,11 +45,9 @@ export async function initOpfs(): Promise<void> {
 	if (navigator.storage.persist) {
 		await navigator.storage.persist();
 	}
-
 	for (const dir of ROOT_DIRS) {
 		if (!(await directoryExists('/' + dir))) await createDirectory('/', dir);
 	}
-
 	const freshDirs = new Set<string>();
 	for (const dir of OS_SUBDIRS) {
 		if (!(await directoryExists(OS_PATH + '/' + dir))) {
@@ -58,15 +55,10 @@ export async function initOpfs(): Promise<void> {
 			freshDirs.add(dir);
 		}
 	}
-
 	if (freshDirs.has('Desktop')) {
 		for (const link of defaultDesktopLinks) await writeLinkFile(OS_PATH + '/Desktop', link);
 	}
-
-	if (!(await exists(OS_PATH, 'file-types.json'))) {
-		await writeFile(OS_PATH, 'file-types.json', JSON.stringify(defaultFileTypes, null, '\t'));
-	}
-
+	if (!(await exists(OS_PATH, 'file-types.json'))) await writeFile(OS_PATH, 'file-types.json', JSON.stringify(defaultFileTypes, null, '\t'));
 	if (freshDirs.has('TaskbarMenu')) {
 		for (const [directoryName, links] of Object.entries(defaultTaskbarMenuStructure)) {
 			await createDirectory(OS_PATH + '/TaskbarMenu', directoryName);
@@ -75,7 +67,6 @@ export async function initOpfs(): Promise<void> {
 		await writeLinkFile(OS_PATH + '/TaskbarMenu', { appId: 'settings', label: 'Settings', icon: '/img/apps/settings.svg' });
 		await writeLinkFile(OS_PATH + '/TaskbarMenu', { appId: 'about', label: 'About ' + OS_NAME, icon: '/img/logo.svg' });
 	}
-
 	if (freshDirs.has('Wallpapers')) {
 		for (const name of defaultWallpapers) {
 			try {

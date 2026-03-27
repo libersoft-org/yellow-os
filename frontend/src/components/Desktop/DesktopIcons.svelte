@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { defocusAll } from '../../scripts/window-store.svelte.ts';
+	import { defocusAll, openWindow } from '../../scripts/window-store.svelte.ts';
 	import { OS_PATH } from '../../scripts/opfs-init.ts';
+	import { getAppComponent } from '../../scripts/app-registry.ts';
 	import DirectoryView from '../DirectoryView/DirectoryView.svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	const DESKTOP_PATH = OS_PATH + '/Desktop';
@@ -8,7 +9,17 @@
 		desktopId?: number | undefined;
 	}
 	const {}: Props = $props();
-	const extraMenuItems: ContextMenuItem[] = [{ separator: true }, { icon: '/img/settings.svg', label: 'Settings', onclick: () => {} }];
+	const extraMenuItems: ContextMenuItem[] = [
+		{ separator: true },
+		{
+			icon: '/img/settings.svg',
+			label: 'Settings',
+			onclick: () => {
+				const c = getAppComponent('settings');
+				if (c) openWindow(c);
+			},
+		},
+	];
 	let directoryView = $state<DirectoryView>();
 
 	function onItemsMove(_moves: { id: string; gridX: number; gridY: number }[]): void {
