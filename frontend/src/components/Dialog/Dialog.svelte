@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { getWindow } from '../../scripts/window-context.ts';
 	import { closeWindow } from '../../scripts/window-store.svelte.ts';
 	import { getTypeIcon, getTypeColorVariable } from '../../scripts/dialog.ts';
@@ -14,11 +15,29 @@
 	const win = getWindow();
 	const typeIcon = $derived(getTypeIcon(type));
 	const typeColor = $derived(getTypeColorVariable(type));
+	let buttonsEl: HTMLDivElement | undefined = $state();
 
 	function handleButton(btn: DialogButton): void {
 		if (btn.onclick) btn.onclick();
 		closeWindow(win.id);
 	}
+
+	function handleKeydown(e: KeyboardEvent): void {
+		if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+		if (!buttonsEl) return;
+		const focusable = [...buttonsEl.querySelectorAll<HTMLElement>('[role="button"]')];
+		if (focusable.length === 0) return;
+		const current = focusable.indexOf(document.activeElement as HTMLElement);
+		if (current === -1) return;
+		e.preventDefault();
+		const next = e.key === 'ArrowRight' ? (current + 1) % focusable.length : (current - 1 + focusable.length) % focusable.length;
+		focusable[next]!.focus();
+	}
+
+	onMount(() => {
+		const first = buttonsEl?.querySelector<HTMLElement>('[role="button"]');
+		if (first) first.focus();
+	});
 </script>
 
 <style>
@@ -51,12 +70,12 @@
 	}
 </style>
 
-<div class="dialog">
+<div class="dialog" role="application" onkeydown={handleKeydown}>
 	<div class="content">
 		<Icon img={typeIcon} size="40px" padding="0" colorVariable={typeColor} />
 		<span class="message">{message}</span>
 	</div>
-	<div class="buttons">
+	<div class="buttons" bind:this={buttonsEl}>
 		{#each buttons as btn}
 			<Button colorVariable={btn.colorVariable} backgroundColorVariable={btn.backgroundColorVariable} onclick={() => handleButton(btn)}>
 				{btn.label}
