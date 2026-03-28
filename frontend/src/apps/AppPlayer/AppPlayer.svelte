@@ -3,6 +3,7 @@
 	import { readYappManifest, buildBlobUrl, isYappFile, resolveYappIcon } from './app-player.ts';
 	import type { YappManifest } from './app-player.ts';
 	import { registerDropZone } from '../../scripts/drag-state.svelte.ts';
+	import { focusWindow } from '../../scripts/window-store.svelte.ts';
 	import Spinner from '../../components/Spinner/Spinner.svelte';
 	import Icon from '../../components/Icon/Icon.svelte';
 	interface Props {
@@ -46,9 +47,7 @@
 		if (manifest.icon) {
 			try {
 				win.icon = await resolveYappIcon(dir, manifest.icon);
-			} catch {
-				/* keep default icon */
-			}
+			} catch { /* keep default icon */ }
 		}
 		const w = manifest.window;
 		if (!w) return;
@@ -118,6 +117,7 @@
 		if (fileNames.length !== 1) return;
 		const name = fileNames[0]!;
 		if (!isYappFile(name)) return;
+		focusWindow(win.id);
 		loadYapp(sourcePath, name);
 	}
 </script>
