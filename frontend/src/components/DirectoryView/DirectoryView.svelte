@@ -7,7 +7,7 @@
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/opfs-notify.ts';
-	import { confirmDelete, openRenameDialog, openNewEntryDialog } from '../../scripts/file-actions.ts';
+	import { confirmDelete, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
@@ -215,9 +215,12 @@
 
 		if (e.button === 0) {
 			if (destPath) {
-				for (const id of draggedIds) await moveEntry(path, id, destPath);
-				notifyDirectoryChange(path);
-				notifyDirectoryChange(destPath);
+				const allowed = warnSystemMove(path, draggedIds);
+				if (allowed.length > 0) {
+					for (const id of allowed) await moveEntry(path, id, destPath);
+					notifyDirectoryChange(path);
+					notifyDirectoryChange(destPath);
+				}
 			}
 		} else if (e.button === 2) {
 			const dropMenuItems: ContextMenuItem[] = [
@@ -226,9 +229,12 @@
 					label: 'Move here',
 					onclick: async () => {
 						if (destPath && destPath !== path) {
-							for (const id of draggedIds) await moveEntry(path, id, destPath);
-							notifyDirectoryChange(path);
-							notifyDirectoryChange(destPath);
+							const allowed = warnSystemMove(path, draggedIds);
+							if (allowed.length > 0) {
+								for (const id of allowed) await moveEntry(path, id, destPath);
+								notifyDirectoryChange(path);
+								notifyDirectoryChange(destPath);
+							}
 						}
 					},
 				},
@@ -279,8 +285,10 @@
 
 		if (button === 0) {
 			(async (): Promise<void> => {
+				const allowed = warnSystemMove(sourcePath, fileNames);
+				if (allowed.length === 0) return;
 				const nameMap = new Map<string, string>();
-				for (const name of fileNames) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+				for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
 				const positions = computeDropPositions(nameMap);
 				if (positions) iconGrid?.schedulePositions(positions);
 				notifyDirectoryChange(sourcePath);
@@ -296,8 +304,10 @@
 						icon: '/img/cut.svg',
 						label: 'Move here',
 						onclick: async () => {
+							const allowed = warnSystemMove(sourcePath, fileNames);
+							if (allowed.length === 0) return;
 							const nameMap = new Map<string, string>();
-							for (const name of fileNames) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+							for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
 							const positions = computeDropPositions(nameMap);
 							if (positions) iconGrid?.schedulePositions(positions);
 							notifyDirectoryChange(sourcePath);

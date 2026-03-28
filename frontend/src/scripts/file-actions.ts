@@ -6,6 +6,12 @@ import { notifyDirectoryChange } from './opfs-notify.ts';
 import NewEntryDialog from '../apps/FileBrowser/NewEntryDialog.svelte';
 import RenameDialog from '../apps/FileBrowser/RenameDialog.svelte';
 
+export function warnSystemMove(dirPath: string, names: string[]): string[] {
+	const blocked = names.filter(n => isSystemEntry(dirPath, n));
+	if (blocked.length > 0) showDialog({ title: 'Error', message: `"${blocked.join('", "')}" cannot be moved because it is a system directory.`, type: 'warning', buttons: [{ label: 'OK' }] });
+	return names.filter(n => !isSystemEntry(dirPath, n));
+}
+
 export function confirmDelete(dirPath: string, entryName: string, entryType: 'file' | 'directory', permanent: boolean, onclosed?: () => void): void {
 	if (isSystemEntry(dirPath, entryName)) {
 		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be deleted.`, type: 'warning', buttons: [{ label: 'OK' }], ...(onclosed ? { onclosed } : {}) });
