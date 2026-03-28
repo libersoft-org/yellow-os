@@ -6,6 +6,7 @@
 	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
+	import { getAppComponent } from '../../scripts/app-registry.ts';
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/opfs-notify.ts';
 	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
@@ -117,7 +118,6 @@
 			if (onnavigate) {
 				onnavigate(fullPath);
 			} else {
-				const { getAppComponent } = await import('../../scripts/app-registry.ts');
 				const FileBrowser = getAppComponent('file-browser');
 				if (FileBrowser) openWindow(FileBrowser, { path: fullPath });
 			}
@@ -146,8 +146,7 @@
 			items.push({
 				icon: '/img/open.svg',
 				label: 'Open in new window',
-				onclick: async () => {
-					const { getAppComponent } = await import('../../scripts/app-registry.ts');
+				onclick: () => {
 					const FileBrowser = getAppComponent('file-browser');
 					const fullPath = path === '/' ? '/' + entry.name : path + '/' + entry.name;
 					if (FileBrowser) openWindow(FileBrowser, { path: fullPath });
