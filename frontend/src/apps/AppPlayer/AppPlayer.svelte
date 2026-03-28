@@ -43,11 +43,13 @@
 	}
 
 	async function applyManifest(dir: string, manifest: YappManifest): Promise<void> {
-		win.title = manifest.name + ' - App Player';
+		win.title = manifest.name ?? '';
 		if (manifest.icon) {
 			try {
 				win.icon = await resolveYappIcon(dir, manifest.icon);
-			} catch { /* keep default icon */ }
+			} catch {
+				/* keep default icon */
+			}
 		}
 		const w = manifest.window;
 		if (!w) return;

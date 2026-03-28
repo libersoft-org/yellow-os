@@ -93,7 +93,7 @@ A `.yapp` file is a JSON manifest that defines a custom application running insi
 
 | Field    | Type   | Required | Description                                              |
 | -------- | ------ | -------- | -------------------------------------------------------- |
-| `name`   | string | yes      | Application name shown in the window titlebar            |
+| `name`   | string | no       | Application name shown in the window titlebar            |
 | `entry`  | string | yes      | Path to the HTML entry file (relative to `.yapp` location or absolute from OPFS root) |
 | `icon`   | string | no       | Path to the app icon                                     |
 | `window` | object | no       | Window configuration (see below)                         |

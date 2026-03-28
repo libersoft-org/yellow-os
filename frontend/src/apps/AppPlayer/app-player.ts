@@ -1,6 +1,6 @@
 import { readFileText, readFileBlob } from '../../scripts/opfs.ts';
 export interface YappManifest {
-	name: string;
+	name?: string;
 	entry: string;
 	icon?: string;
 	window?: {
@@ -23,7 +23,7 @@ export async function readYappManifest(dirPath: string, fileName: string): Promi
 	try {
 		const text = await readFileText(dirPath, fileName);
 		const data = JSON.parse(text) as Partial<YappManifest>;
-		if (typeof data.name !== 'string' || typeof data.entry !== 'string') return null;
+		if (typeof data.entry !== 'string') return null;
 		return data as YappManifest;
 	} catch {
 		return null;
