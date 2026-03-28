@@ -3,7 +3,6 @@
 ## Bugs / changes
 
 - Test what happens when settings.json file is deleted
-- Describe how .yapp files should look like in USAGE.md
 - In directory view - when selected multiple icons and then right click - delete - it deletes one item only - should delete them all and the message should be like if i really want to delete xx items. Do it for trash and permanent delete too.
 - File browser - right click in list view mode on directory doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
