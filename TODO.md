@@ -21,7 +21,6 @@
 
 ## New features
 
-- When some icon in directory list is selected, keyboard arrow keys and enter should work too (it doesnt now)
 - Forbid moving / renaming / deleting Trash directory
 - Forbid dragging windows outside of screen
 - File Browser - drag and drop / upload form from main OS to web OS

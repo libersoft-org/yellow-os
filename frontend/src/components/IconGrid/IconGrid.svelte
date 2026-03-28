@@ -340,7 +340,6 @@
 					const origPos = itemPositions.get(dragMoveItemId)!;
 					const deltaX = newGridX - origPos.gridX;
 					const deltaY = newGridY - origPos.gridY;
-
 					if (deltaX !== 0 || deltaY !== 0) {
 						const selectedIds = [...selection.selected];
 						const selectedSet = new Set(selectedIds);
@@ -375,11 +374,64 @@
 		dragOverId = null;
 	}
 
+	function findItemInDirection(fromId: string, key: string): string | null {
+		const fromPos = itemPositions.get(fromId);
+		if (!fromPos) return null;
+		const dx = key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : 0;
+		const dy = key === 'ArrowDown' ? 1 : key === 'ArrowUp' ? -1 : 0;
+		let bestId: string | null = null;
+		let bestDist = Infinity;
+		for (const [id, pos] of itemPositions) {
+			if (id === fromId) continue;
+			const relX = pos.gridX - fromPos.gridX;
+			const relY = pos.gridY - fromPos.gridY;
+			// Must be in the correct direction on the primary axis
+			if (dx !== 0 && Math.sign(relX) !== dx) continue;
+			if (dy !== 0 && Math.sign(relY) !== dy) continue;
+			// For horizontal movement, prefer same row; for vertical, prefer same column
+			const primary = dx !== 0 ? Math.abs(relX) : Math.abs(relY);
+			const secondary = dx !== 0 ? Math.abs(relY) : Math.abs(relX);
+			const dist = primary + secondary * 1000;
+			if (dist < bestDist) {
+				bestDist = dist;
+				bestId = id;
+			}
+		}
+		return bestId;
+	}
+
 	function onKeydown(e: KeyboardEvent): void {
 		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
 			e.preventDefault();
 			selection.selectAll(items.map(i => i.id));
 			emitSelectionChange();
+			return;
+		}
+		if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+			e.preventDefault();
+			if (items.length === 0) return;
+			const currentId = lastClickedItemId && selection.isSelected(lastClickedItemId) ? lastClickedItemId : [...selection.selected][0];
+			if (!currentId) {
+				const firstItem = items[0]!;
+				selection.set(new Set([firstItem.id]));
+				lastClickedItemId = firstItem.id;
+				emitSelectionChange();
+				return;
+			}
+			const nextId = findItemInDirection(currentId, e.key);
+			if (nextId) {
+				selection.set(new Set([nextId]));
+				lastClickedItemId = nextId;
+				emitSelectionChange();
+			}
+			return;
+		}
+		if (e.key === 'Enter' && selection.selected.size === 1) {
+			e.preventDefault();
+			const id = [...selection.selected][0]!;
+			const item = items.find(i => i.id === id);
+			if (item) ondblclick?.(item);
+			return;
 		}
 		onkeyaction?.(e);
 	}
