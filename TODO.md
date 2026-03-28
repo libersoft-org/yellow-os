@@ -22,7 +22,6 @@
 ## New features
 
 - When taskbar windows are icon only (withtout text) add tooltip
-- Forbid moving / renaming / deleting OS directory (in our case YellowOS)
 - Forbid dragging windows outside of screen
 - File Browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps (test the App Player application)
