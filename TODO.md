@@ -21,6 +21,7 @@
 
 ## New features
 
+- When taskbar windows are icon only (withtout text) add tooltip
 - Forbid moving / renaming / deleting Trash directory
 - Forbid dragging windows outside of screen
 - File Browser - drag and drop / upload form from main OS to web OS
