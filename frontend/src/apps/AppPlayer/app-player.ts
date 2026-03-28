@@ -87,3 +87,9 @@ function resolveBaseDir(yappDir: string, entryPath: string): string {
 export function isYappFile(name: string): boolean {
 	return name.endsWith('.yapp');
 }
+
+export async function resolveYappIcon(yappDir: string, iconPath: string): Promise<string> {
+	const { dir, name } = resolveFilePath(yappDir, iconPath);
+	const blob = await readFileBlob(dir, name);
+	return URL.createObjectURL(blob);
+}

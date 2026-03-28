@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window-context.ts';
-	import { readYappManifest, buildBlobUrl, isYappFile } from './app-player.ts';
+	import { readYappManifest, buildBlobUrl, isYappFile, resolveYappIcon } from './app-player.ts';
 	import type { YappManifest } from './app-player.ts';
 	import { registerDropZone } from '../../scripts/drag-state.svelte.ts';
 	import Spinner from '../../components/Spinner/Spinner.svelte';
@@ -33,7 +33,7 @@
 				loading = false;
 				return;
 			}
-			applyManifest(manifest);
+			await applyManifest(dir, manifest);
 			iframeSrc = await buildBlobUrl(dir, manifest.entry);
 		} catch (e) {
 			error = e instanceof Error ? e.message : 'Failed to load app.';
@@ -41,8 +41,15 @@
 		loading = false;
 	}
 
-	function applyManifest(manifest: YappManifest): void {
+	async function applyManifest(dir: string, manifest: YappManifest): Promise<void> {
 		win.title = manifest.name + ' - App Player';
+		if (manifest.icon) {
+			try {
+				win.icon = await resolveYappIcon(dir, manifest.icon);
+			} catch {
+				/* keep default icon */
+			}
+		}
 		const w = manifest.window;
 		if (!w) return;
 		if (w.width !== undefined) win.width = w.width;
@@ -94,7 +101,7 @@
 				loading = false;
 				return;
 			}
-			applyManifest(manifest as YappManifest);
+			applyManifest('/', manifest as YappManifest);
 			error = 'Drag & drop from host OS requires all app files to be on OPFS.\nUse File Browser to upload the app first.';
 			loading = false;
 		} catch {
