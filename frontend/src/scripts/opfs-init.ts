@@ -41,9 +41,7 @@ async function writeLinkFile(path: string, data: LinkData): Promise<void> {
 }
 
 export async function initOpfs(): Promise<void> {
-	if (navigator.storage.persist) {
-		await navigator.storage.persist();
-	}
+	if (navigator.storage.persist) await navigator.storage.persist();
 	for (const dir of ROOT_DIRS) {
 		if (!(await directoryExists('/' + dir))) await createDirectory('/', dir);
 	}

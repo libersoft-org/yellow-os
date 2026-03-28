@@ -195,5 +195,11 @@ export async function directoryExists(path: string): Promise<boolean> {
 }
 
 export async function moveToTrash(path: string, name: string): Promise<void> {
+	if (isSystemEntry(path, name)) return;
+	if (path === '/Trash' || path.startsWith('/Trash/')) {
+		const dir = await resolveDirectory(path);
+		await dir.removeEntry(name, { recursive: true });
+		return;
+	}
 	await moveEntry(path, name, '/Trash');
 }

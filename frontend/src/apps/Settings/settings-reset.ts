@@ -19,17 +19,32 @@ export function confirmFactoryReset(): void {
 	});
 }
 
-async function factoryReset(): Promise<void> {
+async function wipeOpfs(): Promise<void> {
 	const root = await navigator.storage.getDirectory();
-	for await (const [name] of (root as any).entries() as AsyncIterable<[string, FileSystemHandle]>) {
+	const names: string[] = [];
+	for await (const name of (root as any).keys() as AsyncIterable<string>) {
+		names.push(name);
+	}
+	for (const name of names) {
 		try {
 			await root.removeEntry(name, { recursive: true });
-		} catch {
-			/* skip entries that fail to delete */
+		} catch (e) {
+			console.warn('[factory-reset] removeEntry failed:', name, e);
 		}
 	}
+}
+
+async function wipeIndexedDB(): Promise<void> {
+	const databases = await indexedDB.databases();
+	for (const db of databases) {
+		if (db.name) indexedDB.deleteDatabase(db.name);
+	}
+}
+
+async function factoryReset(): Promise<void> {
 	localStorage.clear();
-	const dbs = await indexedDB.databases();
-	for (const db of dbs) if (db.name) indexedDB.deleteDatabase(db.name);
+	sessionStorage.clear();
+	await wipeOpfs();
+	await wipeIndexedDB();
 	location.reload();
 }

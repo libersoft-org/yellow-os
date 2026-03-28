@@ -7,7 +7,7 @@
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/opfs-notify.ts';
-	import { confirmDelete, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
+	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
@@ -161,7 +161,19 @@
 		if (selectedEntries.length <= 1) {
 			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(path, entry.name, entry.type, handleRenamed, focusGrid) });
 		}
-		items.push({ icon: '/img/trash.svg', label: 'Delete', onclick: (e: MouseEvent) => confirmDelete(path, entry.name, entry.type, e.shiftKey, focusGrid) });
+		items.push({
+			icon: '/img/trash.svg',
+			label: 'Delete',
+			onclick: (e: MouseEvent) => {
+				const toDelete = selectedEntries.length > 1 ? selectedEntries : [entry];
+				confirmDeleteMultiple(
+					path,
+					toDelete.map(en => ({ name: en.name, type: en.type })),
+					e.shiftKey,
+					focusGrid
+				);
+			},
+		});
 		return items;
 	}
 
@@ -201,7 +213,12 @@
 	function handleKeydown(e: KeyboardEvent): void {
 		if (e.key === 'Delete' && selectedEntries.length > 0) {
 			e.preventDefault();
-			for (const entry of selectedEntries) confirmDelete(path, entry.name, entry.type, e.shiftKey, focusGrid);
+			confirmDeleteMultiple(
+				path,
+				selectedEntries.map(en => ({ name: en.name, type: en.type })),
+				e.shiftKey,
+				focusGrid
+			);
 		}
 		if (e.key === 'F2' && selectedEntries.length === 1) {
 			e.preventDefault();

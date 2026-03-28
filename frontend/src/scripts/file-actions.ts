@@ -60,6 +60,63 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 	}
 }
 
+export function confirmDeleteMultiple(dirPath: string, entries: { name: string; type: 'file' | 'directory' }[], permanent: boolean, onclosed?: () => void): void {
+	const deletable = entries.filter(e => !isSystemEntry(dirPath, e.name));
+	const blocked = entries.filter(e => isSystemEntry(dirPath, e.name));
+	if (blocked.length > 0) {
+		showDialog({ title: 'Error', message: `"${blocked.map(e => e.name).join('", "')}" cannot be deleted because ${blocked.length === 1 ? 'it is a system directory' : 'they are system directories'}.`, type: 'warning', buttons: [{ label: 'OK' }] });
+	}
+	if (deletable.length === 0) {
+		if (onclosed) onclosed();
+		return;
+	}
+	if (deletable.length === 1) {
+		confirmDelete(dirPath, deletable[0]!.name, deletable[0]!.type, permanent, onclosed);
+		return;
+	}
+	const count = deletable.length;
+	if (permanent) {
+		showDialog({
+			title: 'Permanently Delete',
+			message: `Are you sure you want to permanently delete ${count} items? This action cannot be undone.`,
+			type: 'question',
+			buttons: [
+				{
+					label: 'Delete',
+					backgroundColorVariable: '--color-danger',
+					colorVariable: '--color-accent-fg',
+					onclick: async () => {
+						for (const e of deletable) await deleteEntry(dirPath, e.name);
+						notifyDirectoryChange(dirPath);
+					},
+				},
+				{ label: 'Cancel' },
+			],
+			...(onclosed ? { onclosed } : {}),
+		});
+	} else {
+		showDialog({
+			title: 'Delete',
+			message: `Are you sure you want to move ${count} items to Trash?`,
+			type: 'question',
+			buttons: [
+				{
+					label: 'Move to Trash',
+					backgroundColorVariable: '--color-danger',
+					colorVariable: '--color-accent-fg',
+					onclick: async () => {
+						for (const e of deletable) await moveToTrash(dirPath, e.name);
+						notifyDirectoryChange(dirPath);
+						notifyDirectoryChange('/Trash');
+					},
+				},
+				{ label: 'Cancel' },
+			],
+			...(onclosed ? { onclosed } : {}),
+		});
+	}
+}
+
 export function openRenameDialog(dirPath: string, entryName: string, entryType: 'file' | 'directory', onrenamed?: (oldName: string, newName: string) => void, onclosed?: () => void): void {
 	if (isSystemEntry(dirPath, entryName)) {
 		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be renamed.`, type: 'warning', buttons: [{ label: 'OK' }], ...(onclosed ? { onclosed } : {}) });
