@@ -8,17 +8,13 @@ export interface FileTypeHandler {
 	props: Record<string, unknown>;
 }
 
-let cachedAssociations: Record<string, string> | null = null;
-
 async function loadAssociations(): Promise<Record<string, string>> {
-	if (cachedAssociations) return cachedAssociations;
 	try {
 		const text = await readFileText(OS_PATH, 'file-types.json');
-		cachedAssociations = JSON.parse(text) as Record<string, string>;
+		return JSON.parse(text) as Record<string, string>;
 	} catch {
-		cachedAssociations = {};
+		return {};
 	}
-	return cachedAssociations;
 }
 
 function getExtension(name: string): string {
@@ -40,10 +36,6 @@ export async function getFileHandler(filePath: string, fileName: string): Promis
 export function getEditHandler(filePath: string, fileName: string): FileTypeHandler {
 	const component = getAppComponent('text-editor')!;
 	return { component, props: { filePath, fileName } };
-}
-
-export function invalidateFileTypeCache(): void {
-	cachedAssociations = null;
 }
 
 export async function getFileAppId(fileName: string): Promise<string | null> {
