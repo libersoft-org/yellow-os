@@ -23,6 +23,5 @@ export function sendTestNotification(): void {
 		description: 'This is a test notification to preview how notifications look and behave. It contains a much longer text to demonstrate how the notification component handles overflow, wrapping, and scrolling when the content exceeds the expected size. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.',
 		image: '/img/logo.svg',
 		imageColor: 'var(--color-accent)',
-		titleColor: 'var(--color-accent)',
 	});
 }

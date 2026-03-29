@@ -9,6 +9,7 @@
 	import { getAppComponent } from '../../scripts/app-registry.ts';
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/opfs-notify.ts';
 	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
+	import { downloadEntries } from '../../scripts/download.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
@@ -285,6 +286,16 @@
 			items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
 		}
 		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true });
+		const toDownload = selectedEntries.length > 1 ? selectedEntries : [entry];
+		items.push({
+			icon: '/img/download.svg',
+			label: 'Download',
+			onclick: () =>
+				downloadEntries(
+					path,
+					toDownload.map(en => ({ name: en.name, type: en.type }))
+				),
+		});
 		if (selectedEntries.length <= 1) {
 			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(path, entry.name, entry.type, handleRenamed, focusGrid) });
 		}

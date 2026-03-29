@@ -173,7 +173,7 @@
 	.title {
 		font-size: 14px;
 		font-weight: bold;
-		color: var(--color-text);
+		color: var(--color-accent);
 		word-wrap: break-word;
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
