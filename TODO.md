@@ -2,7 +2,7 @@
 
 ## Bugs / changes
 
-- When icons in file browser are overflowing to side (which is OK) and I scroll right, then this IconGrid element is not on the empty space, so right click doesnt work there for showing context menu.
+- List view should have margin on sides, so I can right click there and have the context menu with new file, new directory etc.
 - File Browser - when right click - cut - show cutted icons with opacity
 - File Browser - When Right clicked on folder and after that right clicked again on other folder - it doesn't highlight the second folder instead of the first folder
 - File Browser - there are 2 different clipboards for text and for file operations, it should be unified... if I copy /cut a file, I should not be able to paste anything to Text Editor and if I copy / cut in Text Editor, I should not be able to paste anything in file browser... also when using File Browser for copy / cut / paste, CTRL + C, X, V are not working at all
