@@ -154,6 +154,10 @@ export async function uniqueName(path: string, name: string): Promise<string> {
 }
 
 export async function copyEntryTo(sourcePath: string, name: string, destPath: string): Promise<string> {
+	const fullSourcePath = joinPath(sourcePath, name);
+	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) {
+		throw new Error(`Cannot copy "${name}" into itself.`);
+	}
 	const sourceDir = await resolveDirectory(sourcePath);
 	const destDir = await resolveDirectory(destPath);
 	const targetName = await findUniqueName(destDir, name);
@@ -173,6 +177,10 @@ export async function copyEntryTo(sourcePath: string, name: string, destPath: st
 
 export async function moveEntry(sourcePath: string, name: string, destPath: string): Promise<string> {
 	if (isSystemEntry(sourcePath, name)) return name;
+	const fullSourcePath = joinPath(sourcePath, name);
+	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) {
+		throw new Error(`Cannot move "${name}" into itself.`);
+	}
 	const finalName = await copyEntryTo(sourcePath, name, destPath);
 	const sourceDir = await resolveDirectory(sourcePath);
 	await sourceDir.removeEntry(name, { recursive: true });

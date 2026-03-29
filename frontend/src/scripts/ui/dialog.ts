@@ -69,3 +69,8 @@ export function showDialog(options: DialogOptions): void {
 	}
 	if (options.onclosed) onWindowClosed(windowId, options.onclosed);
 }
+
+export function showErrorDialog(error: unknown): void {
+	const message = error instanceof Error ? error.message : String(error);
+	showDialog({ title: 'Error', message, type: 'error', buttons: [{ label: 'OK' }] });
+}

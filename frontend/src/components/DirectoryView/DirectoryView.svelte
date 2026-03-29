@@ -10,7 +10,7 @@
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/fs/opfs-notify.ts';
 	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/fs/file-actions.ts';
 	import { downloadEntries } from '../../scripts/fs/download.ts';
-	import { showDialog } from '../../scripts/ui/dialog.ts';
+	import { showDialog, showErrorDialog } from '../../scripts/ui/dialog.ts';
 	import { setClipboard, hasClipboard, pasteClipboard, getClipboard } from '../../scripts/fs/clipboard.svelte.ts';
 	import { ensureOpfsReady } from '../../scripts/fs/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive, startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem } from '../../scripts/ui/drag-state.svelte.ts';
@@ -558,9 +558,13 @@
 			if (destPath) {
 				const allowed = warnSystemMove(path, draggedIds);
 				if (allowed.length > 0) {
-					for (const id of allowed) await moveEntry(path, id, destPath);
-					notifyDirectoryChange(path);
-					notifyDirectoryChange(destPath);
+					try {
+						for (const id of allowed) await moveEntry(path, id, destPath);
+						notifyDirectoryChange(path);
+						notifyDirectoryChange(destPath);
+					} catch (err) {
+						showErrorDialog(err);
+					}
 				}
 			}
 		} else if (e.button === 2) {
@@ -569,36 +573,48 @@
 				y: e.clientY,
 				items: buildDropMenu(
 					async () => {
-						if (!destPath) {
-							const nameMap = new Map<string, string>();
-							for (const id of draggedIds) nameMap.set(id, id);
-							scheduleNewPositions(nameMap);
-						} else if (destPath !== path) {
-							const allowed = warnSystemMove(path, draggedIds);
-							if (allowed.length > 0) {
-								for (const id of allowed) await moveEntry(path, id, destPath);
-								notifyDirectoryChange(path);
-								notifyDirectoryChange(destPath);
+						try {
+							if (!destPath) {
+								const nameMap = new Map<string, string>();
+								for (const id of draggedIds) nameMap.set(id, id);
+								scheduleNewPositions(nameMap);
+							} else if (destPath !== path) {
+								const allowed = warnSystemMove(path, draggedIds);
+								if (allowed.length > 0) {
+									for (const id of allowed) await moveEntry(path, id, destPath);
+									notifyDirectoryChange(path);
+									notifyDirectoryChange(destPath);
+								}
 							}
+						} catch (err) {
+							showErrorDialog(err);
 						}
 					},
 					async () => {
-						const copyDest = destPath ?? path;
-						const nameMap = new Map<string, string>();
-						for (const id of draggedIds) nameMap.set(id, await copyEntryTo(path, id, copyDest));
-						if (!destPath) scheduleNewPositions(nameMap);
-						notifyDirectoryChange(path);
-						if (copyDest !== path) notifyDirectoryChange(copyDest);
+						try {
+							const copyDest = destPath ?? path;
+							const nameMap = new Map<string, string>();
+							for (const id of draggedIds) nameMap.set(id, await copyEntryTo(path, id, copyDest));
+							if (!destPath) scheduleNewPositions(nameMap);
+							notifyDirectoryChange(path);
+							if (copyDest !== path) notifyDirectoryChange(copyDest);
+						} catch (err) {
+							showErrorDialog(err);
+						}
 					},
 					async () => {
-						const linkDest = destPath ?? path;
-						const entryInfos = draggedIds.map(id => {
-							const entry = sortedEntries.find(en => en.name === id);
-							return { name: id, type: (entry?.type ?? 'file') as 'file' | 'directory' };
-						});
-						const nameMap = await createLinksForEntries(path, entryInfos, linkDest);
-						if (!destPath) scheduleNewPositions(nameMap);
-						notifyDirectoryChange(linkDest);
+						try {
+							const linkDest = destPath ?? path;
+							const entryInfos = draggedIds.map(id => {
+								const entry = sortedEntries.find(en => en.name === id);
+								return { name: id, type: (entry?.type ?? 'file') as 'file' | 'directory' };
+							});
+							const nameMap = await createLinksForEntries(path, entryInfos, linkDest);
+							if (!destPath) scheduleNewPositions(nameMap);
+							notifyDirectoryChange(linkDest);
+						} catch (err) {
+							showErrorDialog(err);
+						}
 					}
 				),
 			};
@@ -626,14 +642,18 @@
 
 		if (button === 0) {
 			(async (): Promise<void> => {
-				const allowed = warnSystemMove(sourcePath, fileNames);
-				if (allowed.length === 0) return;
-				const nameMap = new Map<string, string>();
-				for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
-				scheduleDropPositions(nameMap);
-				notifyDirectoryChange(sourcePath);
-				notifyDirectoryChange(destPath);
-				if (destPath !== path) notifyDirectoryChange(path);
+				try {
+					const allowed = warnSystemMove(sourcePath, fileNames);
+					if (allowed.length === 0) return;
+					const nameMap = new Map<string, string>();
+					for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+					scheduleDropPositions(nameMap);
+					notifyDirectoryChange(sourcePath);
+					notifyDirectoryChange(destPath);
+					if (destPath !== path) notifyDirectoryChange(path);
+				} catch (err) {
+					showErrorDialog(err);
+				}
 			})();
 		} else if (button === 2) {
 			contextMenu = {
@@ -641,32 +661,44 @@
 				y,
 				items: buildDropMenu(
 					async () => {
-						const allowed = warnSystemMove(sourcePath, fileNames);
-						if (allowed.length === 0) return;
-						const nameMap = new Map<string, string>();
-						for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
-						scheduleDropPositions(nameMap);
-						notifyDirectoryChange(sourcePath);
-						notifyDirectoryChange(destPath);
-						if (destPath !== path) notifyDirectoryChange(path);
+						try {
+							const allowed = warnSystemMove(sourcePath, fileNames);
+							if (allowed.length === 0) return;
+							const nameMap = new Map<string, string>();
+							for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+							scheduleDropPositions(nameMap);
+							notifyDirectoryChange(sourcePath);
+							notifyDirectoryChange(destPath);
+							if (destPath !== path) notifyDirectoryChange(path);
+						} catch (err) {
+							showErrorDialog(err);
+						}
 					},
 					async () => {
-						const nameMap = new Map<string, string>();
-						for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
-						scheduleDropPositions(nameMap);
-						notifyDirectoryChange(destPath);
-						if (destPath !== path) notifyDirectoryChange(path);
+						try {
+							const nameMap = new Map<string, string>();
+							for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
+							scheduleDropPositions(nameMap);
+							notifyDirectoryChange(destPath);
+							if (destPath !== path) notifyDirectoryChange(path);
+						} catch (err) {
+							showErrorDialog(err);
+						}
 					},
 					async () => {
-						const sourceEntries = await readDirectory(sourcePath);
-						const entryInfos = fileNames.map(name => {
-							const entry = sourceEntries.find(en => en.name === name);
-							return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
-						});
-						const nameMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
-						scheduleDropPositions(nameMap);
-						notifyDirectoryChange(destPath);
-						if (destPath !== path) notifyDirectoryChange(path);
+						try {
+							const sourceEntries = await readDirectory(sourcePath);
+							const entryInfos = fileNames.map(name => {
+								const entry = sourceEntries.find(en => en.name === name);
+								return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
+							});
+							const nameMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
+							scheduleDropPositions(nameMap);
+							notifyDirectoryChange(destPath);
+							if (destPath !== path) notifyDirectoryChange(path);
+						} catch (err) {
+							showErrorDialog(err);
+						}
 					}
 				),
 			};

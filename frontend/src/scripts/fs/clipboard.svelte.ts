@@ -1,5 +1,6 @@
 import { copyEntryTo, moveEntry } from './opfs.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
+import { showErrorDialog } from '../ui/dialog.ts';
 export type ClipboardMode = 'copy' | 'cut';
 interface ClipboardEntry {
 	path: string;
@@ -32,10 +33,14 @@ export async function pasteClipboard(destPath: string): Promise<void> {
 	const entries = [...clipboardEntries];
 	if (mode === 'cut') clearClipboard();
 	const sourcePaths = new Set<string>();
-	for (const entry of entries) {
-		sourcePaths.add(entry.path);
-		if (mode === 'cut') await moveEntry(entry.path, entry.name, destPath);
-		else await copyEntryTo(entry.path, entry.name, destPath);
+	try {
+		for (const entry of entries) {
+			sourcePaths.add(entry.path);
+			if (mode === 'cut') await moveEntry(entry.path, entry.name, destPath);
+			else await copyEntryTo(entry.path, entry.name, destPath);
+		}
+	} catch (err) {
+		showErrorDialog(err);
 	}
 	notifyDirectoryChange(destPath);
 	if (mode === 'cut') {

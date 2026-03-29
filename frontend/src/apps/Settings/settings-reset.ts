@@ -1,4 +1,5 @@
 import { showDialog } from '../../scripts/ui/dialog.ts';
+import { startFactoryReset } from '../../scripts/system/factory-reset.svelte.ts';
 
 export function confirmFactoryReset(): void {
 	showDialog({
@@ -8,7 +9,9 @@ export function confirmFactoryReset(): void {
 		buttons: [
 			{
 				label: 'Yes',
-				onclick: factoryReset,
+				onclick: () => {
+					startFactoryReset();
+				},
 				backgroundColorVariable: '--color-accent',
 				colorVariable: '--color-accent-fg',
 			},
@@ -17,34 +20,4 @@ export function confirmFactoryReset(): void {
 			},
 		],
 	});
-}
-
-async function wipeOpfs(): Promise<void> {
-	const root = await navigator.storage.getDirectory();
-	const names: string[] = [];
-	for await (const name of (root as any).keys() as AsyncIterable<string>) {
-		names.push(name);
-	}
-	for (const name of names) {
-		try {
-			await root.removeEntry(name, { recursive: true });
-		} catch (e) {
-			console.warn('[factory-reset] removeEntry failed:', name, e);
-		}
-	}
-}
-
-async function wipeIndexedDB(): Promise<void> {
-	const databases = await indexedDB.databases();
-	for (const db of databases) {
-		if (db.name) indexedDB.deleteDatabase(db.name);
-	}
-}
-
-async function factoryReset(): Promise<void> {
-	localStorage.clear();
-	sessionStorage.clear();
-	await wipeOpfs();
-	await wipeIndexedDB();
-	location.reload();
 }
