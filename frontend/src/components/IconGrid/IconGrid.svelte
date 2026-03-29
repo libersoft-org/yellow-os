@@ -130,6 +130,12 @@
 		return (maxRow + 1) * cellHeight;
 	});
 
+	const contentWidth = $derived.by(() => {
+		let maxCol = 0;
+		for (const pos of itemPositions.values()) maxCol = Math.max(maxCol, pos.gridX);
+		return (maxCol + 1) * cellWidth;
+	});
+
 	// Drag state
 	type DragMode = 'none' | 'select' | 'move';
 	let dragMode = $state<DragMode>('none');
@@ -607,7 +613,7 @@
 	}
 </style>
 
-<div class="icon-grid" role="grid" use:observeResize bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" use:pointerGestures={{ onpress: handlePress, onclick: handleClick, ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd }} onkeydown={onKeydown} tabindex="0">
+<div class="icon-grid" role="grid" use:observeResize bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" style:min-width="max(100%, {contentWidth}px)" use:pointerGestures={{ onpress: handlePress, onclick: handleClick, ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd }} onkeydown={onKeydown} tabindex="0">
 	{#if items.length === 0 && empty}
 		<div class="empty-state">{@render empty()}</div>
 	{/if}
