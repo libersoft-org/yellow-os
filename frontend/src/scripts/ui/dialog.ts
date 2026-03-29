@@ -1,5 +1,5 @@
 import type { Component } from 'svelte';
-import { openWindow, findWindow, onWindowClosed } from './window-store.svelte.ts';
+import { openWindow, findWindow, onWindowClosed } from '../window/window-store.svelte.ts';
 export type DialogType = 'info' | 'warning' | 'error' | 'question';
 export interface DialogButton {
 	label: string;

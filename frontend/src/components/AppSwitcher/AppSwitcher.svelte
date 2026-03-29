@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appSwitcher } from '../../scripts/app-switcher.svelte.ts';
+	import { appSwitcher } from '../../scripts/system/app-switcher.svelte.ts';
 	import Icon from '../Icon/Icon.svelte';
 </script>
 

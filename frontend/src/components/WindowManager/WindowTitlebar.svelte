@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { WindowState } from '../../scripts/window-store.svelte.ts';
-	import { closeWindow, minimizeWindow, toggleMaximize, restoreWindow, moveWindow, focus, snapPreview, snapWindow, triggerSnapAnimation } from '../../scripts/window-store.svelte.ts';
-	import { getSnapZone } from '../../scripts/window-snap.ts';
-	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
+	import type { WindowState } from '../../scripts/window/window-store.svelte.ts';
+	import { closeWindow, minimizeWindow, toggleMaximize, restoreWindow, moveWindow, focus, snapPreview, snapWindow, triggerSnapAnimation } from '../../scripts/window/window-store.svelte.ts';
+	import { getSnapZone } from '../../scripts/window/window-snap.ts';
+	import { pointerGestures } from '../../scripts/ui/pointer-gestures.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import WindowControl from './WindowControl.svelte';
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { settings } from '../../scripts/settings.svelte.ts';
+	import { settings } from '../../scripts/system/settings.svelte.ts';
 	import { setDesktopCount, setTaskbarShowText } from './settings-taskbar.ts';
 	import SettingsTitle from './components/SettingsTitle.svelte';
 	import SettingsOptionRow from './components/SettingsOptionRow.svelte';

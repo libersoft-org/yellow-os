@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { settings } from '../../scripts/settings.svelte.ts';
-	import type { NotificationPosition, NotificationAnimation } from '../../scripts/settings.svelte.ts';
+	import { settings } from '../../scripts/system/settings.svelte.ts';
+	import type { NotificationPosition, NotificationAnimation } from '../../scripts/system/settings.svelte.ts';
 	import { setNotificationPosition, setNotificationDuration, setNotificationAnimation, sendTestNotification } from './settings-notifications.ts';
 	import SettingsTitle from './components/SettingsTitle.svelte';
 	import SettingsOptionRow from './components/SettingsOptionRow.svelte';

@@ -1,4 +1,4 @@
-import { readFileText, readFileBlob } from '../../scripts/opfs.ts';
+import { readFileText, readFileBlob } from '../../scripts/fs/opfs.ts';
 export interface YappManifest {
 	name?: string;
 	entry: string;

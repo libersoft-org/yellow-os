@@ -1,6 +1,6 @@
-import { saveSetting } from '../../scripts/settings.svelte.ts';
-import type { NotificationPosition, NotificationAnimation } from '../../scripts/settings.svelte.ts';
-import { addNotification } from '../../scripts/notifications.svelte.ts';
+import { saveSetting } from '../../scripts/system/settings.svelte.ts';
+import type { NotificationPosition, NotificationAnimation } from '../../scripts/system/settings.svelte.ts';
+import { addNotification } from '../../scripts/ui/notifications.svelte.ts';
 
 export function setNotificationPosition(position: NotificationPosition): void {
 	saveSetting('notificationPosition', position);

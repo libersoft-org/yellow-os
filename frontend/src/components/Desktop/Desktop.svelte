@@ -2,10 +2,10 @@
 	import WindowManager from '../WindowManager/WindowManager.svelte';
 	import Taskbar from '../Taskbar/Taskbar.svelte';
 	import DesktopIcons from './DesktopIcons.svelte';
-	import { defocusAll } from '../../scripts/window-store.svelte.ts';
-	import { handleKeyboardShortcut, handleKeyUp } from '../../scripts/window-shortcuts.ts';
-	import { desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte.ts';
-	import { settings, settingsReady, wallpaperUrl } from '../../scripts/settings.svelte.ts';
+	import { defocusAll } from '../../scripts/window/window-store.svelte.ts';
+	import { handleKeyboardShortcut, handleKeyUp } from '../../scripts/window/window-shortcuts.ts';
+	import { desktop, switchDesktop, clearSlide } from '../../scripts/system/desktop.svelte.ts';
+	import { settings, settingsReady, wallpaperUrl } from '../../scripts/system/settings.svelte.ts';
 	const wallpaperCss = $derived(wallpaperUrl.value ? `url('${wallpaperUrl.value}')` : 'none');
 	const desktopCount = $derived(settingsReady.value ? settings.desktopCount : 1);
 	import AppSwitcher from '../AppSwitcher/AppSwitcher.svelte';

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getWindow } from '../../scripts/window-context.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import ListItem from '../../components/ListItem/ListItem.svelte';
 	import SettingsDesktop from './SettingsDesktop.svelte';

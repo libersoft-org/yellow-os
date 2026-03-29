@@ -1,10 +1,10 @@
 import type { Component } from 'svelte';
 import { deleteEntry, renameEntry, moveToTrash, createFile, createDirectory, uniqueName, isSystemEntry } from './opfs.ts';
-import { showDialog } from './dialog.ts';
-import { openWindow, findWindow, onWindowClosed } from './window-store.svelte.ts';
+import { showDialog } from '../ui/dialog.ts';
+import { openWindow, findWindow, onWindowClosed } from '../window/window-store.svelte.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
-import NewEntryDialog from '../apps/FileBrowser/NewEntryDialog.svelte';
-import RenameDialog from '../apps/FileBrowser/RenameDialog.svelte';
+import NewEntryDialog from '../../apps/FileBrowser/NewEntryDialog.svelte';
+import RenameDialog from '../../apps/FileBrowser/RenameDialog.svelte';
 
 export function warnSystemMove(dirPath: string, names: string[]): string[] {
 	const blocked = names.filter(n => isSystemEntry(dirPath, n));

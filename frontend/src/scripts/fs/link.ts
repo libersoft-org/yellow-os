@@ -1,5 +1,5 @@
 import { readFileText, writeFile, copyEntryTo, joinPath, uniqueName } from './opfs.ts';
-import { getAppComponent } from './app-registry.ts';
+import { getAppComponent } from '../system/app-registry.ts';
 import { getFileAppId } from './file-types.ts';
 import type { Component } from 'svelte';
 

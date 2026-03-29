@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Icon from '../Icon/Icon.svelte';
 	import Spinner from '../Spinner/Spinner.svelte';
-	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
+	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/system/product.ts';
 </script>
 
 <style>

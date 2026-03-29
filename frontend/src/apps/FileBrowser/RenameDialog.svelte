@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { getWindow } from '../../scripts/window-context.ts';
-	import { closeWindow } from '../../scripts/window-store.svelte.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
+	import { closeWindow } from '../../scripts/window/window-store.svelte.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import Button from '../../components/Button/Button.svelte';
 	import Input from '../../components/Input/Input.svelte';

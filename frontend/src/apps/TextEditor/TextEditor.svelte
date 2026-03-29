@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { getWindow } from '../../scripts/window-context.ts';
-	import { readFileText, writeFile } from '../../scripts/opfs.ts';
-	import { closeWindow } from '../../scripts/window-store.svelte.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
+	import { readFileText, writeFile } from '../../scripts/fs/opfs.ts';
+	import { closeWindow } from '../../scripts/window/window-store.svelte.ts';
 	import { browser } from '$app/environment';
 	import MenuBar from '../../components/MenuBar/MenuBar.svelte';
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';

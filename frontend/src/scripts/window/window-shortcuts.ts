@@ -1,6 +1,6 @@
 import type { SnapZone } from './window-snap.ts';
 import { closeWindow, findWindow, focus, minimizeWindow, restoreWindow, snapWindow } from './window-store.svelte.ts';
-import { appSwitcher, openSwitcher, cycleSwitcher, confirmSwitcher } from './app-switcher.svelte.ts';
+import { appSwitcher, openSwitcher, cycleSwitcher, confirmSwitcher } from '../system/app-switcher.svelte.ts';
 
 const NUMPAD_SNAP: Record<string, SnapZone> = {
 	Numpad7: 'top-left',

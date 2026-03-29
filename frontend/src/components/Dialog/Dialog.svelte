@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { getWindow } from '../../scripts/window-context.ts';
-	import { closeWindow } from '../../scripts/window-store.svelte.ts';
-	import { getTypeIcon, getTypeColorVariable } from '../../scripts/dialog.ts';
-	import type { DialogType, DialogButton } from '../../scripts/dialog.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
+	import { closeWindow } from '../../scripts/window/window-store.svelte.ts';
+	import { getTypeIcon, getTypeColorVariable } from '../../scripts/ui/dialog.ts';
+	import type { DialogType, DialogButton } from '../../scripts/ui/dialog.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import Button from '../../components/Button/Button.svelte';
 	interface Props {

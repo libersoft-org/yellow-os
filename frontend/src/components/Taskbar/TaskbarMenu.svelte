@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { openWindow } from '../../scripts/window-store.svelte.ts';
-	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/product.ts';
+	import { openWindow } from '../../scripts/window/window-store.svelte.ts';
+	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/system/product.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import ListItem from '../ListItem/ListItem.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
-	import { readDirectory } from '../../scripts/opfs.ts';
-	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
-	import type { LinkData } from '../../scripts/link.ts';
-	import { ensureOpfsReady, OS_PATH } from '../../scripts/opfs-init.ts';
+	import { readDirectory } from '../../scripts/fs/opfs.ts';
+	import { isLinkFile, readLink, resolveLink } from '../../scripts/fs/link.ts';
+	import type { LinkData } from '../../scripts/fs/link.ts';
+	import { ensureOpfsReady, OS_PATH } from '../../scripts/fs/opfs-init.ts';
 	import { browser } from '$app/environment';
 
 	interface MenuApp {

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { globalGhost } from '../../scripts/drag-state.svelte.ts';
+	import { globalGhost } from '../../scripts/ui/drag-state.svelte.ts';
 	import IconGridItem from '../IconGrid/IconGridItem.svelte';
 </script>
 

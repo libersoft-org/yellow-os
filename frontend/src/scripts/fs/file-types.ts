@@ -1,6 +1,6 @@
 import type { Component } from 'svelte';
 import { readFileText } from './opfs.ts';
-import { getAppComponent } from './app-registry.ts';
+import { getAppComponent } from '../system/app-registry.ts';
 import { OS_PATH } from './opfs-init.ts';
 
 export interface FileTypeHandler {

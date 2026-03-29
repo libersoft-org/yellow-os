@@ -1,4 +1,4 @@
-import { showDialog } from '../../scripts/dialog.ts';
+import { showDialog } from '../../scripts/ui/dialog.ts';
 
 export function confirmFactoryReset(): void {
 	showDialog({

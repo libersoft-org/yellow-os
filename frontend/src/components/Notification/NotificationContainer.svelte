@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { notifications, onNotificationAdded, setPaused } from '../../scripts/notifications.svelte.ts';
-	import { settings } from '../../scripts/settings.svelte.ts';
+	import { notifications, onNotificationAdded, setPaused } from '../../scripts/ui/notifications.svelte.ts';
+	import { settings } from '../../scripts/system/settings.svelte.ts';
 	import { onMount, onDestroy, tick } from 'svelte';
 	import Notification from './Notification.svelte';
 

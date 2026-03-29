@@ -1,5 +1,5 @@
-import type { WindowState } from './window-store.svelte.ts';
-import { getWindows, focusWindow } from './window-store.svelte.ts';
+import type { WindowState } from '../window/window-store.svelte.ts';
+import { getWindows, focusWindow } from '../window/window-store.svelte.ts';
 import { desktop } from './desktop.svelte.ts';
 
 export const appSwitcher: { open: boolean; selectedIndex: number; windows: WindowState[] } = $state({

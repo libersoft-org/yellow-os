@@ -1,5 +1,5 @@
-import { saveSetting } from '../../scripts/settings.svelte.ts';
-import { clampDesktop } from '../../scripts/desktop.svelte.ts';
+import { saveSetting } from '../../scripts/system/settings.svelte.ts';
+import { clampDesktop } from '../../scripts/system/desktop.svelte.ts';
 
 export function setDesktopCount(count: number): void {
 	saveSetting('desktopCount', count);

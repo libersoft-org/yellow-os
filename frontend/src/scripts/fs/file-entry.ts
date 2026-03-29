@@ -1,7 +1,7 @@
 import type { OpfsEntry } from './opfs.ts';
 import { readDirectory } from './opfs.ts';
 import { isLinkFile, readLink } from './link.ts';
-import { isYappFile, readYappManifest, resolveYappIcon } from '../apps/AppPlayer/app-player.ts';
+import { isYappFile, readYappManifest, resolveYappIcon } from '../../apps/AppPlayer/app-player.ts';
 import { OS_NAME } from './opfs.ts';
 
 export interface FileEntry extends OpfsEntry {

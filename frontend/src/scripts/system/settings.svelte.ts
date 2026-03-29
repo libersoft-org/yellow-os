@@ -1,5 +1,5 @@
-import { readFileText, writeFile, exists, readFileBlob } from './opfs.ts';
-import { OS_PATH, WALLPAPERS_PATH, ensureOpfsReady } from './opfs-init.ts';
+import { readFileText, writeFile, exists, readFileBlob } from '../fs/opfs.ts';
+import { OS_PATH, WALLPAPERS_PATH, ensureOpfsReady } from '../fs/opfs-init.ts';
 import { browser } from '$app/environment';
 export type NotificationPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type NotificationAnimation = 'slide' | 'fade' | 'none';

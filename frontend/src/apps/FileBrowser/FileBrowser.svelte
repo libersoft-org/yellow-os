@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { getWindow } from '../../scripts/window-context.ts';
-	import type { FileEntry } from '../../scripts/file-entry.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
+	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
 	import type { DiskInfo } from './filebrowser.ts';
-	import { getStorageEstimate } from '../../scripts/opfs.ts';
+	import { getStorageEstimate } from '../../scripts/fs/opfs.ts';
 	import FileBrowserToolbar from './FileBrowserToolbar.svelte';
 	import FileBrowserSidebar from './FileBrowserSidebar.svelte';
 	import FileBrowserSeparator from './FileBrowserSeparator.svelte';

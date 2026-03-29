@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { DiskInfo } from './filebrowser.ts';
-	import { formatBytes } from '../../scripts/format.ts';
+	import { formatBytes } from '../../scripts/system/format.ts';
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
 	import ListItem from '../../components/ListItem/ListItem.svelte';
 	interface Props {

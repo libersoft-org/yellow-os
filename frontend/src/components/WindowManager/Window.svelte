@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { WindowState } from '../../scripts/window-store.svelte.ts';
-	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds, getChrome, registerFocusCallback, unregisterFocusCallback } from '../../scripts/window-store.svelte.ts';
-	import { RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window-resize.svelte.ts';
+	import type { WindowState } from '../../scripts/window/window-store.svelte.ts';
+	import { focusWindow, finishMinimize, finishClose, finishSnapAnimation, focus, snapAnimatingIds, getChrome, registerFocusCallback, unregisterFocusCallback } from '../../scripts/window/window-store.svelte.ts';
+	import { RESIZE_DIRS, getHandleStyle, createResizeHandler } from '../../scripts/window/window-resize.svelte.ts';
 	import { onMount, onDestroy, setContext } from 'svelte';
-	import { WINDOW_KEY } from '../../scripts/window-context.ts';
+	import { WINDOW_KEY } from '../../scripts/window/window-context.ts';
 	import WindowTitlebar from './WindowTitlebar.svelte';
 	interface Props {
 		win: WindowState;

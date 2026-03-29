@@ -1,6 +1,6 @@
 import { zipSync, type Zippable } from 'fflate';
 import { readDirectory, readFileBlob, joinPath } from './opfs.ts';
-import { addNotification } from './notifications.svelte.ts';
+import { addNotification } from '../ui/notifications.svelte.ts';
 
 function triggerDownload(blob: Blob, fileName: string): void {
 	const url = URL.createObjectURL(blob);

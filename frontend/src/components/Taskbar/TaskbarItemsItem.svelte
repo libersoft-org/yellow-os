@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '../Icon/Icon.svelte';
-	import { settings } from '../../scripts/settings.svelte.ts';
+	import { settings } from '../../scripts/system/settings.svelte.ts';
 	interface Props {
 		icon: string;
 		title: string;

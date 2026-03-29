@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import type { IconGridItemData } from './icon-grid.ts';
-	import { createSelection } from '../../scripts/selection.svelte.ts';
-	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
-	import { startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem, type DropResult } from '../../scripts/drag-state.svelte.ts';
+	import { createSelection } from '../../scripts/ui/selection.svelte.ts';
+	import { pointerGestures } from '../../scripts/ui/pointer-gestures.ts';
+	import { startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem, type DropResult } from '../../scripts/ui/drag-state.svelte.ts';
 	import IconGridItem from './IconGridItem.svelte';
 	interface Props {
 		items: IconGridItemData[];

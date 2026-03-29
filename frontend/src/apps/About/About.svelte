@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { PRODUCT_NAME, PRODUCT_VERSION, PRODUCT_URL, GITHUB_URL, COMMIT_HASH, BUILD_DATE } from '../../scripts/product.ts';
-	import { getWindow } from '../../scripts/window-context.ts';
+	import { PRODUCT_NAME, PRODUCT_VERSION, PRODUCT_URL, GITHUB_URL, COMMIT_HASH, BUILD_DATE } from '../../scripts/system/product.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	const win = getWindow();
 	win.title = `About ${PRODUCT_NAME}`;

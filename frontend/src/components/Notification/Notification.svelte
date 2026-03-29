@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
-	import { removeNotification, onPauseChanged } from '../../scripts/notifications.svelte.ts';
-	import { settings } from '../../scripts/settings.svelte.ts';
+	import { removeNotification, onPauseChanged } from '../../scripts/ui/notifications.svelte.ts';
+	import { settings } from '../../scripts/system/settings.svelte.ts';
 	import Clickable from '../Clickable/Clickable.svelte';
 	import Icon from '../Icon/Icon.svelte';
 	interface Props {

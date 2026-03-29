@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { FileEntry } from '../../scripts/file-entry.ts';
-	import { entryIcon, entryIconColor } from '../../scripts/file-entry.ts';
+	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
+	import { entryIcon, entryIconColor } from '../../scripts/fs/file-entry.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
-	import { formatBytes } from '../../scripts/format.ts';
+	import { formatBytes } from '../../scripts/system/format.ts';
 	interface Props {
 		selected: FileEntry[];
 		currentPath: string;

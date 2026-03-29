@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { defocusAll, openWindow } from '../../scripts/window-store.svelte.ts';
-	import { OS_PATH } from '../../scripts/opfs-init.ts';
-	import { getAppComponent } from '../../scripts/app-registry.ts';
+	import { defocusAll, openWindow } from '../../scripts/window/window-store.svelte.ts';
+	import { OS_PATH } from '../../scripts/fs/opfs-init.ts';
+	import { getAppComponent } from '../../scripts/system/app-registry.ts';
 	import DirectoryView from '../DirectoryView/DirectoryView.svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	const DESKTOP_PATH = OS_PATH + '/Desktop';

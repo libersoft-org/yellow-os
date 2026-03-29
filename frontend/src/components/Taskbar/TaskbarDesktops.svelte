@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { desktop, switchDesktop } from '../../scripts/desktop.svelte.ts';
-	import { settings, settingsReady } from '../../scripts/settings.svelte.ts';
+	import { desktop, switchDesktop } from '../../scripts/system/desktop.svelte.ts';
+	import { settings, settingsReady } from '../../scripts/system/settings.svelte.ts';
 	import Clickable from '../Clickable/Clickable.svelte';
 	const count = $derived(settingsReady.value ? settings.desktopCount : 1);
 </script>

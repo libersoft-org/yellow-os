@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { settings } from '../../scripts/settings.svelte.ts';
+	import { settings } from '../../scripts/system/settings.svelte.ts';
 	import { loadWallpapers, selectWallpaper } from './settings-desktop.ts';
 	import type { WallpaperItem } from './settings-desktop.ts';
 	import SettingsTitle from './components/SettingsTitle.svelte';

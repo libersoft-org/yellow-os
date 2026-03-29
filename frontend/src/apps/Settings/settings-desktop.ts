@@ -1,6 +1,6 @@
-import { saveSetting } from '../../scripts/settings.svelte.ts';
-import { readDirectory, readFileBlob } from '../../scripts/opfs.ts';
-import { WALLPAPERS_PATH } from '../../scripts/opfs-init.ts';
+import { saveSetting } from '../../scripts/system/settings.svelte.ts';
+import { readDirectory, readFileBlob } from '../../scripts/fs/opfs.ts';
+import { WALLPAPERS_PATH } from '../../scripts/fs/opfs-init.ts';
 
 export interface WallpaperItem {
 	filename: string;

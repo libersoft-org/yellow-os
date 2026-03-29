@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, findWindow, reorderWindow } from '../../scripts/window-store.svelte.ts';
-	import { desktop } from '../../scripts/desktop.svelte.ts';
-	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
+	import { getWindows, focusWindow, minimizeWindow, isTopWindow, focus, findWindow, reorderWindow } from '../../scripts/window/window-store.svelte.ts';
+	import { desktop } from '../../scripts/system/desktop.svelte.ts';
+	import { pointerGestures } from '../../scripts/ui/pointer-gestures.ts';
 	import TaskbarItemsItem from './TaskbarItemsItem.svelte';
 	import Icon from '../Icon/Icon.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';

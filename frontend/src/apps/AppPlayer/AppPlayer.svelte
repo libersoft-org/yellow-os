@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { getWindow } from '../../scripts/window-context.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
 	import { readYappManifest, buildBlobUrl, isYappFile, resolveYappIcon } from './app-player.ts';
 	import type { YappManifest } from './app-player.ts';
-	import { registerDropZone } from '../../scripts/drag-state.svelte.ts';
-	import { focusWindow } from '../../scripts/window-store.svelte.ts';
+	import { registerDropZone } from '../../scripts/ui/drag-state.svelte.ts';
+	import { focusWindow } from '../../scripts/window/window-store.svelte.ts';
 	import Spinner from '../../components/Spinner/Spinner.svelte';
 	import Icon from '../../components/Icon/Icon.svelte';
 	interface Props {

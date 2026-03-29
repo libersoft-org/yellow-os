@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getWindow } from '../../scripts/window-context.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
 	import Clickable from '../../components/Clickable/Clickable.svelte';
 	const win = getWindow();
 	win.title = 'Calculator';

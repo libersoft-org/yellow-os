@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getWindow } from '../../scripts/window-context.ts';
+	import { getWindow } from '../../scripts/window/window-context.ts';
 	import { onMount } from 'svelte';
 	const win = getWindow();
 	win.title = 'Pong';
