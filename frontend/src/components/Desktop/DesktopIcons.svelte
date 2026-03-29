@@ -35,7 +35,6 @@
 	.desktop-icons {
 		position: absolute;
 		inset: 0;
-		padding: 8px;
 		outline: none;
 	}
 </style>

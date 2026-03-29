@@ -125,7 +125,6 @@
 	.grid-area {
 		flex: 1;
 		overflow: auto;
-		padding: 8px;
 	}
 </style>
 
