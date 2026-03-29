@@ -2,6 +2,7 @@ export interface ContextMenuAction {
 	icon?: string | undefined;
 	label: string;
 	onclick: (e: MouseEvent) => void;
+	disabled?: boolean | undefined;
 }
 
 export interface ContextMenuSeparator {

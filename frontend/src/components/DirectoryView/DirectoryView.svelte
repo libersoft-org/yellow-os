@@ -11,6 +11,7 @@
 	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
 	import { downloadEntries } from '../../scripts/download.ts';
 	import { showDialog } from '../../scripts/dialog.ts';
+	import { setClipboard, hasClipboard, pasteClipboard } from '../../scripts/clipboard.svelte.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
@@ -323,7 +324,30 @@
 		if (entry.type === 'file') {
 			items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
 		}
-		items.push({ separator: true }, { icon: '/img/copy.svg', label: 'Copy', onclick: () => {} }, { icon: '/img/cut.svg', label: 'Cut', onclick: () => {} }, { icon: '/img/paste.svg', label: 'Paste', onclick: () => {} }, { separator: true });
+		const toCopy = selectedEntries.length > 1 ? selectedEntries : [entry];
+		items.push(
+			{ separator: true },
+			{
+				icon: '/img/copy.svg',
+				label: 'Copy',
+				onclick: () =>
+					setClipboard(
+						toCopy.map(en => ({ path, name: en.name, type: en.type })),
+						'copy'
+					),
+			},
+			{
+				icon: '/img/cut.svg',
+				label: 'Cut',
+				onclick: () =>
+					setClipboard(
+						toCopy.map(en => ({ path, name: en.name, type: en.type })),
+						'cut'
+					),
+			},
+			...(entry.type === 'directory' ? [{ icon: '/img/paste.svg', label: 'Paste', disabled: !hasClipboard(), onclick: () => pasteClipboard(joinPath(path, entry.name)) }] : []),
+			{ separator: true }
+		);
 		const toDownload = selectedEntries.length > 1 ? selectedEntries : [entry];
 		items.push({
 			icon: '/img/download.svg',
@@ -387,6 +411,8 @@
 						label: 'Sort by',
 						children: [{ icon: sortField === 'name' ? '/img/check.svg' : undefined, label: 'Name', onclick: () => setSortField('name') }, { icon: sortField === 'modified' ? '/img/check.svg' : undefined, label: 'Modification date', onclick: () => setSortField('modified') }, { icon: sortField === 'extension' ? '/img/check.svg' : undefined, label: 'Extension', onclick: () => setSortField('extension') }, { icon: sortField === 'size' ? '/img/check.svg' : undefined, label: 'Size', onclick: () => setSortField('size') }, { separator: true }, { icon: sortDirection === 'asc' ? '/img/check.svg' : undefined, label: 'Ascending', onclick: () => setSortDirection('asc') }, { icon: sortDirection === 'desc' ? '/img/check.svg' : undefined, label: 'Descending', onclick: () => setSortDirection('desc') }],
 					},
+					{ separator: true },
+					{ icon: '/img/paste.svg', label: 'Paste', disabled: !hasClipboard(), onclick: () => pasteClipboard(path) },
 					{ separator: true },
 					{ icon: '/img/file.svg', label: 'New file', onclick: () => openNewEntryDialog(path, 'file', placeAtClick) },
 					{ icon: '/img/directory.svg', label: 'New directory', onclick: () => openNewEntryDialog(path, 'directory', placeAtClick) },

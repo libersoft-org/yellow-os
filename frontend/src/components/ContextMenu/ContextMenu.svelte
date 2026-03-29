@@ -30,6 +30,7 @@
 	}
 
 	function handleItemClick(item: ContextMenuAction, e: MouseEvent): void {
+		if (item.disabled) return;
 		item.onclick(e);
 		onclose();
 	}
@@ -50,6 +51,11 @@
 		padding: 6px;
 		min-width: 180px;
 		box-shadow: 0 4px 20px var(--color-shadow);
+	}
+
+	.disabled {
+		opacity: 0.4;
+		pointer-events: none;
 	}
 
 	.category-item {
@@ -97,20 +103,24 @@
 								{#if isSeparator(child)}
 									<ContextMenuSeparator />
 								{:else if !isCategory(child)}
-									<ListItem onclick={e => handleItemClick(child, e)}>
-										{#if child.icon}<Icon img={child.icon} alt={child.label} size="16px" padding="0" colorVariable="--color-text" />{/if}
-										<div>{child.label}</div>
-									</ListItem>
+									<div class:disabled={child.disabled}>
+										<ListItem onclick={e => handleItemClick(child, e)}>
+											{#if child.icon}<Icon img={child.icon} alt={child.label} size="16px" padding="0" colorVariable="--color-text" />{/if}
+											<div>{child.label}</div>
+										</ListItem>
+									</div>
 								{/if}
 							{/each}
 						</div>
 					{/if}
 				</div>
 			{:else}
-				<ListItem onclick={e => handleItemClick(item, e)}>
-					{#if item.icon}<Icon img={item.icon} alt={item.label} size="16px" padding="0" colorVariable="--color-text" />{/if}
-					<div>{item.label}</div>
-				</ListItem>
+				<div class:disabled={item.disabled}>
+					<ListItem onclick={e => handleItemClick(item, e)}>
+						{#if item.icon}<Icon img={item.icon} alt={item.label} size="16px" padding="0" colorVariable="--color-text" />{/if}
+						<div>{item.label}</div>
+					</ListItem>
+				</div>
 			{/if}
 		{/each}
 	</div>

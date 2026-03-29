@@ -2,8 +2,9 @@
 
 ## Bugs / changes
 
-- Right click on desktop / file browser (on empty space) - Paste option is missing... should be gray if there is nothing to paste
-- Right click on file (on desktop / file browser) - Paste should work only on folder - it will paste coppied files / directories into that directory.. now this option appears on file too (which makes no sense as it would be copying files and directories into a file)
+- File Browser - when right click - cut - show cutted icons with opacity
+- File Browser - when using for copy / cut / paste use CTRL + C, X, V
+- File Browser - When Right clicked on folder and after that right clicked again on other folder - it doesn't highlight the second folder instead of the first folder
 - Test what happens when settings.json file is deleted
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why?? Instead it show standard menu with "Sort by, New file, New directory"
@@ -35,6 +36,7 @@
 - File Browser - on right click in directory on empty space - there should be Cut, Copy and Paste buttons. If file is coppied / cut, let it paste as a new file with (copy) in name... if it is is (copy) already, then (copy 2) etc.
 - File Browser - add functionality to all menu items when right clicking (long taping) on empty space / icon
 - File Browser - allow drag and drop directories and files from one directory to another, right click and drag = context menu copy / move
+- File Browser - Add Pack / unpack / browse files and folders into ZIP / other compression formats within OPFS
 - Cleanup code
 - Tray icons
 - Quick launch
