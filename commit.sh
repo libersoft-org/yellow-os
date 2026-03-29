@@ -31,6 +31,7 @@ if [ ! -d "./.git/" ]; then
 else
 	git remote set-url origin https://$USER:$PASS@github.com/$USER/$REPO
 fi
+./prettier-all.sh
 #bun i -g prettier prettier-plugin-svelte
 #prettier --plugin 'prettier-plugin-svelte' --write "src/**/*.{js,ts,css,html,svelte}"
 git config user.name "$NAME"

@@ -2,7 +2,6 @@
 	import WindowManager from '../WindowManager/WindowManager.svelte';
 	import Taskbar from '../Taskbar/Taskbar.svelte';
 	import DesktopIcons from './DesktopIcons.svelte';
-	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	import { defocusAll } from '../../scripts/window-store.svelte.ts';
 	import { handleKeyboardShortcut, handleKeyUp } from '../../scripts/window-shortcuts.ts';
 	import { desktop, switchDesktop, clearSlide } from '../../scripts/desktop.svelte.ts';
@@ -49,20 +48,6 @@
 
 	function onAnimationEnd(e: AnimationEvent): void {
 		if (e.currentTarget === e.target) clearSlide();
-	}
-
-	let contextMenu = $state<{ x: number; y: number } | null>(null);
-
-	const desktopMenuItems = [
-		{ icon: '/img/file.svg', label: 'New file', onclick: () => {} },
-		{ icon: '/img/directory.svg', label: 'New directory', onclick: () => {} },
-		{ icon: '/img/settings.svg', label: 'Settings', onclick: () => {} },
-	];
-
-	function onContextMenu(e: MouseEvent): void {
-		if ((e.target as HTMLElement).closest('.window')) return;
-		e.preventDefault();
-		contextMenu = { x: e.clientX, y: e.clientY };
 	}
 </script>
 
@@ -157,14 +142,11 @@
 		{/if}
 	{/key}
 	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" style:background-image={wallpaperCss} onanimationend={onAnimationEnd}>
-		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown} oncontextmenu={onContextMenu}>
+		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown}>
 			<DesktopIcons />
 			<WindowManager />
 		</div>
 		<Taskbar />
 	</div>
-	{#if contextMenu}
-		<ContextMenu items={desktopMenuItems} x={contextMenu.x} y={contextMenu.y} onclose={() => (contextMenu = null)} />
-	{/if}
 	<AppSwitcher />
 </div>
