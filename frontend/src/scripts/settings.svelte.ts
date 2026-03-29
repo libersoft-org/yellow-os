@@ -1,16 +1,25 @@
 import { readFileText, writeFile, exists, readFileBlob } from './opfs.ts';
 import { OS_PATH, WALLPAPERS_PATH, ensureOpfsReady } from './opfs-init.ts';
 import { browser } from '$app/environment';
+export type NotificationPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export type NotificationAnimation = 'slide' | 'fade' | 'none';
+
 export interface SystemSettings {
 	wallpaper: string;
 	desktopCount: number;
 	taskbarShowText: boolean;
+	notificationPosition: NotificationPosition;
+	notificationDuration: number;
+	notificationAnimation: NotificationAnimation;
 }
 const SETTINGS_FILE = 'settings.json';
 const defaults: SystemSettings = {
 	wallpaper: 'waves-dark.webp',
 	desktopCount: 4,
 	taskbarShowText: true,
+	notificationPosition: 'bottom-right',
+	notificationDuration: 10,
+	notificationAnimation: 'slide',
 };
 export const settings: SystemSettings = $state({ ...defaults });
 const _ready: { value: boolean } = $state({ value: false });
@@ -41,6 +50,9 @@ export async function loadSettings(): Promise<void> {
 			if (parsed.wallpaper !== undefined) settings.wallpaper = parsed.wallpaper;
 			if (parsed.desktopCount !== undefined) settings.desktopCount = parsed.desktopCount;
 			if (parsed.taskbarShowText !== undefined) settings.taskbarShowText = parsed.taskbarShowText;
+			if (parsed.notificationPosition !== undefined) settings.notificationPosition = parsed.notificationPosition;
+			if (parsed.notificationDuration !== undefined) settings.notificationDuration = parsed.notificationDuration;
+			if (parsed.notificationAnimation !== undefined) settings.notificationAnimation = parsed.notificationAnimation;
 		}
 	} catch {
 		// use defaults

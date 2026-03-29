@@ -9,6 +9,7 @@
 	const wallpaperCss = $derived(wallpaperUrl.value ? `url('${wallpaperUrl.value}')` : 'none');
 	const desktopCount = $derived(settingsReady.value ? settings.desktopCount : 1);
 	import AppSwitcher from '../AppSwitcher/AppSwitcher.svelte';
+	import NotificationContainer from '../Notification/NotificationContainer.svelte';
 	const sliding = $derived(desktop.slideDirection !== null && desktop.previous !== null);
 	const NUMPAD_DESKTOP: Record<string, number> = {
 		Numpad1: 0,
@@ -149,4 +150,5 @@
 		<Taskbar />
 	</div>
 	<AppSwitcher />
+	<NotificationContainer />
 </div>

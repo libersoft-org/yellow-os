@@ -4,6 +4,7 @@
 	import ListItem from '../../components/ListItem/ListItem.svelte';
 	import SettingsDesktop from './SettingsDesktop.svelte';
 	import SettingsTaskbar from './SettingsTaskbar.svelte';
+	import SettingsNotifications from './SettingsNotifications.svelte';
 	import SettingsReset from './SettingsReset.svelte';
 
 	const win = getWindow();
@@ -13,11 +14,12 @@
 	win.height = 600;
 	win.minWidth = 512;
 	win.minHeight = 384;
-	type Section = 'desktop' | 'taskbar' | 'reset';
+	type Section = 'desktop' | 'taskbar' | 'notifications' | 'reset';
 	let activeSection = $state<Section>('desktop');
 	const sections: { id: Section; label: string; icon: string }[] = [
 		{ id: 'desktop', label: 'Desktop', icon: '/img/settings/desktop.svg' },
 		{ id: 'taskbar', label: 'Taskbar', icon: '/img/settings/taskbar.svg' },
+		{ id: 'notifications', label: 'Notifications', icon: '/img/settings/notification.svg' },
 		{ id: 'reset', label: 'Factory reset', icon: '/img/settings/reset.svg' },
 	];
 
@@ -63,6 +65,8 @@
 			<SettingsDesktop />
 		{:else if activeSection === 'taskbar'}
 			<SettingsTaskbar />
+		{:else if activeSection === 'notifications'}
+			<SettingsNotifications />
 		{:else if activeSection === 'reset'}
 			<SettingsReset />
 		{/if}

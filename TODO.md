@@ -18,6 +18,8 @@
 
 ## New features
 
+- Notification system - toast
+- Search files / directories in File browser
 - Add File system settings to Settings - File types (list, add, delete, modify)
 - For unknown file types show app selection - run just this time / run always
 - Show a different icon for empty trash and full trash (when something is inside)
@@ -50,7 +52,6 @@
 - Sticky notes
 - Desktop widgets (weather, news etc.)
 - Taskbar position in settings + add more panels
-- Notification system - toast
 - Sounds
 - More themes (light, dark etc.)
 - API for app development
