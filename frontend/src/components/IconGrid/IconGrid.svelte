@@ -20,10 +20,11 @@
 		ondrop?: ((draggedIds: string[], targetId: string | null, e: PointerEvent) => void) | undefined;
 		onkeyaction?: ((e: KeyboardEvent) => void) | undefined;
 		externalDragOverId?: string | null | undefined;
+		cutItemIds?: Set<string> | undefined;
 		columnFirst?: boolean | undefined;
 		empty?: Snippet | undefined;
 	}
-	let { items, dirPath, cellWidth = 100, cellHeight = 100, iconSize = '40px', getInitialSelection, onclick, ondblclick, onselectionchange, onitemsmove, ondrop, onkeyaction, externalDragOverId, columnFirst, empty }: Props = $props();
+	let { items, dirPath, cellWidth = 100, cellHeight = 100, iconSize = '40px', getInitialSelection, onclick, ondblclick, onselectionchange, onitemsmove, ondrop, onkeyaction, externalDragOverId, cutItemIds, columnFirst, empty }: Props = $props();
 	const selection = createSelection();
 
 	onMount(() => {
@@ -573,6 +574,10 @@
 		opacity: 0.3;
 	}
 
+	.icon-cell.cut {
+		opacity: 0.4;
+	}
+
 	.drag-rect {
 		position: absolute;
 		border: 1px solid var(--color-accent);
@@ -610,7 +615,7 @@
 	{#each items as item (item.id)}
 		{@const pos = itemPositions.get(item.id)}
 		{#if pos}
-			<div class="icon-cell" class:selected={isItemSelected(item.id)} class:is-dragging={dragMode === 'move' && isItemSelected(item.id)} class:drop-target={dragOverId === item.id || externalDragOverId === item.id} data-icon-id={item.id} style="--cx: {pos.gridX * cellWidth}px; --cy: {pos.gridY * cellHeight}px; --cw: {cellWidth}px; --ch: {cellHeight}px;">
+			<div class="icon-cell" class:selected={isItemSelected(item.id)} class:is-dragging={dragMode === 'move' && isItemSelected(item.id)} class:drop-target={dragOverId === item.id || externalDragOverId === item.id} class:cut={cutItemIds?.has(item.id) ?? false} data-icon-id={item.id} style="--cx: {pos.gridX * cellWidth}px; --cy: {pos.gridY * cellHeight}px; --cw: {cellWidth}px; --ch: {cellHeight}px;">
 				<IconGridItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
 			</div>
 		{/if}

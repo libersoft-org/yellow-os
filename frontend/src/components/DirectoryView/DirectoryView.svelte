@@ -11,7 +11,7 @@
 	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
 	import { downloadEntries } from '../../scripts/download.ts';
 	import { showDialog } from '../../scripts/dialog.ts';
-	import { setClipboard, hasClipboard, pasteClipboard } from '../../scripts/clipboard.svelte.ts';
+	import { setClipboard, hasClipboard, pasteClipboard, getClipboard } from '../../scripts/clipboard.svelte.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
@@ -98,6 +98,16 @@
 			droppable: e.type === 'directory',
 		}))
 	);
+
+	const cutItemIds = $derived.by<Set<string>>(() => {
+		const cb = getClipboard();
+		if (cb.mode !== 'cut') return new Set();
+		const names = new Set<string>();
+		for (const entry of cb.entries) {
+			if (entry.path === path) names.add(entry.name);
+		}
+		return names;
+	});
 
 	async function loadDirectory(): Promise<void> {
 		await ensureOpfsReady();
@@ -652,7 +662,7 @@
 		{:else}
 			<div class="list-view" role="listbox" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondblclick: listHandleDblClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
 				{#each sortedEntries as entry}
-					<div data-icon-id={entry.name}>
+					<div data-icon-id={entry.name} style:opacity={cutItemIds.has(entry.name) ? '0.4' : undefined}>
 						<ListItem active={_selectedIds.has(entry.name)}>
 							<IconGridItem icon={entryIcon(entry)} label={displayLabel(entry.name)} layout="horizontal" iconSize="20px" iconColor={entryIconColor(entry)} />
 						</ListItem>
@@ -670,7 +680,7 @@
 			</div>
 		{/if}
 	{:else}
-		<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} getInitialSelection={() => _selectedIds} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
+		<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} {cutItemIds} getInitialSelection={() => _selectedIds} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
 			{#snippet empty()}
 				{#if !hideEmptyLabel}
 					This directory is empty
