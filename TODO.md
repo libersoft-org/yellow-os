@@ -2,7 +2,9 @@
 
 ## Bugs / changes
 
-- Right click on desktop / file browser - Sort by - no options work from there
+- Right click on desktop / file browser (on empty space) - Sort by - no options work from there
+- Right click on desktop / file browser (on empty space) - Paste option is missing... should be gray if there is nothing to paste
+- Right click on file (on desktop / file browser) - Paste should work only on folder - it will paste coppied files / directories into that directory.. now this option appears on file too (which makes no sense as it would be copying files and directories into a file)
 - Test what happens when settings.json file is deleted
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why?? Instead it show standard menu with "Sort by, New file, New directory"
@@ -45,6 +47,7 @@
 - Add desktop icons (+ grid align)
 - Serverless data synchronization between devices
 - Photo viewer
+- Image editor (like MS Paint)
 - Terminal (for interacting with file system)
 - Media player
 - Web browser (iframe-based)
