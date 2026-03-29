@@ -367,6 +367,16 @@
 		return positions;
 	}
 
+	function buildDropMenu(onmove: () => Promise<void> | void, oncopy: () => Promise<void>, onlink: () => Promise<void>): ContextMenuItem[] {
+		return [
+			{ icon: '/img/cut.svg', label: 'Move here', onclick: onmove },
+			{ icon: '/img/copy.svg', label: 'Copy here', onclick: oncopy },
+			{ icon: '/img/shortcut.svg', label: 'Create a link', onclick: onlink },
+			{ separator: true },
+			{ icon: '/img/close.svg', label: 'Cancel', onclick: () => {} },
+		];
+	}
+
 	async function onIconDrop(draggedIds: string[], targetId: string | null, e: PointerEvent): Promise<void> {
 		const targetEntry = targetId ? sortedEntries.find(en => en.name === targetId) : null;
 		const destPath = targetEntry?.type === 'directory' ? joinPath(path, targetId!) : null;
@@ -399,11 +409,11 @@
 				}
 			}
 		} else if (e.button === 2) {
-			const dropMenuItems: ContextMenuItem[] = [
-				{
-					icon: '/img/cut.svg',
-					label: 'Move here',
-					onclick: async () => {
+			contextMenu = {
+				x: e.clientX,
+				y: e.clientY,
+				items: buildDropMenu(
+					async () => {
 						if (!destPath) {
 							const nameMap = new Map<string, string>();
 							for (const id of draggedIds) nameMap.set(id, id);
@@ -417,11 +427,7 @@
 							}
 						}
 					},
-				},
-				{
-					icon: '/img/copy.svg',
-					label: 'Copy here',
-					onclick: async () => {
+					async () => {
 						const copyDest = destPath ?? path;
 						const nameMap = new Map<string, string>();
 						for (const id of draggedIds) nameMap.set(id, await copyEntryTo(path, id, copyDest));
@@ -429,11 +435,7 @@
 						notifyDirectoryChange(path);
 						if (copyDest !== path) notifyDirectoryChange(copyDest);
 					},
-				},
-				{
-					icon: '/img/shortcut.svg',
-					label: 'Create a link',
-					onclick: async () => {
+					async () => {
 						const linkDest = destPath ?? path;
 						const entryInfos = draggedIds.map(id => {
 							const entry = sortedEntries.find(en => en.name === id);
@@ -443,11 +445,8 @@
 						if (!destPath) scheduleNewPositions(nameMap);
 						notifyDirectoryChange(linkDest);
 					},
-				},
-				{ separator: true },
-				{ icon: '/img/close.svg', label: 'Cancel', onclick: () => {} },
-			];
-			contextMenu = { x: e.clientX, y: e.clientY, items: dropMenuItems };
+				),
+			};
 		}
 	}
 
@@ -485,50 +484,36 @@
 			contextMenu = {
 				x,
 				y,
-				items: [
-					{
-						icon: '/img/cut.svg',
-						label: 'Move here',
-						onclick: async () => {
-							const allowed = warnSystemMove(sourcePath, fileNames);
-							if (allowed.length === 0) return;
-							const nameMap = new Map<string, string>();
-							for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
-							scheduleDropPositions(nameMap);
-							notifyDirectoryChange(sourcePath);
-							notifyDirectoryChange(destPath);
-							if (destPath !== path) notifyDirectoryChange(path);
-						},
+				items: buildDropMenu(
+					async () => {
+						const allowed = warnSystemMove(sourcePath, fileNames);
+						if (allowed.length === 0) return;
+						const nameMap = new Map<string, string>();
+						for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+						scheduleDropPositions(nameMap);
+						notifyDirectoryChange(sourcePath);
+						notifyDirectoryChange(destPath);
+						if (destPath !== path) notifyDirectoryChange(path);
 					},
-					{
-						icon: '/img/copy.svg',
-						label: 'Copy here',
-						onclick: async () => {
-							const nameMap = new Map<string, string>();
-							for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
-							scheduleDropPositions(nameMap);
-							notifyDirectoryChange(destPath);
-							if (destPath !== path) notifyDirectoryChange(path);
-						},
+					async () => {
+						const nameMap = new Map<string, string>();
+						for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
+						scheduleDropPositions(nameMap);
+						notifyDirectoryChange(destPath);
+						if (destPath !== path) notifyDirectoryChange(path);
 					},
-					{
-						icon: '/img/shortcut.svg',
-						label: 'Create a link',
-						onclick: async () => {
-							const sourceEntries = await readDirectory(sourcePath);
-							const entryInfos = fileNames.map(name => {
-								const entry = sourceEntries.find(en => en.name === name);
-								return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
-							});
-							const nameMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
-							scheduleDropPositions(nameMap);
-							notifyDirectoryChange(destPath);
-							if (destPath !== path) notifyDirectoryChange(path);
-						},
+					async () => {
+						const sourceEntries = await readDirectory(sourcePath);
+						const entryInfos = fileNames.map(name => {
+							const entry = sourceEntries.find(en => en.name === name);
+							return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
+						});
+						const nameMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
+						scheduleDropPositions(nameMap);
+						notifyDirectoryChange(destPath);
+						if (destPath !== path) notifyDirectoryChange(path);
 					},
-					{ separator: true },
-					{ icon: '/img/close.svg', label: 'Cancel', onclick: () => {} },
-				],
+				),
 			};
 		}
 	}
