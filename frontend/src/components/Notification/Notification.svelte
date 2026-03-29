@@ -175,12 +175,24 @@
 		font-weight: bold;
 		color: var(--color-text);
 		word-wrap: break-word;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	.description {
 		font-size: 13px;
 		color: var(--color-text-dim);
 		word-wrap: break-word;
+		white-space: pre-line;
+		text-align: justify;
+		display: -webkit-box;
+		-webkit-line-clamp: 10;
+		line-clamp: 10;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
 	}
 
 	.close {
@@ -252,10 +264,10 @@
 
 	/* Fade animations */
 	.fade-in {
-		animation: fadeIn 0.3s ease forwards;
+		animation: fadeIn 0.5s ease forwards;
 	}
 	.fade-out {
-		animation: fadeOut 0.3s ease forwards;
+		animation: fadeOut 0.5s ease forwards;
 	}
 
 	@keyframes fadeIn {

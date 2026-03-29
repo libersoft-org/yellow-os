@@ -1,13 +1,17 @@
 <script lang="ts">
 	interface Props {
 		value?: string;
-		placeholder?: string;
+		type?: 'text' | 'number' | 'password' | undefined;
+		placeholder?: string | undefined;
+		min?: number | undefined;
+		max?: number | undefined;
+		step?: number | undefined;
 		oninput?: (value: string) => void;
 		onkeydown?: (e: KeyboardEvent) => void;
 		autofocus?: boolean;
 		selectAll?: boolean;
 	}
-	let { value = $bindable(''), placeholder, oninput, onkeydown, autofocus = false, selectAll = false }: Props = $props();
+	let { value = $bindable(''), type = 'text', placeholder, min, max, step, oninput, onkeydown, autofocus = false, selectAll = false }: Props = $props();
 
 	function handleInput(e: Event): void {
 		const target = e.target as HTMLInputElement;
@@ -45,4 +49,4 @@
 	}
 </style>
 
-<input type="text" {value} {placeholder} oninput={handleInput} {onkeydown} use:initInput />
+<input {type} {value} {placeholder} {min} {max} {step} oninput={handleInput} {onkeydown} use:initInput />

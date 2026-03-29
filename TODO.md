@@ -18,7 +18,6 @@
 
 ## New features
 
-- Notification system - toast
 - Search files / directories in File browser
 - Add File system settings to Settings - File types (list, add, delete, modify)
 - For unknown file types show app selection - run just this time / run always

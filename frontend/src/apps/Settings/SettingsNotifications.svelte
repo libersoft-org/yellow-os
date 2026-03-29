@@ -7,29 +7,25 @@
 	import SettingsOption from './components/SettingsOption.svelte';
 	import SettingsDescription from './components/SettingsDescription.svelte';
 	import Button from '../../components/Button/Button.svelte';
+	import Input from '../../components/Input/Input.svelte';
 	import Clickable from '../../components/Clickable/Clickable.svelte';
-
 	const positions: { id: NotificationPosition; label: string }[] = [
 		{ id: 'top-left', label: 'Top left' },
 		{ id: 'top-right', label: 'Top right' },
 		{ id: 'bottom-left', label: 'Bottom left' },
 		{ id: 'bottom-right', label: 'Bottom right' },
 	];
-
 	const animations: { id: NotificationAnimation; label: string }[] = [
 		{ id: 'slide', label: 'Slide' },
 		{ id: 'fade', label: 'Fade' },
 		{ id: 'none', label: 'None' },
 	];
+	let durationValue = $state(String(settings.notificationDuration));
 
-	const durations: { value: number; label: string }[] = [
-		{ value: 3, label: '3s' },
-		{ value: 5, label: '5s' },
-		{ value: 10, label: '10s' },
-		{ value: 15, label: '15s' },
-		{ value: 30, label: '30s' },
-		{ value: 0, label: '∞' },
-	];
+	function onDurationInput(value: string): void {
+		const num = parseInt(value, 10);
+		if (!isNaN(num) && num >= 0) setNotificationDuration(num);
+	}
 </script>
 
 <style>
@@ -70,6 +66,21 @@
 	.test-row {
 		padding-top: 10px;
 	}
+
+	.duration-input {
+		width: 120px;
+	}
+
+	.duration-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.duration-unit {
+		font-size: 14px;
+		color: var(--color-text-dim);
+	}
 </style>
 
 <div class="settings-notifications">
@@ -81,22 +92,20 @@
 			</Clickable>
 		{/each}
 	</div>
-
 	<SettingsTitle label="Duration" />
 	<SettingsDescription text="How long notifications stay visible. 0 means they stay until manually closed." />
-	<SettingsOptionRow>
-		{#each durations as d}
-			<SettingsOption active={settings.notificationDuration === d.value} onclick={() => setNotificationDuration(d.value)}>{d.label}</SettingsOption>
-		{/each}
-	</SettingsOptionRow>
-
+	<div class="duration-row">
+		<div class="duration-input">
+			<Input type="number" bind:value={durationValue} oninput={onDurationInput} placeholder="10" min={0} />
+		</div>
+		<span class="duration-unit">seconds</span>
+	</div>
 	<SettingsTitle label="Animation" />
 	<SettingsOptionRow>
 		{#each animations as anim}
 			<SettingsOption active={settings.notificationAnimation === anim.id} onclick={() => setNotificationAnimation(anim.id)}>{anim.label}</SettingsOption>
 		{/each}
 	</SettingsOptionRow>
-
 	<div class="test-row">
 		<Button onclick={sendTestNotification}>Test notification</Button>
 	</div>
