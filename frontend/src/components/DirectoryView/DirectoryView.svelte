@@ -629,9 +629,11 @@
 	.list-view {
 		display: flex;
 		flex-direction: column;
+		gap: 8px;
 		min-height: 100%;
 		position: relative;
 		outline: none;
+		padding: 8px;
 	}
 
 	.list-drag-rect {
