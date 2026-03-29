@@ -37,12 +37,43 @@
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let _selectedIds = $state(new Set<string>());
 	let iconGrid = $state<IconGrid>();
-	const sortedEntries = $derived(
-		entries.toSorted((a, b) => {
+	type SortField = 'name' | 'modified' | 'extension' | 'size';
+	type SortDirection = 'asc' | 'desc';
+	let sortField = $state<SortField>('name');
+	let sortDirection = $state<SortDirection>('asc');
+
+	function getExtension(name: string): string {
+		const dot = name.lastIndexOf('.');
+		return dot > 0 ? name.slice(dot + 1).toLowerCase() : '';
+	}
+
+	function compareEntries(a: FileEntry, b: FileEntry, field: SortField, direction: SortDirection): number {
+		let result: number;
+		switch (field) {
+			case 'name':
+				result = a.name.localeCompare(b.name);
+				break;
+			case 'modified':
+				result = a.modified - b.modified;
+				break;
+			case 'extension':
+				result = getExtension(a.name).localeCompare(getExtension(b.name)) || a.name.localeCompare(b.name);
+				break;
+			case 'size':
+				result = a.size - b.size;
+				break;
+		}
+		return direction === 'desc' ? -result : result;
+	}
+
+	const sortedEntries = $derived.by(() => {
+		const field = sortField;
+		const direction = sortDirection;
+		return entries.toSorted((a, b) => {
 			if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
-			return a.name.localeCompare(b.name);
-		})
-	);
+			return compareEntries(a, b, field, direction);
+		});
+	});
 	const selectedEntries = $derived(sortedEntries.filter(e => _selectedIds.has(e.name)));
 
 	function setsEqual(a: Set<string>, b: Set<string>): boolean {
@@ -315,6 +346,16 @@
 		return items;
 	}
 
+	function setSortField(field: SortField): void {
+		sortField = field;
+		iconGrid?.clearPositions();
+	}
+
+	function setSortDirection(direction: SortDirection): void {
+		sortDirection = direction;
+		iconGrid?.clearPositions();
+	}
+
 	function onContextMenu(e: MouseEvent): void {
 		e.preventDefault();
 		e.stopPropagation();
@@ -337,7 +378,7 @@
 					{
 						icon: '/img/settings.svg',
 						label: 'Sort by',
-						children: [{ icon: '/img/check.svg', label: 'Name', onclick: () => {} }, { label: 'Modification date', onclick: () => {} }, { label: 'Extension', onclick: () => {} }, { label: 'Size', onclick: () => {} }, { separator: true }, { icon: '/img/check.svg', label: 'Ascending', onclick: () => {} }, { label: 'Descending', onclick: () => {} }],
+						children: [{ icon: sortField === 'name' ? '/img/check.svg' : undefined, label: 'Name', onclick: () => setSortField('name') }, { icon: sortField === 'modified' ? '/img/check.svg' : undefined, label: 'Modification date', onclick: () => setSortField('modified') }, { icon: sortField === 'extension' ? '/img/check.svg' : undefined, label: 'Extension', onclick: () => setSortField('extension') }, { icon: sortField === 'size' ? '/img/check.svg' : undefined, label: 'Size', onclick: () => setSortField('size') }, { separator: true }, { icon: sortDirection === 'asc' ? '/img/check.svg' : undefined, label: 'Ascending', onclick: () => setSortDirection('asc') }, { icon: sortDirection === 'desc' ? '/img/check.svg' : undefined, label: 'Descending', onclick: () => setSortDirection('desc') }],
 					},
 					{ separator: true },
 					{ icon: '/img/file.svg', label: 'New file', onclick: () => openNewEntryDialog(path, 'file', placeAtClick) },

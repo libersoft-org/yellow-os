@@ -447,6 +447,10 @@
 		selection.clear();
 	}
 
+	export function clearPositions(): void {
+		_positions = { map: new Map() };
+	}
+
 	export function focus(): void {
 		containerEl?.focus();
 	}
