@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- File Browser - Breadcrumb in Toolbar should have full width of rest of the space - it has only a half of the toolbar
 - File Browser - in file info there is no size in table (for files) - add it. How about directories - is it processor intensive to show directory size?
 - Add moving moving folders and files in list view in the same way as in grid view - btw, can we abstract the code for grid and list view so we don't have these problems anymore?
 - File Browser - when right click - cut - show cutted icons with opacity
