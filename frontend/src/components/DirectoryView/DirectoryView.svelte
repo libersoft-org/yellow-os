@@ -13,7 +13,7 @@
 	import { showDialog } from '../../scripts/ui/dialog.ts';
 	import { setClipboard, hasClipboard, pasteClipboard, getClipboard } from '../../scripts/fs/clipboard.svelte.ts';
 	import { ensureOpfsReady } from '../../scripts/fs/opfs-init.ts';
-	import { registerDropZone, isGlobalDragActive } from '../../scripts/ui/drag-state.svelte.ts';
+	import { registerDropZone, isGlobalDragActive, startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem } from '../../scripts/ui/drag-state.svelte.ts';
 	import { createSelection } from '../../scripts/ui/selection.svelte.ts';
 	import { pointerGestures } from '../../scripts/ui/pointer-gestures.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
@@ -134,7 +134,7 @@
 			if (externalDragOverId) externalDragOverId = null;
 			return;
 		}
-		const hit = iconGrid?.getItemAtScreen(e.clientX, e.clientY);
+		const hit = getDropTargetAtScreen(e.clientX, e.clientY);
 		externalDragOverId = hit?.droppable ? hit.id : null;
 	}
 
@@ -174,12 +174,40 @@
 	let listDragPreSelected = new Set<string>();
 	let listLastClickedName: string | null = null;
 	let listPendingDeselect: string | null = null;
+	let listDragMode = $state<'none' | 'select' | 'move'>('none');
+	let listPressedOnItem = false;
+	let listDragButton = 0;
+	let listDragOverId = $state<string | null>(null);
+
+	function getListItemAtScreen(x: number, y: number): string | null {
+		if (!listViewEl) return null;
+		const els = listViewEl.querySelectorAll('[data-icon-id]');
+		for (const el of els) {
+			const rect = el.getBoundingClientRect();
+			if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+				return (el as HTMLElement).dataset['iconId'] ?? null;
+			}
+		}
+		return null;
+	}
+
+	function getDropTargetAtScreen(x: number, y: number): { id: string; droppable: boolean } | null {
+		if (viewMode === 'list') {
+			const name = getListItemAtScreen(x, y);
+			if (!name) return null;
+			const entry = sortedEntries.find(en => en.name === name);
+			return entry ? { id: name, droppable: entry.type === 'directory' } : null;
+		}
+		return iconGrid?.getItemAtScreen(x, y) ?? null;
+	}
 
 	function listHandlePress(e: PointerEvent): boolean | void {
 		listPendingDeselect = null;
+		listDragButton = e.button;
 		if (!setsEqual(listSelection.selected, _selectedIds)) listSelection.set(new Set(_selectedIds));
 		const itemEl = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
 		if (itemEl) {
+			listPressedOnItem = true;
 			const name = itemEl.dataset['iconId']!;
 			listLastClickedName = name;
 			if (listSelection.isSelected(name)) {
@@ -222,19 +250,43 @@
 	}
 
 	function listHandleDragStart(): void {
-		listDragActive = true;
 		listPendingDeselect = null;
+		if (listPressedOnItem) {
+			listDragMode = 'move';
+			if (listViewEl) startGlobalDrag(listViewEl);
+		} else {
+			listDragMode = 'select';
+			listDragActive = true;
+		}
 	}
 
 	function listHandleDragMove(e: PointerEvent): void {
+		if (listDragMode === 'move') {
+			const ghostItems: DragGhostItem[] = [];
+			let i = 0;
+			for (const entry of sortedEntries) {
+				if (!_selectedIds.has(entry.name)) continue;
+				ghostItems.push({ id: entry.name, icon: entryIcon(entry), label: displayLabel(entry.name), iconColor: entryIconColor(entry), offsetX: 0, offsetY: i * 28 });
+				i++;
+			}
+			updateGlobalGhost(ghostItems, e.clientX - 40, e.clientY - 14, 200, 28, '20px', e.clientX, e.clientY);
+			const hitName = getListItemAtScreen(e.clientX, e.clientY);
+			if (hitName && !_selectedIds.has(hitName)) {
+				const hit = sortedEntries.find(en => en.name === hitName);
+				listDragOverId = hit?.type === 'directory' ? hitName : null;
+			} else {
+				listDragOverId = null;
+			}
+			return;
+		}
 		if (!listViewEl) return;
 		listDragCurrentX = e.clientX;
 		listDragCurrentY = e.clientY;
 		const minY = Math.min(listDragStartY, e.clientY);
 		const maxY = Math.max(listDragStartY, e.clientY);
 		const next = new Set(listDragPreSelected);
-		const items = listViewEl.querySelectorAll('[data-icon-id]');
-		for (const el of items) {
+		const els = listViewEl.querySelectorAll('[data-icon-id]');
+		for (const el of els) {
 			const rect = el.getBoundingClientRect();
 			if (rect.bottom > minY && rect.top < maxY) {
 				next.add((el as HTMLElement).dataset['iconId']!);
@@ -246,6 +298,7 @@
 
 	function listHandleClick(): void {
 		listDragActive = false;
+		listDragMode = 'none';
 		if (listPendingDeselect) {
 			listSelection.set(new Set([listPendingDeselect]));
 			listPendingDeselect = null;
@@ -260,8 +313,21 @@
 		}
 	}
 
-	function listHandleDragEnd(): void {
+	function listHandleDragEnd(e: PointerEvent): void {
+		if (listDragMode === 'move') {
+			const draggedIds = [..._selectedIds];
+			const dropResult = endGlobalDrag(path, draggedIds, listDragButton, e.clientX, e.clientY);
+			if (dropResult !== 'handled' && dropResult !== 'blocked') {
+				onIconDrop(draggedIds, listDragOverId, e);
+			}
+			cancelGlobalDrag();
+			listDragMode = 'none';
+			listDragOverId = null;
+			listPressedOnItem = false;
+			return;
+		}
 		listDragActive = false;
+		listDragMode = 'none';
 		listPendingDeselect = null;
 	}
 
@@ -547,7 +613,7 @@
 		if (sourcePath === path) return;
 
 		// Check if drop landed on a directory icon → move into that subdirectory
-		const hitItem = iconGrid?.getItemAtScreen(x, y);
+		const hitItem = getDropTargetAtScreen(x, y);
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
 		const destPath = targetEntry ? joinPath(path, targetEntry.name) : path;
 
@@ -636,6 +702,20 @@
 		padding: 8px;
 	}
 
+	.list-drop-target {
+		outline: 2px dashed var(--color-accent);
+		border-radius: 10px;
+		background: var(--color-selection);
+	}
+
+	.list-is-dragging {
+		opacity: 0.3;
+	}
+
+	.cut {
+		opacity: 0.4;
+	}
+
 	.list-drag-rect {
 		position: fixed;
 		border: 1px solid var(--color-accent);
@@ -664,7 +744,7 @@
 		{:else}
 			<div class="list-view" role="listbox" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondblclick: listHandleDblClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
 				{#each sortedEntries as entry}
-					<div data-icon-id={entry.name} style:opacity={cutItemIds.has(entry.name) ? '0.4' : undefined}>
+					<div data-icon-id={entry.name} class:list-drop-target={listDragOverId === entry.name || externalDragOverId === entry.name} class:list-is-dragging={listDragMode === 'move' && _selectedIds.has(entry.name)} class:cut={cutItemIds.has(entry.name)}>
 						<ListItem active={_selectedIds.has(entry.name)}>
 							<IconGridItem icon={entryIcon(entry)} label={displayLabel(entry.name)} layout="horizontal" iconSize="20px" iconColor={entryIconColor(entry)} />
 						</ListItem>

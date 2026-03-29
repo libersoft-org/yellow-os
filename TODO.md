@@ -2,6 +2,10 @@
 
 ## Bugs / changes
 
+- File Browser - Breadcrumb in Toolbar should have full width of rest of the space - it has only a half of the toolbar
+- File Browser - there is an recursive error - when moving a directory to itself on API level, it creates recursively the same directory in itself (like Dir1/Dir1/Dir1/Dir1/Dir1/Dir1/Dir1/Dir1/Dir1/) ... it should always throw an error in dialog. Also all all other OPFS errors should throw it in dialog.
+- File Browser - in file info there is no size in table (for files) - add it. How about directories - is it processor intensive to show directory size?
+- Add moving moving folders and files in list view in the same way as in grid view - btw, can we abstract the code for grid and list view so we don't have these problems anymore?
 - File Browser - when right click - cut - show cutted icons with opacity
 - File Browser - When Right clicked on folder and after that right clicked again on other folder - it doesn't highlight the second folder instead of the first folder
 - File Browser - there are 2 different clipboards for text and for file operations, it should be unified... if I copy /cut a file, I should not be able to paste anything to Text Editor and if I copy / cut in Text Editor, I should not be able to paste anything in file browser... also when using File Browser for copy / cut / paste, CTRL + C, X, V are not working at all
@@ -20,6 +24,7 @@
 
 ## New features
 
+- Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Search files / directories in File browser
 - Add File system settings to Settings - File types (list, add, delete, modify)
 - For unknown file types show app selection - run just this time / run always
