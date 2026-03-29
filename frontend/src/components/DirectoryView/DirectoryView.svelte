@@ -11,12 +11,17 @@
 	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
+	import { createSelection } from '../../scripts/selection.svelte.ts';
+	import { pointerGestures } from '../../scripts/pointer-gestures.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
+	import IconGridItem from '../IconGrid/IconGridItem.svelte';
+	import ListItem from '../ListItem/ListItem.svelte';
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	interface Props {
 		path: string;
+		viewMode?: 'grid' | 'list';
 		columnFirst?: boolean;
 		hideLinkExtension?: boolean;
 		hideEmptyLabel?: boolean;
@@ -26,7 +31,7 @@
 		onitemsmove?: (moves: { id: string; gridX: number; gridY: number }[]) => void;
 		onentrieschange?: (entries: FileEntry[]) => void;
 	}
-	let { path, columnFirst, hideLinkExtension, hideEmptyLabel, extraEmptySpaceMenuItems, onnavigate, onselectionchange, onitemsmove, onentrieschange }: Props = $props();
+	let { path, viewMode = 'grid', columnFirst, hideLinkExtension, hideEmptyLabel, extraEmptySpaceMenuItems, onnavigate, onselectionchange, onitemsmove, onentrieschange }: Props = $props();
 	let entries = $state<FileEntry[]>([]);
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let _selectedIds = $state(new Set<string>());
@@ -104,7 +109,123 @@
 	}
 
 	function focusGrid(): void {
-		iconGrid?.focus();
+		if (viewMode === 'list') listViewEl?.focus();
+		else iconGrid?.focus();
+	}
+
+	// ── List view state ──
+	const listSelection = createSelection();
+	let listViewEl: HTMLElement | undefined = $state();
+	let listDragStartX = $state(0);
+	let listDragStartY = $state(0);
+	let listDragCurrentX = $state(0);
+	let listDragCurrentY = $state(0);
+	let listDragActive = $state(false);
+	let listDragPreSelected = new Set<string>();
+	let listLastClickedName: string | null = null;
+	let listPendingDeselect: string | null = null;
+
+	function listHandlePress(e: PointerEvent): boolean | void {
+		listPendingDeselect = null;
+		const itemEl = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
+		if (itemEl) {
+			const name = itemEl.dataset['iconId']!;
+			listLastClickedName = name;
+			if (listSelection.isSelected(name)) {
+				if (e.ctrlKey || e.metaKey) {
+					const index = sortedEntries.findIndex(en => en.name === name);
+					listSelection.select(
+						name,
+						index,
+						sortedEntries.map(en => en.name),
+						e
+					);
+					syncListSelection();
+					return false;
+				}
+				listPendingDeselect = name;
+			} else {
+				const index = sortedEntries.findIndex(en => en.name === name);
+				if (index >= 0) {
+					listSelection.select(
+						name,
+						index,
+						sortedEntries.map(en => en.name),
+						e
+					);
+					syncListSelection();
+				}
+			}
+		} else {
+			listLastClickedName = null;
+			if (e.button !== 0) return false;
+			if (!(e.ctrlKey || e.metaKey)) {
+				listSelection.clear();
+				_selectedIds = new Set();
+				onselectionchange?.([]);
+			}
+		}
+		listDragPreSelected = new Set(listSelection.selected);
+		listDragStartX = e.clientX;
+		listDragStartY = e.clientY;
+	}
+
+	function listHandleDragStart(): void {
+		listDragActive = true;
+		listPendingDeselect = null;
+	}
+
+	function listHandleDragMove(e: PointerEvent): void {
+		if (!listViewEl) return;
+		listDragCurrentX = e.clientX;
+		listDragCurrentY = e.clientY;
+		const minY = Math.min(listDragStartY, e.clientY);
+		const maxY = Math.max(listDragStartY, e.clientY);
+		const next = new Set(listDragPreSelected);
+		const items = listViewEl.querySelectorAll('[data-icon-id]');
+		for (const el of items) {
+			const rect = el.getBoundingClientRect();
+			if (rect.bottom > minY && rect.top < maxY) {
+				next.add((el as HTMLElement).dataset['iconId']!);
+			}
+		}
+		listSelection.set(next);
+		syncListSelection();
+	}
+
+	function listHandleClick(): void {
+		listDragActive = false;
+		if (listPendingDeselect) {
+			listSelection.set(new Set([listPendingDeselect]));
+			listPendingDeselect = null;
+			syncListSelection();
+		}
+	}
+
+	function listHandleDblClick(): void {
+		if (listLastClickedName) {
+			const entry = sortedEntries.find(en => en.name === listLastClickedName);
+			if (entry) openEntry(entry);
+		}
+	}
+
+	function listHandleDragEnd(): void {
+		listDragActive = false;
+		listPendingDeselect = null;
+	}
+
+	function syncListSelection(): void {
+		_selectedIds = new Set(listSelection.selected);
+		onselectionchange?.(selectedEntries);
+	}
+
+	function onListKeydown(e: KeyboardEvent): void {
+		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+			e.preventDefault();
+			listSelection.selectAll(sortedEntries.map(en => en.name));
+			syncListSelection();
+		}
+		handleKeydown(e);
 	}
 
 	function onDblClick(item: IconGridItemData): void {
@@ -351,7 +472,13 @@
 	}
 
 	export function clearSelection(): void {
-		iconGrid?.clearSelection();
+		if (viewMode === 'list') {
+			listSelection.clear();
+			_selectedIds = new Set();
+			onselectionchange?.([]);
+		} else {
+			iconGrid?.clearSelection();
+		}
 	}
 </script>
 
@@ -362,17 +489,69 @@
 		height: 100%;
 		outline: none;
 	}
+
+	.list-view {
+		display: flex;
+		flex-direction: column;
+		min-height: 100%;
+		position: relative;
+		outline: none;
+	}
+
+	.list-drag-rect {
+		position: fixed;
+		border: 1px solid var(--color-accent);
+		background: var(--color-selection);
+		pointer-events: none;
+		z-index: 10;
+	}
+
+	.empty-state {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		height: 100%;
+		color: var(--color-text-dim);
+		font-size: 14px;
+	}
 </style>
 
 <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div class="directory-view" role="application" tabindex="-1" oncontextmenu={onContextMenu} use:dropZone>
-	<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
-		{#snippet empty()}
+	{#if viewMode === 'list'}
+		{#if sortedEntries.length === 0}
 			{#if !hideEmptyLabel}
-				This directory is empty
+				<div class="empty-state">This directory is empty</div>
 			{/if}
-		{/snippet}
-	</IconGrid>
+		{:else}
+			<div class="list-view" role="listbox" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondblclick: listHandleDblClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
+				{#each sortedEntries as entry}
+					<div data-icon-id={entry.name}>
+						<ListItem active={listSelection.isSelected(entry.name)}>
+							<IconGridItem icon={entryIcon(entry)} label={displayLabel(entry.name)} layout="horizontal" iconSize="20px" iconColor={entryIconColor(entry)} />
+						</ListItem>
+					</div>
+				{/each}
+				{#if listDragActive}
+					{@const left = Math.min(listDragStartX, listDragCurrentX)}
+					{@const top = Math.min(listDragStartY, listDragCurrentY)}
+					{@const width = Math.abs(listDragCurrentX - listDragStartX)}
+					{@const height = Math.abs(listDragCurrentY - listDragStartY)}
+					{#if width > 3 || height > 3}
+						<div class="list-drag-rect" style="top: {top}px; left: {left}px; width: {width}px; height: {height}px;"></div>
+					{/if}
+				{/if}
+			</div>
+		{/if}
+	{:else}
+		<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
+			{#snippet empty()}
+				{#if !hideEmptyLabel}
+					This directory is empty
+				{/if}
+			{/snippet}
+		</IconGrid>
+	{/if}
 	{#if contextMenu}
 		<ContextMenu items={contextMenu.items} x={contextMenu.x} y={contextMenu.y} onclose={() => (contextMenu = null)} />
 	{/if}

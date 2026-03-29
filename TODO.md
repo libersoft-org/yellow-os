@@ -3,7 +3,6 @@
 ## Bugs / changes
 
 - Test what happens when settings.json file is deleted
-- File browser - right click in list view mode on directory doesnt work (doesnt show up context menu) - list view is still the part of File browser instead of DirectoryView !!! - fix it!!!
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why?? Instead it show standard menu with "Sort by, New file, New directory"
 - File browser - right click dragging some directory or directory doesn't show context menu (Move here, Copy here)
