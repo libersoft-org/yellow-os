@@ -29,18 +29,20 @@ export function entryIconColor(entry: FileEntry): string {
 
 export async function loadDirectoryEntries(path: string): Promise<FileEntry[]> {
 	const raw = await readDirectory(path);
-	for (const entry of raw) {
-		if (entry.type === 'file' && isLinkFile(entry.name)) {
-			const linkData = await readLink(path, entry.name);
-			if (linkData?.icon) (entry as FileEntry).linkIcon = linkData.icon;
-		} else if (entry.type === 'file' && isYappFile(entry.name)) {
-			try {
-				const manifest = await readYappManifest(path, entry.name);
-				if (manifest?.icon) (entry as FileEntry).yappIcon = await resolveYappIcon(path, manifest.icon);
-			} catch {
-				/* use default icon */
+	await Promise.all(
+		raw.map(async entry => {
+			if (entry.type === 'file' && isLinkFile(entry.name)) {
+				const linkData = await readLink(path, entry.name);
+				if (linkData?.icon) (entry as FileEntry).linkIcon = linkData.icon;
+			} else if (entry.type === 'file' && isYappFile(entry.name)) {
+				try {
+					const manifest = await readYappManifest(path, entry.name);
+					if (manifest?.icon) (entry as FileEntry).yappIcon = await resolveYappIcon(path, manifest.icon);
+				} catch {
+					/* use default icon */
+				}
 			}
-		}
-	}
+		})
+	);
 	return raw as FileEntry[];
 }
