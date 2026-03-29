@@ -493,6 +493,10 @@
 		_positions = { map: next };
 	}
 
+	export function getItemPosition(id: string): { gridX: number; gridY: number } | null {
+		return itemPositions.get(id) ?? null;
+	}
+
 	export function screenToGrid(screenX: number, screenY: number): { gridX: number; gridY: number } {
 		if (!containerEl) return { gridX: 0, gridY: 0 };
 		const rect = containerEl.getBoundingClientRect();

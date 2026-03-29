@@ -357,6 +357,35 @@
 		const targetEntry = targetId ? sortedEntries.find(en => en.name === targetId) : null;
 		const destPath = targetEntry?.type === 'directory' ? (path === '/' ? '/' + targetId : path + '/' + targetId) : null;
 
+		// Capture drop position and relative offsets before any async work
+		const dropPos = !destPath && iconGrid ? iconGrid.screenToGrid(e.clientX, e.clientY) : null;
+		let anchorPos: { gridX: number; gridY: number } | null = null;
+		const relOffsets = new Map<string, { dx: number; dy: number }>();
+		if (dropPos && iconGrid) {
+			anchorPos = iconGrid.getItemPosition(draggedIds[0]!);
+			if (anchorPos) {
+				for (const id of draggedIds) {
+					const pos = iconGrid.getItemPosition(id);
+					if (pos) relOffsets.set(id, { dx: pos.gridX - anchorPos.gridX, dy: pos.gridY - anchorPos.gridY });
+				}
+			}
+		}
+
+		function scheduleNewPositions(nameMap: Map<string, string>): void {
+			if (!dropPos || !iconGrid) return;
+			const positions = new Map<string, { gridX: number; gridY: number }>();
+			let i = 0;
+			for (const [origName, newName] of nameMap) {
+				const rel = relOffsets.get(origName);
+				positions.set(newName, {
+					gridX: Math.max(0, dropPos.gridX + (rel?.dx ?? i)),
+					gridY: Math.max(0, dropPos.gridY + (rel?.dy ?? 0)),
+				});
+				i++;
+			}
+			iconGrid.schedulePositions(positions);
+		}
+
 		if (e.button === 0) {
 			if (destPath) {
 				const allowed = warnSystemMove(path, draggedIds);
@@ -372,7 +401,11 @@
 					icon: '/img/cut.svg',
 					label: 'Move here',
 					onclick: async () => {
-						if (destPath && destPath !== path) {
+						if (!destPath) {
+							const nameMap = new Map<string, string>();
+							for (const id of draggedIds) nameMap.set(id, id);
+							scheduleNewPositions(nameMap);
+						} else if (destPath !== path) {
 							const allowed = warnSystemMove(path, draggedIds);
 							if (allowed.length > 0) {
 								for (const id of allowed) await moveEntry(path, id, destPath);
@@ -387,9 +420,11 @@
 					label: 'Copy here',
 					onclick: async () => {
 						const copyDest = destPath ?? path;
-						for (const id of draggedIds) await copyEntryTo(path, id, copyDest);
+						const nameMap = new Map<string, string>();
+						for (const id of draggedIds) nameMap.set(id, await copyEntryTo(path, id, copyDest));
+						if (!destPath) scheduleNewPositions(nameMap);
 						notifyDirectoryChange(path);
-						notifyDirectoryChange(copyDest);
+						if (copyDest !== path) notifyDirectoryChange(copyDest);
 					},
 				},
 				{
@@ -401,7 +436,8 @@
 							const entry = sortedEntries.find(en => en.name === id);
 							return { name: id, type: (entry?.type ?? 'file') as 'file' | 'directory' };
 						});
-						await createLinksForEntries(path, entryInfos, linkDest);
+						const nameMap = await createLinksForEntries(path, entryInfos, linkDest);
+						if (!destPath) scheduleNewPositions(nameMap);
 						notifyDirectoryChange(linkDest);
 					},
 				},
@@ -489,7 +525,6 @@
 						label: 'Create a link',
 						onclick: async () => {
 							const sourceEntries = await readDirectory(sourcePath);
-							const nameSet = new Set(fileNames);
 							const entryInfos = fileNames.map(name => {
 								const entry = sourceEntries.find(en => en.name === name);
 								return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
