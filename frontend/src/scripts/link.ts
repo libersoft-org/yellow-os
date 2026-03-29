@@ -1,4 +1,4 @@
-import { readFileText, writeFile, exists } from './opfs.ts';
+import { readFileText, writeFile, exists, copyEntryTo } from './opfs.ts';
 import { getAppComponent } from './app-registry.ts';
 import { getFileAppId } from './file-types.ts';
 import type { Component } from 'svelte';
@@ -62,6 +62,11 @@ async function uniqueLinkName(destPath: string, baseName: string): Promise<strin
 export async function createLinksForEntries(sourcePath: string, entries: EntryInfo[], destPath: string): Promise<Map<string, string>> {
 	const nameMap = new Map<string, string>();
 	for (const entry of entries) {
+		if (entry.type === 'file' && isLinkFile(entry.name)) {
+			const finalName = await copyEntryTo(sourcePath, entry.name, destPath);
+			nameMap.set(entry.name, finalName);
+			continue;
+		}
 		const fullPath = sourcePath === '/' ? '/' + entry.name : sourcePath + '/' + entry.name;
 		let linkData: LinkData;
 		if (entry.type === 'directory') {
