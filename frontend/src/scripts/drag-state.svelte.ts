@@ -104,6 +104,18 @@ export function clearGlobalGhost(): void {
 	_canDrop = true;
 }
 
+let _suppressContextMenu = false;
+
+function onDocumentContextMenu(e: Event): void {
+	if (_suppressContextMenu) {
+		e.preventDefault();
+		e.stopPropagation();
+		_suppressContextMenu = false;
+	}
+}
+
+if (typeof document !== 'undefined') document.addEventListener('contextmenu', onDocumentContextMenu, true);
+
 export function endGlobalDrag(sourcePath: string, fileNames: string[], button: number, x: number, y: number): DropResult {
 	const src = sourceEl;
 	sourceEl = null;
@@ -122,9 +134,11 @@ export function endGlobalDrag(sourcePath: string, fileNames: string[], button: n
 
 	const result = findTargetZone(x, y, src);
 	if (result.type === 'target') {
+		if (button === 2) _suppressContextMenu = true;
 		result.zone.handler(sourcePath, fileNames, button, x, y, offsets);
 		return 'handled';
 	}
+	if (button === 2) _suppressContextMenu = true;
 	return result.type === 'source' ? 'same-source' : 'blocked';
 }
 

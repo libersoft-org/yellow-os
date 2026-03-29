@@ -2,7 +2,8 @@
 
 ## Bugs / changes
 
-- File browser - when right click and drag a dropping some item(s) in file browser / desktop the context menu should appear with 3 options - Move here, Copy here, Create a link
+- When within the same folder I copy a directory to some place by right click drag and dropping, the new folder appears on a wrong spot, not where I put it
+- When I create a link og a link, it should just copy the link, not to create a link of a link
 - Test what happens when settings.json file is deleted
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why?? Instead it show standard menu with "Sort by, New file, New directory"

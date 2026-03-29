@@ -2,8 +2,8 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileEntry } from '../../scripts/file-entry.ts';
 	import { entryIcon, entryIconColor, loadDirectoryEntries } from '../../scripts/file-entry.ts';
-	import { moveEntry, copyEntryTo } from '../../scripts/opfs.ts';
-	import { isLinkFile, readLink, resolveLink } from '../../scripts/link.ts';
+	import { moveEntry, copyEntryTo, readDirectory } from '../../scripts/opfs.ts';
+	import { isLinkFile, readLink, resolveLink, createLinksForEntries } from '../../scripts/link.ts';
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
 	import { getAppComponent } from '../../scripts/app-registry.ts';
@@ -392,6 +392,19 @@
 						notifyDirectoryChange(copyDest);
 					},
 				},
+				{
+					icon: '/img/shortcut.svg',
+					label: 'Create a link',
+					onclick: async () => {
+						const linkDest = destPath ?? path;
+						const entryInfos = draggedIds.map(id => {
+							const entry = sortedEntries.find(en => en.name === id);
+							return { name: id, type: (entry?.type ?? 'file') as 'file' | 'directory' };
+						});
+						await createLinksForEntries(path, entryInfos, linkDest);
+						notifyDirectoryChange(linkDest);
+					},
+				},
 				{ separator: true },
 				{ icon: '/img/close.svg', label: 'Cancel', onclick: () => {} },
 			];
@@ -465,6 +478,23 @@
 						onclick: async () => {
 							const nameMap = new Map<string, string>();
 							for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
+							const positions = computeDropPositions(nameMap);
+							if (positions) iconGrid?.schedulePositions(positions);
+							notifyDirectoryChange(destPath);
+							if (destPath !== path) notifyDirectoryChange(path);
+						},
+					},
+					{
+						icon: '/img/shortcut.svg',
+						label: 'Create a link',
+						onclick: async () => {
+							const sourceEntries = await readDirectory(sourcePath);
+							const nameSet = new Set(fileNames);
+							const entryInfos = fileNames.map(name => {
+								const entry = sourceEntries.find(en => en.name === name);
+								return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
+							});
+							const nameMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
 							const positions = computeDropPositions(nameMap);
 							if (positions) iconGrid?.schedulePositions(positions);
 							notifyDirectoryChange(destPath);

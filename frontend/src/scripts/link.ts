@@ -1,5 +1,6 @@
-import { readFileText, writeFile } from './opfs.ts';
+import { readFileText, writeFile, exists } from './opfs.ts';
 import { getAppComponent } from './app-registry.ts';
+import { getFileAppId } from './file-types.ts';
 import type { Component } from 'svelte';
 
 export interface LinkData {
@@ -41,4 +42,37 @@ export function resolveLink(data: LinkData): ResolvedLink | undefined {
 	const component = getAppComponent(data.appId);
 	if (!component) return undefined;
 	return { component, props: data.props ?? {} };
+}
+
+export interface EntryInfo {
+	name: string;
+	type: 'file' | 'directory';
+}
+
+async function uniqueLinkName(destPath: string, baseName: string): Promise<string> {
+	let candidate = baseName + '.link';
+	if (!(await exists(destPath, candidate))) return candidate;
+	for (let i = 2; i < 1000; i++) {
+		candidate = baseName + ' (' + i + ').link';
+		if (!(await exists(destPath, candidate))) return candidate;
+	}
+	return candidate;
+}
+
+export async function createLinksForEntries(sourcePath: string, entries: EntryInfo[], destPath: string): Promise<Map<string, string>> {
+	const nameMap = new Map<string, string>();
+	for (const entry of entries) {
+		const fullPath = sourcePath === '/' ? '/' + entry.name : sourcePath + '/' + entry.name;
+		let linkData: LinkData;
+		if (entry.type === 'directory') {
+			linkData = { appId: 'file-browser', label: entry.name, icon: '/img/directory.svg', props: { path: fullPath } };
+		} else {
+			const appId = await getFileAppId(entry.name);
+			linkData = { appId: appId ?? 'text-editor', label: entry.name, icon: '/img/file.svg', props: { filePath: sourcePath, fileName: entry.name } };
+		}
+		const fileName = await uniqueLinkName(destPath, entry.name);
+		await writeLink(destPath, fileName, linkData);
+		nameMap.set(entry.name, fileName);
+	}
+	return nameMap;
 }

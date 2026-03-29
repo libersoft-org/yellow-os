@@ -45,3 +45,10 @@ export function getEditHandler(filePath: string, fileName: string): FileTypeHand
 export function invalidateFileTypeCache(): void {
 	cachedAssociations = null;
 }
+
+export async function getFileAppId(fileName: string): Promise<string | null> {
+	const ext = getExtension(fileName);
+	if (!ext) return null;
+	const associations = await loadAssociations();
+	return associations[ext] ?? null;
+}
