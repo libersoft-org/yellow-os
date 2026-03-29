@@ -32,13 +32,6 @@
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
 	const canGoUp = $derived(currentPath !== '/');
-	const sortedEntries = $derived(
-		entries.toSorted((a, b) => {
-			if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
-			return a.name.localeCompare(b.name);
-		})
-	);
-
 	async function loadDiskInfo(): Promise<void> {
 		const estimate = await getStorageEstimate();
 		disks = [{ name: 'OPFS drive', path: '/', icon: '/img/apps/file-browser.svg', total: estimate.total, free: estimate.total - estimate.used }];
@@ -149,7 +142,7 @@
 		</div>
 		{#if showInfo}
 			<FileBrowserSeparator onresize={onInfoSeparatorResize} />
-			<FileBrowserInfo selected={selectedEntries} {currentPath} entries={sortedEntries} width={infoWidth} />
+			<FileBrowserInfo selected={selectedEntries} {currentPath} {entries} width={infoWidth} />
 		{/if}
 	</div>
 </div>
