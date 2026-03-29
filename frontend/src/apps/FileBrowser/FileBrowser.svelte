@@ -29,7 +29,6 @@
 	let selectedEntries = $state<FileEntry[]>([]);
 	let entries = $state<FileEntry[]>([]);
 	let disks = $state<DiskInfo[]>([]);
-	let directoryView = $state<DirectoryView>();
 	const canGoBack = $derived(historyIndex > 0);
 	const canGoForward = $derived(historyIndex < history.length - 1);
 	const canGoUp = $derived(currentPath !== '/');
@@ -112,8 +111,6 @@
 
 	function onViewModeChange(mode: 'grid' | 'list'): void {
 		viewMode = mode;
-		selectedEntries = [];
-		directoryView?.clearSelection();
 	}
 </script>
 
@@ -147,7 +144,7 @@
 		<FileBrowserSeparator onresize={onSeparatorResize} />
 		<div class="grid-area">
 			{#key currentPath}
-				<DirectoryView bind:this={directoryView} path={currentPath} {viewMode} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
+				<DirectoryView path={currentPath} {viewMode} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
 			{/key}
 		</div>
 		{#if showInfo}

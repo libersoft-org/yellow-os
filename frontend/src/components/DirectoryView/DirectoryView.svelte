@@ -44,6 +44,12 @@
 	);
 	const selectedEntries = $derived(sortedEntries.filter(e => _selectedIds.has(e.name)));
 
+	function setsEqual(a: Set<string>, b: Set<string>): boolean {
+		if (a.size !== b.size) return false;
+		for (const v of a) if (!b.has(v)) return false;
+		return true;
+	}
+
 	function displayLabel(name: string): string {
 		if (hideLinkExtension && isLinkFile(name)) return name.slice(0, -5);
 		return name;
@@ -127,6 +133,7 @@
 
 	function listHandlePress(e: PointerEvent): boolean | void {
 		listPendingDeselect = null;
+		if (!setsEqual(listSelection.selected, _selectedIds)) listSelection.set(new Set(_selectedIds));
 		const itemEl = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
 		if (itemEl) {
 			const name = itemEl.dataset['iconId']!;
@@ -527,7 +534,7 @@
 			<div class="list-view" role="listbox" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondblclick: listHandleDblClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
 				{#each sortedEntries as entry}
 					<div data-icon-id={entry.name}>
-						<ListItem active={listSelection.isSelected(entry.name)}>
+						<ListItem active={_selectedIds.has(entry.name)}>
 							<IconGridItem icon={entryIcon(entry)} label={displayLabel(entry.name)} layout="horizontal" iconSize="20px" iconColor={entryIconColor(entry)} />
 						</ListItem>
 					</div>
@@ -544,7 +551,7 @@
 			</div>
 		{/if}
 	{:else}
-		<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
+		<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} getInitialSelection={() => _selectedIds} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
 			{#snippet empty()}
 				{#if !hideEmptyLabel}
 					This directory is empty

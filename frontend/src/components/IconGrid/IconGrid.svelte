@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import type { IconGridItemData } from './icon-grid.ts';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
@@ -11,6 +12,7 @@
 		cellWidth?: number | undefined;
 		cellHeight?: number | undefined;
 		iconSize?: string | undefined;
+		getInitialSelection?: (() => Set<string>) | undefined;
 		onclick?: ((item: IconGridItemData) => void) | undefined;
 		ondblclick?: ((item: IconGridItemData) => void) | undefined;
 		onselectionchange?: ((selectedIds: Set<string>) => void) | undefined;
@@ -21,8 +23,13 @@
 		columnFirst?: boolean | undefined;
 		empty?: Snippet | undefined;
 	}
-	let { items, dirPath, cellWidth = 90, cellHeight = 90, iconSize = '40px', onclick, ondblclick, onselectionchange, onitemsmove, ondrop, onkeyaction, externalDragOverId, columnFirst, empty }: Props = $props();
+	let { items, dirPath, cellWidth = 90, cellHeight = 90, iconSize = '40px', getInitialSelection, onclick, ondblclick, onselectionchange, onitemsmove, ondrop, onkeyaction, externalDragOverId, columnFirst, empty }: Props = $props();
 	const selection = createSelection();
+
+	onMount(() => {
+		const init = getInitialSelection?.();
+		if (init && init.size > 0) selection.set(new Set(init));
+	});
 
 	function emitSelectionChange(): void {
 		onselectionchange?.(selection.selected);

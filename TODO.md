@@ -2,10 +2,10 @@
 
 ## Bugs / changes
 
+- File browser - when right click and drag a dropping some item(s) in file browser / desktop the context menu should appear with 3 options - Move here, Copy here, Create a link
 - Test what happens when settings.json file is deleted
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why?? Instead it show standard menu with "Sort by, New file, New directory"
-- File browser - right click dragging some directory or directory doesn't show context menu (Move here, Copy here)
 - When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
