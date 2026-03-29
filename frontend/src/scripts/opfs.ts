@@ -20,6 +20,10 @@ export function isSystemEntry(dirPath: string, name: string): boolean {
 	return SYSTEM_ENTRIES[dirPath]?.has(name) ?? false;
 }
 
+export function joinPath(dir: string, name: string): string {
+	return dir === '/' ? '/' + name : dir + '/' + name;
+}
+
 async function resolveDirectory(path: string): Promise<FileSystemDirectoryHandle> {
 	const root = await navigator.storage.getDirectory();
 	if (path === '/') return root;

@@ -1,4 +1,4 @@
-import { readFileText, writeFile, exists, copyEntryTo } from './opfs.ts';
+import { readFileText, writeFile, exists, copyEntryTo, joinPath } from './opfs.ts';
 import { getAppComponent } from './app-registry.ts';
 import { getFileAppId } from './file-types.ts';
 import type { Component } from 'svelte';
@@ -67,7 +67,7 @@ export async function createLinksForEntries(sourcePath: string, entries: EntryIn
 			nameMap.set(entry.name, finalName);
 			continue;
 		}
-		const fullPath = sourcePath === '/' ? '/' + entry.name : sourcePath + '/' + entry.name;
+		const fullPath = joinPath(sourcePath, entry.name);
 		let linkData: LinkData;
 		if (entry.type === 'directory') {
 			linkData = { appId: 'file-browser', label: entry.name, icon: '/img/directory.svg', props: { path: fullPath } };

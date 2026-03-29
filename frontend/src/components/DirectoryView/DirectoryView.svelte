@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileEntry } from '../../scripts/file-entry.ts';
 	import { entryIcon, entryIconColor, loadDirectoryEntries } from '../../scripts/file-entry.ts';
-	import { moveEntry, copyEntryTo, readDirectory } from '../../scripts/opfs.ts';
+	import { moveEntry, copyEntryTo, readDirectory, joinPath } from '../../scripts/opfs.ts';
 	import { isLinkFile, readLink, resolveLink, createLinksForEntries } from '../../scripts/link.ts';
 	import { openWindow } from '../../scripts/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/file-types.ts';
@@ -242,7 +242,7 @@
 
 	async function openEntry(entry: FileEntry): Promise<void> {
 		if (entry.type === 'directory') {
-			const fullPath = path === '/' ? '/' + entry.name : path + '/' + entry.name;
+			const fullPath = joinPath(path, entry.name);
 			if (onnavigate) {
 				onnavigate(fullPath);
 			} else {
@@ -276,7 +276,7 @@
 				label: 'Open in new window',
 				onclick: () => {
 					const FileBrowser = getAppComponent('file-browser');
-					const fullPath = path === '/' ? '/' + entry.name : path + '/' + entry.name;
+					const fullPath = joinPath(path, entry.name);
 					if (FileBrowser) openWindow(FileBrowser, { path: fullPath });
 				},
 			});
@@ -355,7 +355,7 @@
 
 	async function onIconDrop(draggedIds: string[], targetId: string | null, e: PointerEvent): Promise<void> {
 		const targetEntry = targetId ? sortedEntries.find(en => en.name === targetId) : null;
-		const destPath = targetEntry?.type === 'directory' ? (path === '/' ? '/' + targetId : path + '/' + targetId) : null;
+		const destPath = targetEntry?.type === 'directory' ? joinPath(path, targetId!) : null;
 
 		// Capture drop position and relative offsets before any async work
 		const dropPos = !destPath && iconGrid ? iconGrid.screenToGrid(e.clientX, e.clientY) : null;
@@ -458,7 +458,7 @@
 		// Check if drop landed on a directory icon → move into that subdirectory
 		const hitItem = iconGrid?.getItemAtScreen(x, y);
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
-		const destPath = targetEntry ? (path === '/' ? '/' + targetEntry.name : path + '/' + targetEntry.name) : path;
+		const destPath = targetEntry ? joinPath(path, targetEntry.name) : path;
 
 		function computeDropPositions(finalNames: Map<string, string>): Map<string, { gridX: number; gridY: number }> | null {
 			if (targetEntry || !iconGrid) return null;
