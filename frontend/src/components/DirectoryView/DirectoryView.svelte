@@ -198,7 +198,8 @@
 			const entry = sortedEntries.find(en => en.name === name);
 			return entry ? { id: name, droppable: entry.type === 'directory' } : null;
 		}
-		return iconGrid?.getItemAtScreen(x, y) ?? null;
+		const item = iconGrid?.getItemAtScreen(x, y);
+		return item ? { id: item.id, droppable: item.droppable ?? false } : null;
 	}
 
 	function listHandlePress(e: PointerEvent): boolean | void {
