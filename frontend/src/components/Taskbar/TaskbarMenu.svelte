@@ -194,7 +194,17 @@
 			<div class="menu-items">
 				{#each menuItems as item}
 					{#if isCategory(item)}
-						<div class="category-item" role="menuitem" tabindex="-1" onpointerenter={(e) => { if (e.pointerType === 'mouse') openCategory = item.label; }} onpointerleave={(e) => { if (e.pointerType === 'mouse') openCategory = null; }}>
+						<div
+							class="category-item"
+							role="menuitem"
+							tabindex="-1"
+							onpointerenter={e => {
+								if (e.pointerType === 'mouse') openCategory = item.label;
+							}}
+							onpointerleave={e => {
+								if (e.pointerType === 'mouse') openCategory = null;
+							}}
+						>
 							<ListItem onclick={() => (openCategory = openCategory === item.label ? null : item.label)}>
 								<Icon img={item.icon} alt={item.label} size="18px" padding="0" colorVariable="--color-text" />
 								<div class="category-label">

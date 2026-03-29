@@ -368,13 +368,7 @@
 	}
 
 	function buildDropMenu(onmove: () => Promise<void> | void, oncopy: () => Promise<void>, onlink: () => Promise<void>): ContextMenuItem[] {
-		return [
-			{ icon: '/img/cut.svg', label: 'Move here', onclick: onmove },
-			{ icon: '/img/copy.svg', label: 'Copy here', onclick: oncopy },
-			{ icon: '/img/shortcut.svg', label: 'Create a link', onclick: onlink },
-			{ separator: true },
-			{ icon: '/img/close.svg', label: 'Cancel', onclick: () => {} },
-		];
+		return [{ icon: '/img/cut.svg', label: 'Move here', onclick: onmove }, { icon: '/img/copy.svg', label: 'Copy here', onclick: oncopy }, { icon: '/img/shortcut.svg', label: 'Create a link', onclick: onlink }, { separator: true }, { icon: '/img/close.svg', label: 'Cancel', onclick: () => {} }];
 	}
 
 	async function onIconDrop(draggedIds: string[], targetId: string | null, e: PointerEvent): Promise<void> {
@@ -444,7 +438,7 @@
 						const nameMap = await createLinksForEntries(path, entryInfos, linkDest);
 						if (!destPath) scheduleNewPositions(nameMap);
 						notifyDirectoryChange(linkDest);
-					},
+					}
 				),
 			};
 		}
@@ -512,7 +506,7 @@
 						scheduleDropPositions(nameMap);
 						notifyDirectoryChange(destPath);
 						if (destPath !== path) notifyDirectoryChange(path);
-					},
+					}
 				),
 			};
 		}
