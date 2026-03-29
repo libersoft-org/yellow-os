@@ -14,8 +14,8 @@
 	win.icon = '/img/apps/file-browser.svg';
 	win.width = 768;
 	win.height = 480;
-	win.minWidth = 320;
-	win.minHeight = 240;
+	win.minWidth = 640;
+	win.minHeight = 320;
 	interface Props {
 		path?: string;
 	}
