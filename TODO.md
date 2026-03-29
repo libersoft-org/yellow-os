@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- fontend/scripts folder has too many files, suggest subfolders and files in it.
 - List view should have margin on sides, so I can right click there and have the context menu with new file, new directory etc.
 - File Browser - when right click - cut - show cutted icons with opacity
 - File Browser - When Right clicked on folder and after that right clicked again on other folder - it doesn't highlight the second folder instead of the first folder
