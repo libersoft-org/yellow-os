@@ -85,7 +85,7 @@ function resolveBaseDir(yappDir: string, entryPath: string): string {
 }
 
 export function isYappFile(name: string): boolean {
-	return name.endsWith('.yapp');
+	return name.toLowerCase().endsWith('.yapp');
 }
 
 export async function resolveYappIcon(yappDir: string, iconPath: string): Promise<string> {

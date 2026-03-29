@@ -12,8 +12,8 @@
 	const win = getWindow();
 	win.title = 'File Browser';
 	win.icon = '/img/apps/file-browser.svg';
-	win.width = 800;
-	win.height = 600;
+	win.width = 768;
+	win.height = 480;
 	win.minWidth = 320;
 	win.minHeight = 240;
 	interface Props {

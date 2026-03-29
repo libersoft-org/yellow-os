@@ -11,11 +11,11 @@ export interface LinkData {
 }
 
 export function isLinkFile(name: string): boolean {
-	return name.endsWith('.link');
+	return name.toLowerCase().endsWith('.link');
 }
 
 export function getLinkLabel(name: string): string {
-	return name.replace(/\.link$/, '');
+	return name.replace(/\.link$/i, '');
 }
 
 export async function readLink(dirPath: string, fileName: string): Promise<LinkData | null> {

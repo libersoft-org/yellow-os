@@ -10,6 +10,7 @@
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/opfs-notify.ts';
 	import { confirmDeleteMultiple, openRenameDialog, openNewEntryDialog, warnSystemMove } from '../../scripts/file-actions.ts';
 	import { downloadEntries } from '../../scripts/download.ts';
+	import { showDialog } from '../../scripts/dialog.ts';
 	import { ensureOpfsReady } from '../../scripts/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/drag-state.svelte.ts';
 	import { createSelection } from '../../scripts/selection.svelte.ts';
@@ -283,10 +284,16 @@
 			}
 		} else if (isLinkFile(entry.name)) {
 			const linkData = await readLink(path, entry.name);
-			if (linkData) {
-				const resolved = resolveLink(linkData);
-				if (resolved) openWindow(resolved.component, resolved.props);
+			if (!linkData) {
+				showDialog({ title: 'Invalid shortcut', message: `"${entry.name}" is not a valid shortcut file.`, type: 'warning', buttons: [{ label: 'OK' }] });
+				return;
 			}
+			const resolved = resolveLink(linkData);
+			if (!resolved) {
+				showDialog({ title: 'Application not found', message: `The application "${linkData.appId}" required by "${entry.name}" was not found.`, type: 'warning', buttons: [{ label: 'OK' }] });
+				return;
+			}
+			openWindow(resolved.component, resolved.props);
 		} else {
 			const handler = await getFileHandler(path, entry.name);
 			if (handler) openWindow(handler.component, handler.props);
