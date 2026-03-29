@@ -353,16 +353,29 @@
 		}
 	}
 
+	function computeDropPositions(basePos: { gridX: number; gridY: number }, offsets: Map<string, { dx: number; dy: number }>, nameMap: Map<string, string>): Map<string, { gridX: number; gridY: number }> {
+		const positions = new Map<string, { gridX: number; gridY: number }>();
+		let i = 0;
+		for (const [origName, newName] of nameMap) {
+			const rel = offsets.get(origName);
+			positions.set(newName, {
+				gridX: Math.max(0, basePos.gridX + (rel?.dx ?? i)),
+				gridY: Math.max(0, basePos.gridY + (rel?.dy ?? 0)),
+			});
+			i++;
+		}
+		return positions;
+	}
+
 	async function onIconDrop(draggedIds: string[], targetId: string | null, e: PointerEvent): Promise<void> {
 		const targetEntry = targetId ? sortedEntries.find(en => en.name === targetId) : null;
 		const destPath = targetEntry?.type === 'directory' ? joinPath(path, targetId!) : null;
 
 		// Capture drop position and relative offsets before any async work
 		const dropPos = !destPath && iconGrid ? iconGrid.screenToGrid(e.clientX, e.clientY) : null;
-		let anchorPos: { gridX: number; gridY: number } | null = null;
 		const relOffsets = new Map<string, { dx: number; dy: number }>();
 		if (dropPos && iconGrid) {
-			anchorPos = iconGrid.getItemPosition(draggedIds[0]!);
+			const anchorPos = iconGrid.getItemPosition(draggedIds[0]!);
 			if (anchorPos) {
 				for (const id of draggedIds) {
 					const pos = iconGrid.getItemPosition(id);
@@ -373,17 +386,7 @@
 
 		function scheduleNewPositions(nameMap: Map<string, string>): void {
 			if (!dropPos || !iconGrid) return;
-			const positions = new Map<string, { gridX: number; gridY: number }>();
-			let i = 0;
-			for (const [origName, newName] of nameMap) {
-				const rel = relOffsets.get(origName);
-				positions.set(newName, {
-					gridX: Math.max(0, dropPos.gridX + (rel?.dx ?? i)),
-					gridY: Math.max(0, dropPos.gridY + (rel?.dy ?? 0)),
-				});
-				i++;
-			}
-			iconGrid.schedulePositions(positions);
+			iconGrid.schedulePositions(computeDropPositions(dropPos, relOffsets, nameMap));
 		}
 
 		if (e.button === 0) {
@@ -460,20 +463,11 @@
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
 		const destPath = targetEntry ? joinPath(path, targetEntry.name) : path;
 
-		function computeDropPositions(finalNames: Map<string, string>): Map<string, { gridX: number; gridY: number }> | null {
-			if (targetEntry || !iconGrid) return null;
-			const basePos = iconGrid.screenToGrid(x, y);
-			const positions = new Map<string, { gridX: number; gridY: number }>();
-			let i = 0;
-			for (const [origName, actualName] of finalNames) {
-				const rel = offsets.get(origName);
-				positions.set(actualName, {
-					gridX: Math.max(0, basePos.gridX + (rel?.dx ?? i)),
-					gridY: Math.max(0, basePos.gridY + (rel?.dy ?? 0)),
-				});
-				i++;
-			}
-			return positions;
+		const dropBasePos = !targetEntry && iconGrid ? iconGrid.screenToGrid(x, y) : null;
+
+		function scheduleDropPositions(nameMap: Map<string, string>): void {
+			if (!dropBasePos || !iconGrid) return;
+			iconGrid.schedulePositions(computeDropPositions(dropBasePos, offsets, nameMap));
 		}
 
 		if (button === 0) {
@@ -482,8 +476,7 @@
 				if (allowed.length === 0) return;
 				const nameMap = new Map<string, string>();
 				for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
-				const positions = computeDropPositions(nameMap);
-				if (positions) iconGrid?.schedulePositions(positions);
+				scheduleDropPositions(nameMap);
 				notifyDirectoryChange(sourcePath);
 				notifyDirectoryChange(destPath);
 				if (destPath !== path) notifyDirectoryChange(path);
@@ -501,8 +494,7 @@
 							if (allowed.length === 0) return;
 							const nameMap = new Map<string, string>();
 							for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
-							const positions = computeDropPositions(nameMap);
-							if (positions) iconGrid?.schedulePositions(positions);
+							scheduleDropPositions(nameMap);
 							notifyDirectoryChange(sourcePath);
 							notifyDirectoryChange(destPath);
 							if (destPath !== path) notifyDirectoryChange(path);
@@ -514,8 +506,7 @@
 						onclick: async () => {
 							const nameMap = new Map<string, string>();
 							for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
-							const positions = computeDropPositions(nameMap);
-							if (positions) iconGrid?.schedulePositions(positions);
+							scheduleDropPositions(nameMap);
 							notifyDirectoryChange(destPath);
 							if (destPath !== path) notifyDirectoryChange(path);
 						},
@@ -530,8 +521,7 @@
 								return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
 							});
 							const nameMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
-							const positions = computeDropPositions(nameMap);
-							if (positions) iconGrid?.schedulePositions(positions);
+							scheduleDropPositions(nameMap);
 							notifyDirectoryChange(destPath);
 							if (destPath !== path) notifyDirectoryChange(path);
 						},
