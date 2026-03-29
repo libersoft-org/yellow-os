@@ -31,6 +31,7 @@
 
 	function handleEditorMount(el: HTMLTextAreaElement): void {
 		editorEl = el;
+		el.focus();
 	}
 
 	function init(): void {
