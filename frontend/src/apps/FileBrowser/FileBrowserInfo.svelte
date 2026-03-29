@@ -124,7 +124,7 @@
 			{#if item.modified > 0}
 				<div class="detail-row">
 					<span class="detail-label">Modified</span>
-					<span class="detail-value">{new Date(item.modified).toLocaleDateString()}</span>
+					<span class="detail-value">{new Date(item.modified).toLocaleString()}</span>
 				</div>
 			{/if}
 		</div>

@@ -3,7 +3,6 @@
 ## Bugs / changes
 
 - Notepad - when opened, focus on editor so cursor is ready for typing
-- File Browser - info panel - modified shows date only, it should show time too! Also it should show "Created" date and time too!
 - Right click on desktop / file browser (on empty space) - Paste option is missing... should be gray if there is nothing to paste
 - Right click on file (on desktop / file browser) - Paste should work only on folder - it will paste coppied files / directories into that directory.. now this option appears on file too (which makes no sense as it would be copying files and directories into a file)
 - Test what happens when settings.json file is deleted
