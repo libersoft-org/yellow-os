@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import type { IconGridItemData } from './icon-grid.ts';
 	import { createSelectableItems, type GhostConfig } from '../../scripts/ui/selectable-items.svelte.ts';
@@ -241,7 +240,8 @@
 				dragMoveItemId = null;
 				return true;
 			}
-			// same-source or no dirPath
+			// Drop onto a droppable item or right-click: call ondrop directly (grid must
+			// decide between local grid-move vs item/context-menu drop before delegating)
 			if (ondrop && (dragOverId || e.button === 2)) {
 				ondrop([...si.selected], dragOverId, e);
 				dragMoveItemId = null;
@@ -300,11 +300,7 @@
 			onkeyaction?.(e);
 		},
 		onArrowKey: findItemInDirection,
-	});
-
-	onMount(() => {
-		const init = getInitialSelection?.();
-		if (init && init.size > 0) si.setSelection(new Set(init));
+		getInitialSelection: () => getInitialSelection?.(),
 	});
 
 	// --- Exports ---

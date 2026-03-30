@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import { createSelectableItems, type GhostConfig } from '../../scripts/ui/selectable-items.svelte.ts';
@@ -91,11 +90,7 @@
 			if (key === 'ArrowUp') return idx > 0 ? ids[idx - 1]! : null;
 			return null;
 		},
-	});
-
-	onMount(() => {
-		const init = getInitialSelection?.();
-		if (init && init.size > 0) si.setSelection(new Set(init));
+		getInitialSelection: () => getInitialSelection?.(),
 	});
 
 	export function clearSelection(): void {
@@ -159,7 +154,7 @@
 	}
 </style>
 
-<div class="list-view" role="listbox" bind:this={containerEl} use:pointerGestures={{ onpress: si.handlePress, onclick: si.handleClick, ondblclick: si.handleDblClick, ondragstart: si.handleDragStart, ondragmove: si.handleDragMove, ondragend: si.handleDragEnd }} onkeydown={si.handleKeydown} tabindex="0">
+<div class="list-view" role="listbox" bind:this={containerEl} use:pointerGestures={{ onpress: e => si.handlePress(e), onclick: () => si.handleClick(), ondblclick: () => si.handleDblClick(), ondragstart: () => si.handleDragStart(), ondragmove: e => si.handleDragMove(e), ondragend: e => si.handleDragEnd(e) }} onkeydown={e => si.handleKeydown(e)} tabindex="0">
 	{#if items.length === 0 && empty}
 		<div class="empty-state">{@render empty()}</div>
 	{/if}

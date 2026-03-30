@@ -1,3 +1,4 @@
+import { onMount } from 'svelte';
 import { createSelection } from './selection.svelte.ts';
 import { startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem, type DropResult } from './drag-state.svelte.ts';
 
@@ -31,6 +32,7 @@ export interface SelectableItemsConfig {
 	ondrop?: ((draggedIds: string[], targetId: string | null, e: PointerEvent) => void) | undefined;
 	onkeyaction?: ((e: KeyboardEvent) => void) | undefined;
 	onArrowKey?: ((currentId: string | null, key: string) => string | null) | undefined;
+	getInitialSelection?: (() => Set<string> | undefined) | undefined;
 }
 
 export interface SelectableItems {
@@ -272,6 +274,11 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 		}
 		config.onkeyaction?.(e);
 	}
+
+	onMount(() => {
+		const init = config.getInitialSelection?.();
+		if (init && init.size > 0) selection.set(new Set(init));
+	});
 
 	return {
 		get selected(): Set<string> {
