@@ -454,6 +454,11 @@
 		selection.clear();
 	}
 
+	export function selectSingle(id: string): void {
+		selection.set(new Set([id]));
+		emitSelectionChange();
+	}
+
 	export function clearPositions(): void {
 		_positions = { map: new Map() };
 	}

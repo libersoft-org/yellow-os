@@ -2,10 +2,9 @@
 
 ## Bugs / changes
 
-- File Browser - When Right clicked on folder and after that right clicked again on other folder - it doesn't highlight the second folder instead of the first folder
 - File Browser - there are 2 different clipboards for text and for file operations, it should be unified... if I copy /cut a file, I should not be able to paste anything to Text Editor and if I copy / cut in Text Editor, I should not be able to paste anything in file browser... also when using File Browser for copy / cut / paste, CTRL + C, X, V are not working at all
-- Test what happens when settings.json file is deleted
 - Search in project keyword "svelte-ignore" and remove it, make it properly so it doesn't have to be there
+- Test what happens when settings.json file is deleted
 - Right click on desktop throws menu (New file, New directory, Settings) - that's OK, and when clicking outside of it then new menu appears (New file, New directory - without Settings) - why?? Instead it show standard menu with "Sort by, New file, New directory"
 - When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables

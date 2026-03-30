@@ -469,7 +469,16 @@
 		e.stopPropagation();
 		const iconEl = (e.target as HTMLElement).closest('[data-icon-id]');
 		if (iconEl) {
-			const entry = sortedEntries.find(en => en.name === (iconEl as HTMLElement).dataset['iconId']);
+			const id = (iconEl as HTMLElement).dataset['iconId']!;
+			if (!_selectedIds.has(id)) {
+				if (viewMode === 'list') {
+					listSelection.set(new Set([id]));
+					onGridSelectionChange(listSelection.selected);
+				} else {
+					iconGrid?.selectSingle(id);
+				}
+			}
+			const entry = sortedEntries.find(en => en.name === id);
 			if (entry) contextMenu = { x: e.clientX, y: e.clientY, items: getIconMenuItems(entry) };
 		} else {
 			const clickX = e.clientX;
