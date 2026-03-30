@@ -11,6 +11,7 @@
 		items: IconGridItemData[];
 		dirPath?: string | undefined;
 		getInitialSelection?: (() => Set<string>) | undefined;
+		onclick?: ((item: IconGridItemData) => void) | undefined;
 		ondblclick?: ((item: IconGridItemData) => void) | undefined;
 		onselectionchange?: ((selectedIds: Set<string>) => void) | undefined;
 		ondrop?: ((draggedIds: string[], targetId: string | null, e: PointerEvent) => void) | undefined;
@@ -19,7 +20,7 @@
 		cutItemIds?: Set<string> | undefined;
 		empty?: Snippet | undefined;
 	}
-	let { items, dirPath, getInitialSelection, ondblclick, onselectionchange, ondrop, onkeyaction, externalDragOverId, cutItemIds, empty }: Props = $props();
+	let { items, dirPath, getInitialSelection, onclick, ondblclick, onselectionchange, ondrop, onkeyaction, externalDragOverId, cutItemIds, empty }: Props = $props();
 	let containerEl: HTMLElement | undefined = $state();
 
 	function getItemIdFromDom(x: number, y: number): string | null {
@@ -68,6 +69,10 @@
 		onselectionchange(selectedIds: Set<string>): void {
 			onselectionchange?.(selectedIds);
 		},
+		onclick(id: string): void {
+			const item = items.find(i => i.id === id);
+			if (item) onclick?.(item);
+		},
 		ondblclick(id: string): void {
 			const item = items.find(i => i.id === id);
 			if (item) ondblclick?.(item);
@@ -77,6 +82,14 @@
 		},
 		onkeyaction(e: KeyboardEvent): void {
 			onkeyaction?.(e);
+		},
+		onArrowKey(currentId: string | null, key: string): string | null {
+			if (key !== 'ArrowUp' && key !== 'ArrowDown') return null;
+			const ids = items.map(i => i.id);
+			const idx = currentId ? ids.indexOf(currentId) : -1;
+			if (key === 'ArrowDown') return ids[idx + 1] ?? null;
+			if (key === 'ArrowUp') return idx > 0 ? ids[idx - 1]! : null;
+			return null;
 		},
 	});
 

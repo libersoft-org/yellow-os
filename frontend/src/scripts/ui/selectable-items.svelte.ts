@@ -26,9 +26,11 @@ export interface SelectableItemsConfig {
 	onPressItem?: ((id: string, e: PointerEvent) => void) | undefined;
 	onMoveDragEnd?: ((dropResult: DropResult | null, draggedIds: string[], dragOverId: string | null, e: PointerEvent) => boolean) | undefined;
 	onselectionchange?: ((selectedIds: Set<string>) => void) | undefined;
+	onclick?: ((id: string) => void) | undefined;
 	ondblclick?: ((id: string) => void) | undefined;
 	ondrop?: ((draggedIds: string[], targetId: string | null, e: PointerEvent) => void) | undefined;
 	onkeyaction?: ((e: KeyboardEvent) => void) | undefined;
+	onArrowKey?: ((currentId: string | null, key: string) => string | null) | undefined;
 }
 
 export interface SelectableItems {
@@ -42,6 +44,7 @@ export interface SelectableItems {
 	clearSelection(): void;
 	selectSingle(id: string): void;
 	setSelection(ids: Set<string>): void;
+	validateSelection(): void;
 	handlePress(e: PointerEvent): boolean | void;
 	handleClick(): void;
 	handleDblClick(): void;
@@ -64,12 +67,27 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 	let pressedOnItem = false;
 	let dragButton = 0;
 	let dragPreSelected = new Set<string>();
+	let lastTapTime = 0;
+	let lastTapItemId: string | null = null;
+	const DOUBLE_TAP_MS = 300;
 
 	function emitSelectionChange(): void {
 		config.onselectionchange?.(selection.selected);
 	}
 
+	function validateSelection(): void {
+		const itemIds = new Set(config.getItems().map(i => i.id));
+		for (const id of selection.selected) {
+			if (!itemIds.has(id)) {
+				selection.clear();
+				emitSelectionChange();
+				return;
+			}
+		}
+	}
+
 	function handlePress(e: PointerEvent): boolean | void {
+		validateSelection();
 		e.preventDefault();
 		config.getContainerEl()?.focus();
 		_pendingDeselect = null;
@@ -120,6 +138,22 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 	}
 
 	function handleClick(): void {
+		if (config.ondblclick && _lastClickedItemId) {
+			const now = Date.now();
+			if (now - lastTapTime < DOUBLE_TAP_MS && lastTapItemId === _lastClickedItemId) {
+				lastTapTime = 0;
+				lastTapItemId = null;
+				config.ondblclick(_lastClickedItemId);
+				return;
+			}
+			lastTapTime = now;
+			lastTapItemId = _lastClickedItemId;
+		}
+
+		if (_lastClickedItemId) {
+			config.onclick?.(_lastClickedItemId);
+		}
+
 		if (_pendingDeselect) {
 			selection.set(new Set([_pendingDeselect]));
 			_pendingDeselect = null;
@@ -129,6 +163,8 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 
 	function handleDblClick(): void {
 		if (_lastClickedItemId) {
+			lastTapTime = 0;
+			lastTapItemId = null;
 			config.ondblclick?.(_lastClickedItemId);
 		}
 	}
@@ -208,6 +244,32 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 			emitSelectionChange();
 			return;
 		}
+		if (config.onArrowKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+			e.preventDefault();
+			const items = config.getItems();
+			if (items.length === 0) return;
+			const currentId = _lastClickedItemId && selection.isSelected(_lastClickedItemId) ? _lastClickedItemId : ([...selection.selected][0] ?? null);
+			if (!currentId) {
+				const firstId = items[0]!.id;
+				selection.set(new Set([firstId]));
+				_lastClickedItemId = firstId;
+				emitSelectionChange();
+				return;
+			}
+			const nextId = config.onArrowKey(currentId, e.key);
+			if (nextId) {
+				selection.set(new Set([nextId]));
+				_lastClickedItemId = nextId;
+				emitSelectionChange();
+			}
+			return;
+		}
+		if (e.key === 'Enter' && selection.selected.size === 1) {
+			e.preventDefault();
+			const id = [...selection.selected][0]!;
+			config.ondblclick?.(id);
+			return;
+		}
 		config.onkeyaction?.(e);
 	}
 
@@ -244,6 +306,7 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 		setSelection(ids: Set<string>): void {
 			selection.set(ids);
 		},
+		validateSelection,
 		handlePress,
 		handleClick,
 		handleDblClick,

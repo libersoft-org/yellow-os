@@ -2,9 +2,9 @@
 	import { onMount } from 'svelte';
 	import type { Snippet } from 'svelte';
 	import type { IconGridItemData } from './icon-grid.ts';
-	import { createSelection } from '../../scripts/ui/selection.svelte.ts';
+	import { createSelectableItems, type GhostConfig } from '../../scripts/ui/selectable-items.svelte.ts';
 	import { pointerGestures } from '../../scripts/ui/pointer-gestures.ts';
-	import { startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem, type DropResult } from '../../scripts/ui/drag-state.svelte.ts';
+	import { type DragGhostItem, type DropResult } from '../../scripts/ui/drag-state.svelte.ts';
 	import IconGridItem from './IconGridItem.svelte';
 	interface Props {
 		items: IconGridItemData[];
@@ -25,35 +25,13 @@
 		empty?: Snippet | undefined;
 	}
 	let { items, dirPath, cellWidth = 100, cellHeight = 100, iconSize = '40px', getInitialSelection, onclick, ondblclick, onselectionchange, onitemsmove, ondrop, onkeyaction, externalDragOverId, cutItemIds, columnFirst, empty }: Props = $props();
-	const selection = createSelection();
 
-	onMount(() => {
-		const init = getInitialSelection?.();
-		if (init && init.size > 0) selection.set(new Set(init));
-	});
-
-	function emitSelectionChange(): void {
-		onselectionchange?.(selection.selected);
-	}
 	let containerEl: HTMLElement | undefined = $state();
 	let containerWidth = $state(0);
 	let containerHeight = $state(0);
 	let _positions = $state({ map: new Map<string, { gridX: number; gridY: number }>() });
 
-	function isItemSelected(id: string): boolean {
-		return selection.isSelected(id);
-	}
-
-	function validateSelection(): void {
-		const itemIds = new Set(items.map(i => i.id));
-		for (const id of selection.selected) {
-			if (!itemIds.has(id)) {
-				selection.clear();
-				emitSelectionChange();
-				return;
-			}
-		}
-	}
+	// --- Grid layout ---
 
 	const cols = $derived(Math.max(1, Math.floor((containerWidth || 400) / cellWidth)));
 	const rows = $derived(Math.max(1, Math.floor((containerHeight || 400) / cellHeight)));
@@ -62,7 +40,6 @@
 		const result = new Map<string, { gridX: number; gridY: number }>();
 		const occupied = new Set<string>();
 
-		// First pass: items with explicit positions (stored or from data)
 		for (const item of items) {
 			const pos = _positions.map.get(item.id);
 			if (pos) {
@@ -74,7 +51,6 @@
 			}
 		}
 
-		// Second pass: fallback positions with collision resolution
 		for (let i = 0; i < items.length; i++) {
 			const item = items[i]!;
 			if (result.has(item.id)) continue;
@@ -95,11 +71,9 @@
 		return result;
 	});
 
-	/** Find the nearest free grid cell starting from (startX, startY), skipping occupied cells. */
 	function findFreePosition(startX: number, startY: number, occupied: Set<string>): { gridX: number; gridY: number } {
 		const isOccupied = (gx: number, gy: number): boolean => occupied.has(gx + ',' + gy);
 		if (!isOccupied(startX, startY)) return { gridX: startX, gridY: startY };
-		// Spiral outward from the start position
 		for (let radius = 1; radius < 100; radius++) {
 			for (let dy = -radius; dy <= radius; dy++) {
 				for (let dx = -radius; dx <= radius; dx++) {
@@ -114,7 +88,6 @@
 		return { gridX: startX, gridY: startY };
 	}
 
-	/** Build a set of "x,y" strings for all occupied cells, excluding given ids. */
 	function getOccupiedSet(excludeIds: Set<string>): Set<string> {
 		const occupied = new Set<string>();
 		for (const [id, pos] of itemPositions) {
@@ -136,23 +109,13 @@
 		return (maxCol + 1) * cellWidth;
 	});
 
-	// Drag state
-	type DragMode = 'none' | 'select' | 'move';
-	let dragMode = $state<DragMode>('none');
-	let pressedOnItem = false;
-	let dragSelectStart = $state({ x: 0, y: 0 });
-	let dragSelectEnd = $state({ x: 0, y: 0 });
-	let dragPreSelected = new Set<string>();
+	// --- Grid-specific drag state ---
+
 	let dragMoveItemId = $state<string | null>(null);
 	let dragMoveOffset = $state({ x: 0, y: 0 });
 	let dragGhostPos = $state({ x: 0, y: 0 });
-	let pendingDeselect = $state<string | null>(null);
-	let lastClickedItemId = $state<string | null>(null);
-	let lastTapTime = 0;
-	let lastTapItemId: string | null = null;
-	const DOUBLE_TAP_MS = 300;
-	let dragOverId = $state<string | null>(null);
-	let dragButton = 0;
+
+	// --- Resize observer ---
 
 	function observeResize(node: HTMLElement): { destroy(): void } {
 		containerWidth = node.clientWidth;
@@ -173,222 +136,10 @@
 		};
 	}
 
-	function handlePress(e: PointerEvent): boolean | void {
-		validateSelection();
-		e.preventDefault();
-		containerEl?.focus();
-		pendingDeselect = null;
+	// --- Arrow key navigation ---
 
-		const cell = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
-		if (cell) {
-			const id = cell.dataset['iconId']!;
-			lastClickedItemId = id;
-
-			if (selection.isSelected(id)) {
-				if (e.ctrlKey || e.metaKey) {
-					const idx = items.findIndex(i => i.id === id);
-					selection.select(
-						id,
-						idx,
-						items.map(i => i.id),
-						e
-					);
-					emitSelectionChange();
-					return false;
-				}
-				pendingDeselect = id;
-			} else {
-				const idx = items.findIndex(i => i.id === id);
-				selection.select(
-					id,
-					idx,
-					items.map(i => i.id),
-					e
-				);
-			}
-
-			pressedOnItem = true;
-			dragButton = e.button;
-			dragMoveItemId = id;
-			const pos = itemPositions.get(id)!;
-			const coords = getContainerCoords(e);
-			dragMoveOffset = {
-				x: coords.x - pos.gridX * cellWidth,
-				y: coords.y - pos.gridY * cellHeight,
-			};
-			dragGhostPos = { x: pos.gridX * cellWidth, y: pos.gridY * cellHeight };
-		} else {
-			if (e.button !== 0) return false;
-			lastClickedItemId = null;
-			if (!(e.ctrlKey || e.metaKey)) selection.clear();
-			pressedOnItem = false;
-			const coords = getContainerCoords(e);
-			dragSelectStart = coords;
-			dragSelectEnd = coords;
-			dragPreSelected = e.ctrlKey || e.metaKey ? new Set(selection.selected) : new Set();
-		}
-		emitSelectionChange();
-	}
-
-	function handleClick(): void {
-		if (ondblclick && lastClickedItemId) {
-			const now = Date.now();
-			if (now - lastTapTime < DOUBLE_TAP_MS && lastTapItemId === lastClickedItemId) {
-				lastTapTime = 0;
-				lastTapItemId = null;
-				const item = items.find(i => i.id === lastClickedItemId);
-				if (item) ondblclick(item);
-				return;
-			}
-			lastTapTime = now;
-			lastTapItemId = lastClickedItemId;
-		}
-
-		if (onclick && lastClickedItemId) {
-			const item = items.find(i => i.id === lastClickedItemId);
-			if (item) onclick(item);
-		}
-
-		if (pendingDeselect) {
-			selection.set(new Set([pendingDeselect]));
-			pendingDeselect = null;
-		}
-		emitSelectionChange();
-	}
-
-	function handleDragStart(): void {
-		dragMode = pressedOnItem ? 'move' : 'select';
-		pendingDeselect = null;
-		if (pressedOnItem && dirPath && containerEl) {
-			startGlobalDrag(containerEl);
-		}
-	}
-
-	function getItemAtCoords(cx: number, cy: number): string | null {
-		for (const [id, pos] of itemPositions) {
-			if (selection.isSelected(id)) continue;
-			const left = pos.gridX * cellWidth;
-			const top = pos.gridY * cellHeight;
-			if (cx >= left && cx < left + cellWidth && cy >= top && cy < top + cellHeight) {
-				return id;
-			}
-		}
-		return null;
-	}
-
-	function handleDragMove(e: PointerEvent): void {
-		if (dragMode === 'move') {
-			const coords = getContainerCoords(e);
-			dragGhostPos = {
-				x: coords.x - dragMoveOffset.x,
-				y: coords.y - dragMoveOffset.y,
-			};
-			const hoveredId = getItemAtCoords(coords.x, coords.y);
-			if (hoveredId) {
-				const item = items.find(i => i.id === hoveredId);
-				dragOverId = item?.droppable ? hoveredId : null;
-			} else {
-				dragOverId = null;
-			}
-
-			if (dirPath && dragMoveItemId) {
-				const origPos = itemPositions.get(dragMoveItemId);
-				if (origPos) {
-					const ghostItems: DragGhostItem[] = [];
-					for (const item of items) {
-						if (!selection.isSelected(item.id)) continue;
-						const itemPos = itemPositions.get(item.id);
-						if (!itemPos) continue;
-						ghostItems.push({ id: item.id, icon: item.icon, label: item.label, iconColor: item.iconColor, offsetX: (itemPos.gridX - origPos.gridX) * cellWidth, offsetY: (itemPos.gridY - origPos.gridY) * cellHeight });
-					}
-					updateGlobalGhost(ghostItems, e.clientX - dragMoveOffset.x, e.clientY - dragMoveOffset.y, cellWidth, cellHeight, iconSize, e.clientX, e.clientY);
-				}
-			}
-		}
-
-		if (dragMode === 'select') {
-			dragSelectEnd = getContainerCoords(e);
-			const selRect = {
-				left: Math.min(dragSelectStart.x, dragSelectEnd.x),
-				right: Math.max(dragSelectStart.x, dragSelectEnd.x),
-				top: Math.min(dragSelectStart.y, dragSelectEnd.y),
-				bottom: Math.max(dragSelectStart.y, dragSelectEnd.y),
-			};
-
-			const next = new Set(dragPreSelected);
-			for (const item of items) {
-				const pos = itemPositions.get(item.id)!;
-				const left = pos.gridX * cellWidth;
-				const top = pos.gridY * cellHeight;
-				const right = left + cellWidth;
-				const bottom = top + cellHeight;
-				if (right > selRect.left && left < selRect.right && bottom > selRect.top && top < selRect.bottom) {
-					next.add(item.id);
-				}
-			}
-			selection.set(next);
-			emitSelectionChange();
-		}
-	}
-
-	function handleDragEnd(e: PointerEvent): void {
-		if (dragMode === 'move' && dragMoveItemId) {
-			let dropResult: DropResult | null = null;
-			if (dirPath) {
-				dropResult = endGlobalDrag(dirPath, [...selection.selected], dragButton, e.clientX, e.clientY);
-			}
-			if (dropResult === 'handled') {
-				// Cross-window drop: freeze current positions so remaining items
-				// don't shift when the dragged file disappears from this directory.
-				const next = new Map(_positions.map);
-				for (const [id, pos] of itemPositions) next.set(id, pos);
-				_positions = { map: next };
-			} else if (dropResult !== 'blocked') {
-				// Same source or no dirPath – do local move
-				if (ondrop && (dragOverId || e.button === 2)) {
-					const draggedIds = [...selection.selected];
-					ondrop(draggedIds, dragOverId, e);
-				} else {
-					const newGridX = Math.max(0, Math.round(dragGhostPos.x / cellWidth));
-					const newGridY = Math.max(0, Math.round(dragGhostPos.y / cellHeight));
-					const origPos = itemPositions.get(dragMoveItemId)!;
-					const deltaX = newGridX - origPos.gridX;
-					const deltaY = newGridY - origPos.gridY;
-					if (deltaX !== 0 || deltaY !== 0) {
-						const selectedIds = [...selection.selected];
-						const selectedSet = new Set(selectedIds);
-						const occupied = getOccupiedSet(selectedSet);
-						const newPositions = new Map<string, { gridX: number; gridY: number }>();
-						for (const id of selectedIds) {
-							const pos = itemPositions.get(id)!;
-							const wanted = { gridX: Math.max(0, pos.gridX + deltaX), gridY: Math.max(0, pos.gridY + deltaY) };
-							const free = findFreePosition(wanted.gridX, wanted.gridY, occupied);
-							newPositions.set(id, free);
-							occupied.add(free.gridX + ',' + free.gridY);
-						}
-
-						const next = new Map(_positions.map);
-						const moves: { id: string; gridX: number; gridY: number }[] = [];
-						for (const [id, pos] of newPositions) {
-							next.set(id, pos);
-							moves.push({ id, ...pos });
-						}
-						_positions = { map: next };
-						onitemsmove?.(moves);
-					}
-				}
-			}
-			// If 'blocked' – do nothing, items snap back to original positions
-		}
-
-		cancelGlobalDrag();
-		dragMode = 'none';
-		dragMoveItemId = null;
-		pendingDeselect = null;
-		dragOverId = null;
-	}
-
-	function findItemInDirection(fromId: string, key: string): string | null {
+	function findItemInDirection(fromId: string | null, key: string): string | null {
+		if (!fromId) return null;
 		const fromPos = itemPositions.get(fromId);
 		if (!fromPos) return null;
 		const dx = key === 'ArrowRight' ? 1 : key === 'ArrowLeft' ? -1 : 0;
@@ -399,10 +150,8 @@
 			if (id === fromId) continue;
 			const relX = pos.gridX - fromPos.gridX;
 			const relY = pos.gridY - fromPos.gridY;
-			// Must be in the correct direction on the primary axis
 			if (dx !== 0 && Math.sign(relX) !== dx) continue;
 			if (dy !== 0 && Math.sign(relY) !== dy) continue;
-			// For horizontal movement, prefer same row; for vertical, prefer same column
 			const primary = dx !== 0 ? Math.abs(relX) : Math.abs(relY);
 			const secondary = dx !== 0 ? Math.abs(relY) : Math.abs(relX);
 			const dist = primary + secondary * 1000;
@@ -414,49 +163,158 @@
 		return bestId;
 	}
 
-	function onKeydown(e: KeyboardEvent): void {
-		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-			e.preventDefault();
-			selection.selectAll(items.map(i => i.id));
-			emitSelectionChange();
-			return;
-		}
-		if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-			e.preventDefault();
-			if (items.length === 0) return;
-			const currentId = lastClickedItemId && selection.isSelected(lastClickedItemId) ? lastClickedItemId : [...selection.selected][0];
-			if (!currentId) {
-				const firstItem = items[0]!;
-				selection.set(new Set([firstItem.id]));
-				lastClickedItemId = firstItem.id;
-				emitSelectionChange();
-				return;
+	// --- Selectable items ---
+
+	const si = createSelectableItems({
+		getItems: () => items,
+		getContainerEl: () => containerEl,
+		getDirPath: () => dirPath,
+		getItemIdAt(screenX: number, screenY: number): string | null {
+			if (!containerEl) return null;
+			const rect = containerEl.getBoundingClientRect();
+			const cx = screenX - rect.left + (containerEl.scrollLeft || 0);
+			const cy = screenY - rect.top + (containerEl.scrollTop || 0);
+			for (const [id, pos] of itemPositions) {
+				if (si.isSelected(id)) continue;
+				const left = pos.gridX * cellWidth;
+				const top = pos.gridY * cellHeight;
+				if (cx >= left && cx < left + cellWidth && cy >= top && cy < top + cellHeight) {
+					return id;
+				}
 			}
-			const nextId = findItemInDirection(currentId, e.key);
-			if (nextId) {
-				selection.set(new Set([nextId]));
-				lastClickedItemId = nextId;
-				emitSelectionChange();
+			return null;
+		},
+		toLocalCoords: getContainerCoords,
+		buildGhostConfig(e: PointerEvent, selectedIds: Set<string>): GhostConfig | null {
+			if (!dragMoveItemId) return null;
+			const origPos = itemPositions.get(dragMoveItemId);
+			if (!origPos) return null;
+			const coords = getContainerCoords(e);
+			dragGhostPos = {
+				x: coords.x - dragMoveOffset.x,
+				y: coords.y - dragMoveOffset.y,
+			};
+			const ghostItems: DragGhostItem[] = [];
+			for (const item of items) {
+				if (!selectedIds.has(item.id)) continue;
+				const itemPos = itemPositions.get(item.id);
+				if (!itemPos) continue;
+				ghostItems.push({ id: item.id, icon: item.icon, label: item.label, iconColor: item.iconColor, offsetX: (itemPos.gridX - origPos.gridX) * cellWidth, offsetY: (itemPos.gridY - origPos.gridY) * cellHeight });
 			}
-			return;
-		}
-		if (e.key === 'Enter' && selection.selected.size === 1) {
-			e.preventDefault();
-			const id = [...selection.selected][0]!;
+			return { items: ghostItems, x: e.clientX - dragMoveOffset.x, y: e.clientY - dragMoveOffset.y, cellWidth, cellHeight, iconSize };
+		},
+		getItemIdsInRect(x1: number, y1: number, x2: number, y2: number): string[] {
+			const result: string[] = [];
+			for (const item of items) {
+				const pos = itemPositions.get(item.id);
+				if (!pos) continue;
+				const left = pos.gridX * cellWidth;
+				const top = pos.gridY * cellHeight;
+				const right = left + cellWidth;
+				const bottom = top + cellHeight;
+				if (right > x1 && left < x2 && bottom > y1 && top < y2) {
+					result.push(item.id);
+				}
+			}
+			return result;
+		},
+		onPressItem(id: string, e: PointerEvent): void {
+			dragMoveItemId = id;
+			const pos = itemPositions.get(id)!;
+			const coords = getContainerCoords(e);
+			dragMoveOffset = {
+				x: coords.x - pos.gridX * cellWidth,
+				y: coords.y - pos.gridY * cellHeight,
+			};
+			dragGhostPos = { x: pos.gridX * cellWidth, y: pos.gridY * cellHeight };
+		},
+		onMoveDragEnd(dropResult: DropResult | null, _draggedIds: string[], dragOverId: string | null, e: PointerEvent): boolean {
+			if (!dragMoveItemId) return false;
+			if (dropResult === 'handled') {
+				const next = new Map(_positions.map);
+				for (const [id, pos] of itemPositions) next.set(id, pos);
+				_positions = { map: next };
+				dragMoveItemId = null;
+				return true;
+			}
+			if (dropResult === 'blocked') {
+				dragMoveItemId = null;
+				return true;
+			}
+			// same-source or no dirPath
+			if (ondrop && (dragOverId || e.button === 2)) {
+				ondrop([...si.selected], dragOverId, e);
+				dragMoveItemId = null;
+				return true;
+			}
+			// Local grid move
+			const coords = getContainerCoords(e);
+			dragGhostPos = {
+				x: coords.x - dragMoveOffset.x,
+				y: coords.y - dragMoveOffset.y,
+			};
+			const newGridX = Math.max(0, Math.round(dragGhostPos.x / cellWidth));
+			const newGridY = Math.max(0, Math.round(dragGhostPos.y / cellHeight));
+			const origPos = itemPositions.get(dragMoveItemId)!;
+			const deltaX = newGridX - origPos.gridX;
+			const deltaY = newGridY - origPos.gridY;
+			if (deltaX !== 0 || deltaY !== 0) {
+				const selectedIds = [...si.selected];
+				const selectedSet = new Set(selectedIds);
+				const occupied = getOccupiedSet(selectedSet);
+				const newPositions = new Map<string, { gridX: number; gridY: number }>();
+				for (const id of selectedIds) {
+					const pos = itemPositions.get(id)!;
+					const wanted = { gridX: Math.max(0, pos.gridX + deltaX), gridY: Math.max(0, pos.gridY + deltaY) };
+					const free = findFreePosition(wanted.gridX, wanted.gridY, occupied);
+					newPositions.set(id, free);
+					occupied.add(free.gridX + ',' + free.gridY);
+				}
+				const next = new Map(_positions.map);
+				const moves: { id: string; gridX: number; gridY: number }[] = [];
+				for (const [id, pos] of newPositions) {
+					next.set(id, pos);
+					moves.push({ id, ...pos });
+				}
+				_positions = { map: next };
+				onitemsmove?.(moves);
+			}
+			dragMoveItemId = null;
+			return true;
+		},
+		onselectionchange(selectedIds: Set<string>): void {
+			onselectionchange?.(selectedIds);
+		},
+		onclick(id: string): void {
+			const item = items.find(i => i.id === id);
+			if (item) onclick?.(item);
+		},
+		ondblclick(id: string): void {
 			const item = items.find(i => i.id === id);
 			if (item) ondblclick?.(item);
-			return;
-		}
-		onkeyaction?.(e);
-	}
+		},
+		ondrop(draggedIds: string[], targetId: string | null, e: PointerEvent): void {
+			ondrop?.(draggedIds, targetId, e);
+		},
+		onkeyaction(e: KeyboardEvent): void {
+			onkeyaction?.(e);
+		},
+		onArrowKey: findItemInDirection,
+	});
+
+	onMount(() => {
+		const init = getInitialSelection?.();
+		if (init && init.size > 0) si.setSelection(new Set(init));
+	});
+
+	// --- Exports ---
 
 	export function clearSelection(): void {
-		selection.clear();
+		si.clearSelection();
 	}
 
 	export function selectSingle(id: string): void {
-		selection.set(new Set([id]));
-		emitSelectionChange();
+		si.selectSingle(id);
 	}
 
 	export function clearPositions(): void {
@@ -473,34 +331,29 @@
 		const next = new Map(_positions.map);
 		next.set(newId, pos);
 		_positions = { map: next };
-		if (selection.isSelected(oldId)) {
-			const sel = new Set(selection.selected);
+		if (si.isSelected(oldId)) {
+			const sel = new Set(si.selected);
 			sel.delete(oldId);
 			sel.add(newId);
-			selection.set(sel);
-			emitSelectionChange();
+			si.setSelection(sel);
 		}
 	}
 
 	export function schedulePositions(positions: Map<string, { gridX: number; gridY: number }>): void {
 		const next = new Map(_positions.map);
-		// Freeze existing items at their current positions
 		for (const [id, pos] of itemPositions) {
 			if (!next.has(id) && !positions.has(id)) next.set(id, pos);
 		}
-		// Build occupied set from all existing items (excluding incoming ones)
 		const incomingIds = new Set(positions.keys());
 		const occupied = new Set<string>();
 		for (const [id, pos] of itemPositions) {
 			if (incomingIds.has(id)) continue;
 			occupied.add(pos.gridX + ',' + pos.gridY);
 		}
-		// Also include frozen positions from `next`
 		for (const [id, pos] of next) {
 			if (incomingIds.has(id)) continue;
 			occupied.add(pos.gridX + ',' + pos.gridY);
 		}
-		// Place incoming items, resolving collisions
 		for (const [id, pos] of positions) {
 			const free = findFreePosition(pos.gridX, pos.gridY, occupied);
 			next.set(id, free);
@@ -524,7 +377,6 @@
 		};
 	}
 
-	/** Return the item at the given screen coordinates, or null. */
 	export function getItemAtScreen(screenX: number, screenY: number): IconGridItemData | null {
 		if (!containerEl) return null;
 		const rect = containerEl.getBoundingClientRect();
@@ -618,7 +470,7 @@
 	}
 </style>
 
-<div class="icon-grid" role="grid" use:observeResize bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" style:min-width="max(100%, {contentWidth}px)" use:pointerGestures={{ onpress: handlePress, onclick: handleClick, ondragstart: handleDragStart, ondragmove: handleDragMove, ondragend: handleDragEnd }} onkeydown={onKeydown} tabindex="0">
+<div class="icon-grid" role="grid" use:observeResize bind:this={containerEl} style:min-height="max(100%, {contentHeight}px)" style:min-width="max(100%, {contentWidth}px)" use:pointerGestures={{ onpress: e => si.handlePress(e), onclick: () => si.handleClick(), ondblclick: () => si.handleDblClick(), ondragstart: () => si.handleDragStart(), ondragmove: e => si.handleDragMove(e), ondragend: e => si.handleDragEnd(e) }} onkeydown={e => si.handleKeydown(e)} tabindex="0">
 	{#if items.length === 0 && empty}
 		<div class="empty-state">{@render empty()}</div>
 	{/if}
@@ -626,27 +478,27 @@
 	{#each items as item (item.id)}
 		{@const pos = itemPositions.get(item.id)}
 		{#if pos}
-			<div class="icon-cell" class:selected={isItemSelected(item.id)} class:is-dragging={dragMode === 'move' && isItemSelected(item.id)} class:drop-target={dragOverId === item.id || externalDragOverId === item.id} class:cut={cutItemIds?.has(item.id) ?? false} data-icon-id={item.id} style="--cx: {pos.gridX * cellWidth}px; --cy: {pos.gridY * cellHeight}px; --cw: {cellWidth}px; --ch: {cellHeight}px;">
+			<div class="icon-cell" class:selected={si.isSelected(item.id)} class:is-dragging={si.dragMode === 'move' && si.isSelected(item.id)} class:drop-target={si.dragOverId === item.id || externalDragOverId === item.id} class:cut={cutItemIds?.has(item.id) ?? false} data-icon-id={item.id} style="--cx: {pos.gridX * cellWidth}px; --cy: {pos.gridY * cellHeight}px; --cw: {cellWidth}px; --ch: {cellHeight}px;">
 				<IconGridItem icon={item.icon} label={item.label} {iconSize} iconColor={item.iconColor} />
 			</div>
 		{/if}
 	{/each}
 
-	{#if dragMode === 'select'}
-		{@const sx = Math.min(dragSelectStart.x, dragSelectEnd.x)}
-		{@const sy = Math.min(dragSelectStart.y, dragSelectEnd.y)}
-		{@const sw = Math.abs(dragSelectEnd.x - dragSelectStart.x)}
-		{@const sh = Math.abs(dragSelectEnd.y - dragSelectStart.y)}
+	{#if si.dragMode === 'select'}
+		{@const sx = Math.min(si.dragSelectStart.x, si.dragSelectEnd.x)}
+		{@const sy = Math.min(si.dragSelectStart.y, si.dragSelectEnd.y)}
+		{@const sw = Math.abs(si.dragSelectEnd.x - si.dragSelectStart.x)}
+		{@const sh = Math.abs(si.dragSelectEnd.y - si.dragSelectStart.y)}
 		{#if sw > 3 || sh > 3}
 			<div class="drag-rect" style="left: {sx}px; top: {sy}px; width: {sw}px; height: {sh}px;"></div>
 		{/if}
 	{/if}
 
-	{#if dragMode === 'move' && dragMoveItemId && !dirPath}
+	{#if si.dragMode === 'move' && dragMoveItemId && !dirPath}
 		{@const origPos = itemPositions.get(dragMoveItemId)}
 		{#if origPos}
 			{#each items as item (item.id)}
-				{#if selection.isSelected(item.id)}
+				{#if si.isSelected(item.id)}
 					{@const itemPos = itemPositions.get(item.id)}
 					{#if itemPos}
 						{@const offsetX = (itemPos.gridX - origPos.gridX) * cellWidth}

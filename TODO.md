@@ -2,6 +2,7 @@
 
 ## Bugs / changes
 
+- File Browser + desktop - When right clicking on empty space - add "Select all" to context menu (already works as CTRL+A)
 - File Browser - there are 2 different clipboards for text and for file operations, it should be unified... if I copy /cut a file, I should not be able to paste anything to Text Editor and if I copy / cut in Text Editor, I should not be able to paste anything in file browser... also when using File Browser for copy / cut / paste, CTRL + C, X, V are not working at all
 - When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables
