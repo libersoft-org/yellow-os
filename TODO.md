@@ -15,6 +15,7 @@
 
 ## New features
 
+- File Browser - drag and drop / upload form from main OS to web OS
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Search files / directories in File browser
 - Add File system settings to Settings - File types (list, add, delete, modify)
@@ -23,7 +24,6 @@
 - Add "Empty trash" in context menu for Trash folder only
 - When taskbar windows are icon only (withtout text) add tooltip
 - Forbid dragging windows outside of screen
-- File Browser - drag and drop / upload form from main OS to web OS
 - Run WASM files as apps (test the App Player application)
 - Add system open / save as ... file dialog
 - Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit
