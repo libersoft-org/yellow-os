@@ -2,6 +2,7 @@ import { copyEntryTo, moveEntry } from './opfs.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
 import { showErrorDialog } from '../ui/dialog.ts';
 export type ClipboardMode = 'copy' | 'cut';
+export type ClipboardOwner = 'files' | 'text';
 interface ClipboardEntry {
 	path: string;
 	name: string;
@@ -9,18 +10,29 @@ interface ClipboardEntry {
 }
 let clipboardEntries: ClipboardEntry[] = $state([]);
 let clipboardMode: ClipboardMode = $state('copy');
+let clipboardOwner: ClipboardOwner = $state('files');
+
+export function getClipboardOwner(): ClipboardOwner {
+	return clipboardOwner;
+}
+
+export function setClipboardOwner(owner: ClipboardOwner): void {
+	clipboardOwner = owner;
+	if (owner === 'text') clipboardEntries = [];
+}
 
 export function getClipboard(): { entries: ClipboardEntry[]; mode: ClipboardMode } {
 	return { entries: clipboardEntries, mode: clipboardMode };
 }
 
 export function hasClipboard(): boolean {
-	return clipboardEntries.length > 0;
+	return clipboardOwner === 'files' && clipboardEntries.length > 0;
 }
 
 export function setClipboard(entries: ClipboardEntry[], mode: ClipboardMode): void {
 	clipboardEntries = entries;
 	clipboardMode = mode;
+	clipboardOwner = 'files';
 }
 
 export function clearClipboard(): void {

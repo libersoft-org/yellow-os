@@ -7,6 +7,7 @@
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
 	import StatusBar from '../../components/StatusBar/StatusBar.svelte';
 	import Textarea from '../../components/Textarea/Textarea.svelte';
+	import { setClipboardOwner, getClipboardOwner } from '../../scripts/fs/clipboard.svelte.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -117,6 +118,7 @@
 		if (!editorEl) return;
 		const text = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd);
 		navigator.clipboard.writeText(text);
+		setClipboardOwner('text');
 		const start = editorEl.selectionStart;
 		content = content.substring(0, start) + content.substring(editorEl.selectionEnd);
 		editorEl.setSelectionRange(start, start);
@@ -127,10 +129,11 @@
 		if (!editorEl) return;
 		const text = editorEl.value.substring(editorEl.selectionStart, editorEl.selectionEnd);
 		navigator.clipboard.writeText(text);
+		setClipboardOwner('text');
 	}
 
 	function paste(): void {
-		if (!editorEl) return;
+		if (!editorEl || getClipboardOwner() === 'files') return;
 		navigator.clipboard.readText().then(text => {
 			if (!editorEl || !text) return;
 			const start = editorEl.selectionStart;
@@ -155,6 +158,24 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent): void {
+		const isCopy = (e.ctrlKey && (e.key === 'c' || e.key === 'C')) || (e.ctrlKey && e.key === 'Insert');
+		const isCut = e.ctrlKey && (e.key === 'x' || e.key === 'X');
+		const isPaste = (e.ctrlKey && (e.key === 'v' || e.key === 'V')) || (e.shiftKey && e.key === 'Insert');
+		if (isCopy) {
+			setClipboardOwner('text');
+			return;
+		}
+		if (isCut) {
+			setClipboardOwner('text');
+			return;
+		}
+		if (isPaste) {
+			if (getClipboardOwner() === 'files') {
+				e.preventDefault();
+				return;
+			}
+			return;
+		}
 		if (!e.ctrlKey) return;
 		switch (e.key.toLowerCase()) {
 			case 'z':

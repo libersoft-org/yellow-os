@@ -323,7 +323,38 @@
 		}
 	}
 
+	function isCopy(e: KeyboardEvent): boolean {
+		return ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C')) || (e.ctrlKey && e.key === 'Insert');
+	}
+	function isCut(e: KeyboardEvent): boolean {
+		return (e.ctrlKey || e.metaKey) && (e.key === 'x' || e.key === 'X');
+	}
+	function isPaste(e: KeyboardEvent): boolean {
+		return ((e.ctrlKey || e.metaKey) && (e.key === 'v' || e.key === 'V')) || (e.shiftKey && e.key === 'Insert');
+	}
+
 	function handleKeydown(e: KeyboardEvent): void {
+		if (isCopy(e) && selectedEntries.length > 0) {
+			e.preventDefault();
+			setClipboard(
+				selectedEntries.map(en => ({ path, name: en.name, type: en.type })),
+				'copy'
+			);
+			return;
+		}
+		if (isCut(e) && selectedEntries.length > 0) {
+			e.preventDefault();
+			setClipboard(
+				selectedEntries.map(en => ({ path, name: en.name, type: en.type })),
+				'cut'
+			);
+			return;
+		}
+		if (isPaste(e) && hasClipboard()) {
+			e.preventDefault();
+			pasteClipboard(path);
+			return;
+		}
 		if (e.key === 'Delete' && selectedEntries.length > 0) {
 			e.preventDefault();
 			confirmDeleteMultiple(
