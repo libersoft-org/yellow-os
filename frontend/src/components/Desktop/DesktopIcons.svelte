@@ -5,10 +5,6 @@
 	import DirectoryView from '../DirectoryView/DirectoryView.svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	const DESKTOP_PATH = OS_PATH + '/Desktop';
-	interface Props {
-		desktopId?: number | undefined;
-	}
-	const {}: Props = $props();
 	const extraMenuItems: ContextMenuItem[] = [
 		{ separator: true },
 		{

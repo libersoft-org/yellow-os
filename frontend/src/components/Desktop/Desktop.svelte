@@ -135,7 +135,7 @@
 		{#if sliding}
 			<div class="desktop {desktop.slideDirection === 'left' ? 'leave-to-left' : 'leave-to-right'}" style:background-image={wallpaperCss}>
 				<div class="window-area" role="presentation">
-					<DesktopIcons desktopId={desktop.previous!} />
+					<DesktopIcons />
 					<WindowManager desktopId={desktop.previous!} />
 				</div>
 				<Taskbar desktopId={desktop.previous!} />
