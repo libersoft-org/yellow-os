@@ -65,6 +65,7 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 	let _dragSelectStart = $state({ x: 0, y: 0 });
 	let _dragSelectEnd = $state({ x: 0, y: 0 });
 	let _lastClickedItemId = $state<string | null>(null);
+	let _shiftAnchorId: string | null = null;
 	let _pendingDeselect = $state<string | null>(null);
 
 	let pressedOnItem = false;
@@ -256,12 +257,27 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 				const firstId = items[0]!.id;
 				selection.set(new Set([firstId]));
 				_lastClickedItemId = firstId;
+				_shiftAnchorId = firstId;
 				emitSelectionChange();
 				return;
 			}
 			const nextId = config.onArrowKey(currentId, e.key);
 			if (nextId) {
-				selection.set(new Set([nextId]));
+				if (e.shiftKey) {
+					if (!_shiftAnchorId) _shiftAnchorId = currentId;
+					const anchorIdx = items.findIndex(i => i.id === _shiftAnchorId);
+					const nextIdx = items.findIndex(i => i.id === nextId);
+					if (anchorIdx >= 0 && nextIdx >= 0) {
+						const from = Math.min(anchorIdx, nextIdx);
+						const to = Math.max(anchorIdx, nextIdx);
+						const rangeIds = new Set<string>();
+						for (let i = from; i <= to; i++) rangeIds.add(items[i]!.id);
+						selection.set(rangeIds);
+					}
+				} else {
+					selection.set(new Set([nextId]));
+					_shiftAnchorId = null;
+				}
 				_lastClickedItemId = nextId;
 				emitSelectionChange();
 			}
