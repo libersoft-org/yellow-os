@@ -2,7 +2,7 @@
 	import { openWindow } from '../../scripts/window/window-store.svelte.ts';
 	import { PRODUCT_NAME, PRODUCT_VERSION } from '../../scripts/system/product.ts';
 	import Icon from '../Icon/Icon.svelte';
-	import ListItem from '../ListItem/ListItem.svelte';
+	import ListItem from '../List/ListItem.svelte';
 	import Clickable from '../Clickable/Clickable.svelte';
 	import { readDirectory } from '../../scripts/fs/opfs.ts';
 	import { isLinkFile, readLink, resolveLink } from '../../scripts/fs/link.ts';

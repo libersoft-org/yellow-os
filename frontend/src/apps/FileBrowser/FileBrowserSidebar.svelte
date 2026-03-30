@@ -2,7 +2,7 @@
 	import type { DiskInfo } from './filebrowser.ts';
 	import { formatBytes } from '../../scripts/system/format.ts';
 	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
-	import ListItem from '../../components/ListItem/ListItem.svelte';
+	import ListItem from '../../components/List/ListItem.svelte';
 	interface Props {
 		disks: DiskInfo[];
 		currentPath: string;

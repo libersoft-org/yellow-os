@@ -1,12 +1,9 @@
 type DropHandler = (sourcePath: string, fileNames: string[], button: number, x: number, y: number, offsets: Map<string, { dx: number; dy: number }>) => void;
-
 export type DropResult = 'handled' | 'same-source' | 'blocked';
-
 interface DropZone {
 	el: HTMLElement;
 	handler: DropHandler;
 }
-
 export interface DragGhostItem {
 	id: string;
 	icon: string;
@@ -15,10 +12,8 @@ export interface DragGhostItem {
 	offsetX: number;
 	offsetY: number;
 }
-
 let sourceEl: HTMLElement | null = null;
 const zones: DropZone[] = [];
-
 let _ghostItems = $state<DragGhostItem[]>([]);
 let _ghostX = $state(0);
 let _ghostY = $state(0);
@@ -27,7 +22,6 @@ let _ghostCellWidth = $state(90);
 let _ghostCellHeight = $state(90);
 let _ghostIconSize = $state('40px');
 let _canDrop = $state(true);
-
 export const globalGhost = {
 	get items(): DragGhostItem[] {
 		return _ghostItems;
@@ -54,11 +48,9 @@ export const globalGhost = {
 		return _canDrop;
 	},
 };
-
 type ZoneSearchResult = { type: 'target'; zone: DropZone } | { type: 'source' } | { type: 'blocked' };
 
-/** Find the topmost drop zone at (x, y) using visual stacking order.
- *  Windows without a drop zone above them block drops to zones beneath. */
+// Find the topmost drop zone at (x, y) using visual stacking order. Windows without a drop zone above them block drops to zones beneath.
 function findTargetZone(x: number, y: number, src: HTMLElement | null): ZoneSearchResult {
 	const elements = document.elementsFromPoint(x, y);
 	for (const el of elements) {
@@ -72,9 +64,7 @@ function findTargetZone(x: number, y: number, src: HTMLElement | null): ZoneSear
 		// zones beneath it — even if the drag source lives in this window.
 		// (If the cursor were over the zone inside the window, the zone
 		// check above would have matched before we reached here.)
-		if (el.classList.contains('window')) {
-			return { type: 'blocked' };
-		}
+		if (el.classList.contains('window')) return { type: 'blocked' };
 	}
 	return { type: 'blocked' };
 }
@@ -109,7 +99,7 @@ let _suppressContextMenu = false;
 function onDocumentContextMenu(e: Event): void {
 	if (_suppressContextMenu) {
 		e.preventDefault();
-		e.stopPropagation();
+		e.stopImmediatePropagation();
 		_suppressContextMenu = false;
 	}
 }
@@ -119,7 +109,6 @@ if (typeof document !== 'undefined') document.addEventListener('contextmenu', on
 export function endGlobalDrag(sourcePath: string, fileNames: string[], button: number, x: number, y: number): DropResult {
 	const src = sourceEl;
 	sourceEl = null;
-
 	// Capture relative grid offsets from ghost before clearing.
 	const offsets = new Map<string, { dx: number; dy: number }>();
 	if (_ghostItems.length > 0 && _ghostCellWidth > 0 && _ghostCellHeight > 0) {
@@ -131,7 +120,6 @@ export function endGlobalDrag(sourcePath: string, fileNames: string[], button: n
 		}
 	}
 	clearGlobalGhost();
-
 	const result = findTargetZone(x, y, src);
 	if (result.type === 'target') {
 		if (button === 2) _suppressContextMenu = true;

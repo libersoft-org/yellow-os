@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
 	import Icon from '../Icon/Icon.svelte';
-	import ListItem from '../ListItem/ListItem.svelte';
+	import ListItem from '../List/ListItem.svelte';
 	import ContextMenuSeparator from './ContextMenuSeparator.svelte';
 	import { isSeparator, isCategory, type ContextMenuItem, type ContextMenuAction } from './context-menu.ts';
 	interface Props {

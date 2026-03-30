@@ -70,11 +70,16 @@ export function pointerGestures(node: HTMLElement, options: GestureOptions): Ges
 	}
 
 	function onPointerUp(e: PointerEvent): void {
-		if (!active || e.pointerId !== trackedPointerId) return;
+		if (!active || e.pointerId !== trackedPointerId || e.button !== activeButton) return;
 		active = false;
 		trackedPointerId = -1;
 		if (dragging) {
-			if (activeButton === 2) suppressNextContextMenu = true;
+			if (activeButton === 2) {
+				suppressNextContextMenu = true;
+				queueMicrotask(() => {
+					suppressNextContextMenu = false;
+				});
+			}
 			dragging = false;
 			opts.ondragend?.(e);
 			return;

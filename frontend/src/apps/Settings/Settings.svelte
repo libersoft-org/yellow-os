@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window/window-context.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
-	import ListItem from '../../components/ListItem/ListItem.svelte';
+	import ListItem from '../../components/List/ListItem.svelte';
 	import SettingsDesktop from './SettingsDesktop.svelte';
 	import SettingsTaskbar from './SettingsTaskbar.svelte';
 	import SettingsNotifications from './SettingsNotifications.svelte';

@@ -13,13 +13,10 @@
 	import { showDialog, showErrorDialog } from '../../scripts/ui/dialog.ts';
 	import { setClipboard, hasClipboard, pasteClipboard, getClipboard } from '../../scripts/fs/clipboard.svelte.ts';
 	import { ensureOpfsReady } from '../../scripts/fs/opfs-init.ts';
-	import { registerDropZone, isGlobalDragActive, startGlobalDrag, endGlobalDrag, cancelGlobalDrag, updateGlobalGhost, type DragGhostItem } from '../../scripts/ui/drag-state.svelte.ts';
-	import { createSelection } from '../../scripts/ui/selection.svelte.ts';
-	import { pointerGestures } from '../../scripts/ui/pointer-gestures.ts';
+	import { registerDropZone, isGlobalDragActive } from '../../scripts/ui/drag-state.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
-	import IconGridItem from '../IconGrid/IconGridItem.svelte';
-	import ListItem from '../ListItem/ListItem.svelte';
+	import List from '../List/List.svelte';
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	interface Props {
@@ -39,6 +36,7 @@
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let _selectedIds = $state(new Set<string>());
 	let iconGrid = $state<IconGrid>();
+	let listView = $state<List>();
 	type SortField = 'name' | 'modified' | 'extension' | 'size';
 	type SortDirection = 'asc' | 'desc';
 	let sortField = $state<SortField>('name');
@@ -72,12 +70,6 @@
 		});
 	});
 	const selectedEntries = $derived(sortedEntries.filter(e => _selectedIds.has(e.name)));
-
-	function setsEqual(a: Set<string>, b: Set<string>): boolean {
-		if (a.size !== b.size) return false;
-		for (const v of a) if (!b.has(v)) return false;
-		return true;
-	}
 
 	function displayLabel(name: string): string {
 		if (hideLinkExtension && isLinkFile(name)) return name.slice(0, -5);
@@ -154,191 +146,13 @@
 	}
 
 	function focusGrid(): void {
-		if (viewMode === 'list') listViewEl?.focus();
+		if (viewMode === 'list') listView?.focus();
 		else iconGrid?.focus();
 	}
 
-	// ── List view state ──
-	const listSelection = createSelection();
-	let listViewEl: HTMLElement | undefined = $state();
-	let listDragStartX = $state(0);
-	let listDragStartY = $state(0);
-	let listDragCurrentX = $state(0);
-	let listDragCurrentY = $state(0);
-	let listDragActive = $state(false);
-	let listDragPreSelected = new Set<string>();
-	let listLastClickedName: string | null = null;
-	let listPendingDeselect: string | null = null;
-	let listDragMode = $state<'none' | 'select' | 'move'>('none');
-	let listPressedOnItem = false;
-	let listDragButton = 0;
-	let listDragOverId = $state<string | null>(null);
-
-	function getListItemAtScreen(x: number, y: number): string | null {
-		if (!listViewEl) return null;
-		const els = listViewEl.querySelectorAll('[data-icon-id]');
-		for (const el of els) {
-			const rect = el.getBoundingClientRect();
-			if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-				return (el as HTMLElement).dataset['iconId'] ?? null;
-			}
-		}
-		return null;
-	}
-
 	function getDropTargetAtScreen(x: number, y: number): { id: string; droppable: boolean } | null {
-		if (viewMode === 'list') {
-			const name = getListItemAtScreen(x, y);
-			if (!name) return null;
-			const entry = sortedEntries.find(en => en.name === name);
-			return entry ? { id: name, droppable: entry.type === 'directory' } : null;
-		}
-		const item = iconGrid?.getItemAtScreen(x, y);
+		const item = viewMode === 'list' ? listView?.getItemAtScreen(x, y) : iconGrid?.getItemAtScreen(x, y);
 		return item ? { id: item.id, droppable: item.droppable ?? false } : null;
-	}
-
-	function listHandlePress(e: PointerEvent): boolean | void {
-		listPendingDeselect = null;
-		listDragButton = e.button;
-		if (!setsEqual(listSelection.selected, _selectedIds)) listSelection.set(new Set(_selectedIds));
-		const itemEl = (e.target as HTMLElement).closest('[data-icon-id]') as HTMLElement | null;
-		if (itemEl) {
-			listPressedOnItem = true;
-			const name = itemEl.dataset['iconId']!;
-			listLastClickedName = name;
-			if (listSelection.isSelected(name)) {
-				if (e.ctrlKey || e.metaKey) {
-					const index = sortedEntries.findIndex(en => en.name === name);
-					listSelection.select(
-						name,
-						index,
-						sortedEntries.map(en => en.name),
-						e
-					);
-					syncListSelection();
-					return false;
-				}
-				listPendingDeselect = name;
-			} else {
-				const index = sortedEntries.findIndex(en => en.name === name);
-				if (index >= 0) {
-					listSelection.select(
-						name,
-						index,
-						sortedEntries.map(en => en.name),
-						e
-					);
-					syncListSelection();
-				}
-			}
-		} else {
-			listLastClickedName = null;
-			if (e.button !== 0) return false;
-			if (!(e.ctrlKey || e.metaKey)) {
-				listSelection.clear();
-				_selectedIds = new Set();
-				onselectionchange?.([]);
-			}
-		}
-		listDragPreSelected = new Set(listSelection.selected);
-		listDragStartX = e.clientX;
-		listDragStartY = e.clientY;
-	}
-
-	function listHandleDragStart(): void {
-		listPendingDeselect = null;
-		if (listPressedOnItem) {
-			listDragMode = 'move';
-			if (listViewEl) startGlobalDrag(listViewEl);
-		} else {
-			listDragMode = 'select';
-			listDragActive = true;
-		}
-	}
-
-	function listHandleDragMove(e: PointerEvent): void {
-		if (listDragMode === 'move') {
-			const ghostItems: DragGhostItem[] = [];
-			let i = 0;
-			for (const entry of sortedEntries) {
-				if (!_selectedIds.has(entry.name)) continue;
-				ghostItems.push({ id: entry.name, icon: entryIcon(entry), label: displayLabel(entry.name), iconColor: entryIconColor(entry), offsetX: 0, offsetY: i * 28 });
-				i++;
-			}
-			updateGlobalGhost(ghostItems, e.clientX - 40, e.clientY - 14, 200, 28, '20px', e.clientX, e.clientY);
-			const hitName = getListItemAtScreen(e.clientX, e.clientY);
-			if (hitName && !_selectedIds.has(hitName)) {
-				const hit = sortedEntries.find(en => en.name === hitName);
-				listDragOverId = hit?.type === 'directory' ? hitName : null;
-			} else {
-				listDragOverId = null;
-			}
-			return;
-		}
-		if (!listViewEl) return;
-		listDragCurrentX = e.clientX;
-		listDragCurrentY = e.clientY;
-		const minY = Math.min(listDragStartY, e.clientY);
-		const maxY = Math.max(listDragStartY, e.clientY);
-		const next = new Set(listDragPreSelected);
-		const els = listViewEl.querySelectorAll('[data-icon-id]');
-		for (const el of els) {
-			const rect = el.getBoundingClientRect();
-			if (rect.bottom > minY && rect.top < maxY) {
-				next.add((el as HTMLElement).dataset['iconId']!);
-			}
-		}
-		listSelection.set(next);
-		syncListSelection();
-	}
-
-	function listHandleClick(): void {
-		listDragActive = false;
-		listDragMode = 'none';
-		if (listPendingDeselect) {
-			listSelection.set(new Set([listPendingDeselect]));
-			listPendingDeselect = null;
-			syncListSelection();
-		}
-	}
-
-	function listHandleDblClick(): void {
-		if (listLastClickedName) {
-			const entry = sortedEntries.find(en => en.name === listLastClickedName);
-			if (entry) openEntry(entry);
-		}
-	}
-
-	function listHandleDragEnd(e: PointerEvent): void {
-		if (listDragMode === 'move') {
-			const draggedIds = [..._selectedIds];
-			const dropResult = endGlobalDrag(path, draggedIds, listDragButton, e.clientX, e.clientY);
-			if (dropResult !== 'handled' && dropResult !== 'blocked') {
-				onIconDrop(draggedIds, listDragOverId, e);
-			}
-			cancelGlobalDrag();
-			listDragMode = 'none';
-			listDragOverId = null;
-			listPressedOnItem = false;
-			return;
-		}
-		listDragActive = false;
-		listDragMode = 'none';
-		listPendingDeselect = null;
-	}
-
-	function syncListSelection(): void {
-		_selectedIds = new Set(listSelection.selected);
-		onselectionchange?.(selectedEntries);
-	}
-
-	function onListKeydown(e: KeyboardEvent): void {
-		if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-			e.preventDefault();
-			listSelection.selectAll(sortedEntries.map(en => en.name));
-			syncListSelection();
-		}
-		handleKeydown(e);
 	}
 
 	function onDblClick(item: IconGridItemData): void {
@@ -466,12 +280,8 @@
 		if (iconEl) {
 			const id = (iconEl as HTMLElement).dataset['iconId']!;
 			if (!_selectedIds.has(id)) {
-				if (viewMode === 'list') {
-					listSelection.set(new Set([id]));
-					onGridSelectionChange(listSelection.selected);
-				} else {
-					iconGrid?.selectSingle(id);
-				}
+				if (viewMode === 'list') listView?.selectSingle(id);
+				else iconGrid?.selectSingle(id);
 			}
 			const entry = sortedEntries.find(en => en.name === id);
 			if (entry) contextMenu = { x: e.clientX, y: e.clientY, items: getIconMenuItems(entry) };
@@ -711,13 +521,10 @@
 	}
 
 	export function clearSelection(): void {
-		if (viewMode === 'list') {
-			listSelection.clear();
-			_selectedIds = new Set();
-			onselectionchange?.([]);
-		} else {
-			iconGrid?.clearSelection();
-		}
+		if (viewMode === 'list') listView?.clearSelection();
+		else iconGrid?.clearSelection();
+		_selectedIds = new Set();
+		onselectionchange?.([]);
 	}
 </script>
 
@@ -728,75 +535,17 @@
 		height: 100%;
 		outline: none;
 	}
-
-	.list-view {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		min-height: 100%;
-		position: relative;
-		outline: none;
-		padding: 8px;
-	}
-
-	.list-drop-target {
-		outline: 2px dashed var(--color-accent);
-		border-radius: 10px;
-		background: var(--color-selection);
-	}
-
-	.list-is-dragging {
-		opacity: 0.3;
-	}
-
-	.cut {
-		opacity: 0.4;
-	}
-
-	.list-drag-rect {
-		position: fixed;
-		border: 1px solid var(--color-accent);
-		background: var(--color-selection);
-		pointer-events: none;
-		z-index: 10;
-	}
-
-	.empty-state {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		height: 100%;
-		color: var(--color-text-dim);
-		font-size: 14px;
-	}
 </style>
 
 <div class="directory-view" role="group" tabindex="-1" oncontextmenu={onContextMenu} use:dropZone>
 	{#if viewMode === 'list'}
-		{#if sortedEntries.length === 0}
-			{#if !hideEmptyLabel}
-				<div class="empty-state">This directory is empty</div>
-			{/if}
-		{:else}
-			<div class="list-view" role="listbox" bind:this={listViewEl} use:pointerGestures={{ onpress: listHandlePress, onclick: listHandleClick, ondblclick: listHandleDblClick, ondragstart: listHandleDragStart, ondragmove: listHandleDragMove, ondragend: listHandleDragEnd }} onkeydown={onListKeydown} tabindex="0">
-				{#each sortedEntries as entry}
-					<div data-icon-id={entry.name} class:list-drop-target={listDragOverId === entry.name || externalDragOverId === entry.name} class:list-is-dragging={listDragMode === 'move' && _selectedIds.has(entry.name)} class:cut={cutItemIds.has(entry.name)}>
-						<ListItem active={_selectedIds.has(entry.name)}>
-							<IconGridItem icon={entryIcon(entry)} label={displayLabel(entry.name)} layout="horizontal" iconSize="20px" iconColor={entryIconColor(entry)} />
-						</ListItem>
-					</div>
-				{/each}
-				{#if listDragActive}
-					{@const left = Math.min(listDragStartX, listDragCurrentX)}
-					{@const top = Math.min(listDragStartY, listDragCurrentY)}
-					{@const width = Math.abs(listDragCurrentX - listDragStartX)}
-					{@const height = Math.abs(listDragCurrentY - listDragStartY)}
-					{#if width > 3 || height > 3}
-						<div class="list-drag-rect" style="top: {top}px; left: {left}px; width: {width}px; height: {height}px;"></div>
-					{/if}
+		<List bind:this={listView} items={iconViewItems} dirPath={path} {externalDragOverId} {cutItemIds} getInitialSelection={() => _selectedIds} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} onkeyaction={handleKeydown}>
+			{#snippet empty()}
+				{#if !hideEmptyLabel}
+					This directory is empty
 				{/if}
-			</div>
-		{/if}
+			{/snippet}
+		</List>
 	{:else}
 		<IconGrid bind:this={iconGrid} items={iconViewItems} dirPath={path} {columnFirst} {externalDragOverId} {cutItemIds} getInitialSelection={() => _selectedIds} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} {onitemsmove} onkeyaction={handleKeydown}>
 			{#snippet empty()}
