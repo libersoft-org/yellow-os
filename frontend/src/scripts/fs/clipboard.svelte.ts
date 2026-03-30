@@ -33,17 +33,22 @@ export async function pasteClipboard(destPath: string): Promise<void> {
 	const entries = [...clipboardEntries];
 	if (mode === 'cut') clearClipboard();
 	const sourcePaths = new Set<string>();
-	try {
-		for (const entry of entries) {
+	const failed: string[] = [];
+	for (const entry of entries) {
+		try {
 			sourcePaths.add(entry.path);
 			if (mode === 'cut') await moveEntry(entry.path, entry.name, destPath);
 			else await copyEntryTo(entry.path, entry.name, destPath);
+		} catch {
+			failed.push(entry.name);
 		}
-	} catch (err) {
-		showErrorDialog(err);
 	}
 	notifyDirectoryChange(destPath);
 	if (mode === 'cut') {
 		for (const p of sourcePaths) notifyDirectoryChange(p);
+	}
+	if (failed.length > 0) {
+		const action = mode === 'cut' ? 'move' : 'copy';
+		showErrorDialog(new Error(`Failed to ${action} ${failed.length} item${failed.length > 1 ? 's' : ''}: ${failed.join(', ')}`));
 	}
 }

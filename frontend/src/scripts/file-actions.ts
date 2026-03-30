@@ -1,26 +1,10 @@
 import type { Component } from 'svelte';
 import { deleteEntry, renameEntry, moveToTrash, createFile, createDirectory, uniqueName, isSystemEntry } from './opfs.ts';
-import { showDialog, showErrorDialog } from '../ui/dialog.ts';
-import { openWindow, findWindow, onWindowClosed } from '../window/window-store.svelte.ts';
+import { showDialog } from './dialog.ts';
+import { openWindow, findWindow, onWindowClosed } from './window-store.svelte.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
-import NewEntryDialog from '../../apps/FileBrowser/NewEntryDialog.svelte';
-import RenameDialog from '../../apps/FileBrowser/RenameDialog.svelte';
-
-async function deleteMultiple(entries: { name: string; type: 'file' | 'directory' }[], action: (e: { name: string; type: 'file' | 'directory' }) => Promise<void>): Promise<string[]> {
-	const failed: string[] = [];
-	for (const e of entries) {
-		try {
-			await action(e);
-		} catch {
-			failed.push(e.name);
-		}
-	}
-	return failed;
-}
-
-function showDeleteErrors(action: string, failed: string[]): void {
-	showErrorDialog(new Error(`Failed to ${action} ${failed.length} item${failed.length > 1 ? 's' : ''}: ${failed.join(', ')}`));
-}
+import NewEntryDialog from '../apps/FileBrowser/NewEntryDialog.svelte';
+import RenameDialog from '../apps/FileBrowser/RenameDialog.svelte';
 
 export function warnSystemMove(dirPath: string, names: string[]): string[] {
 	const blocked = names.filter(n => isSystemEntry(dirPath, n));
@@ -45,12 +29,8 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 					backgroundColorVariable: '--color-danger',
 					colorVariable: '--color-accent-fg',
 					onclick: async () => {
-						try {
-							await deleteEntry(dirPath, entryName);
-							notifyDirectoryChange(dirPath);
-						} catch (err) {
-							showErrorDialog(err);
-						}
+						await deleteEntry(dirPath, entryName);
+						notifyDirectoryChange(dirPath);
 					},
 				},
 				{ label: 'Cancel' },
@@ -68,13 +48,9 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 					backgroundColorVariable: '--color-danger',
 					colorVariable: '--color-accent-fg',
 					onclick: async () => {
-						try {
-							await moveToTrash(dirPath, entryName);
-							notifyDirectoryChange(dirPath);
-							notifyDirectoryChange('/Trash');
-						} catch (err) {
-							showErrorDialog(err);
-						}
+						await moveToTrash(dirPath, entryName);
+						notifyDirectoryChange(dirPath);
+						notifyDirectoryChange('/Trash');
 					},
 				},
 				{ label: 'Cancel' },
@@ -110,9 +86,8 @@ export function confirmDeleteMultiple(dirPath: string, entries: { name: string; 
 					backgroundColorVariable: '--color-danger',
 					colorVariable: '--color-accent-fg',
 					onclick: async () => {
-						const failed = await deleteMultiple(deletable, e => deleteEntry(dirPath, e.name));
+						for (const e of deletable) await deleteEntry(dirPath, e.name);
 						notifyDirectoryChange(dirPath);
-						if (failed.length > 0) showDeleteErrors('delete', failed);
 					},
 				},
 				{ label: 'Cancel' },
@@ -130,10 +105,9 @@ export function confirmDeleteMultiple(dirPath: string, entries: { name: string; 
 					backgroundColorVariable: '--color-danger',
 					colorVariable: '--color-accent-fg',
 					onclick: async () => {
-						const failed = await deleteMultiple(deletable, e => moveToTrash(dirPath, e.name));
+						for (const e of deletable) await moveToTrash(dirPath, e.name);
 						notifyDirectoryChange(dirPath);
 						notifyDirectoryChange('/Trash');
-						if (failed.length > 0) showDeleteErrors('move to Trash', failed);
 					},
 				},
 				{ label: 'Cancel' },
@@ -152,13 +126,9 @@ export function openRenameDialog(dirPath: string, entryName: string, entryType: 
 		entryType,
 		currentName: entryName,
 		onrename: async (newName: string) => {
-			try {
-				await renameEntry(dirPath, entryName, newName);
-				onrenamed?.(entryName, newName);
-				notifyDirectoryChange(dirPath);
-			} catch (err) {
-				showErrorDialog(err);
-			}
+			await renameEntry(dirPath, entryName, newName);
+			onrenamed?.(entryName, newName);
+			notifyDirectoryChange(dirPath);
 		},
 	});
 	const dialogWin = findWindow(windowId);
@@ -182,15 +152,11 @@ export function openNewEntryDialog(dirPath: string, entryType: 'file' | 'directo
 	const windowId = openWindow(NewEntryDialog as Component, {
 		entryType,
 		oncreate: async (name: string) => {
-			try {
-				const finalName = await uniqueName(dirPath, name);
-				if (entryType === 'directory') await createDirectory(dirPath, finalName);
-				else await createFile(dirPath, finalName);
-				oncreated?.(finalName);
-				notifyDirectoryChange(dirPath);
-			} catch (err) {
-				showErrorDialog(err);
-			}
+			const finalName = await uniqueName(dirPath, name);
+			if (entryType === 'directory') await createDirectory(dirPath, finalName);
+			else await createFile(dirPath, finalName);
+			oncreated?.(finalName);
+			notifyDirectoryChange(dirPath);
 		},
 	});
 	const dialogWin = findWindow(windowId);
