@@ -96,13 +96,18 @@
 		return names;
 	});
 
+	let loadGeneration = 0;
+
 	async function loadDirectory(): Promise<void> {
+		const gen = ++loadGeneration;
 		await ensureOpfsReady();
+		if (gen !== loadGeneration) return;
 		try {
 			entries = await loadDirectoryEntries(path);
 		} catch {
 			entries = [];
 		}
+		if (gen !== loadGeneration) return;
 		onentrieschange?.(entries);
 		if (_selectedIds.size > 0) onselectionchange?.(selectedEntries);
 	}
@@ -207,9 +212,7 @@
 				},
 			});
 		}
-		if (entry.type === 'file') {
-			items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
-		}
+		if (entry.type === 'file') items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
 		const toCopy = selectedEntries.length > 1 ? selectedEntries : [entry];
 		items.push(
 			{ separator: true },
@@ -391,7 +394,6 @@
 	async function onIconDrop(draggedIds: string[], targetId: string | null, e: PointerEvent): Promise<void> {
 		const targetEntry = targetId ? sortedEntries.find(en => en.name === targetId) : null;
 		const destPath = targetEntry?.type === 'directory' ? joinPath(path, targetId!) : null;
-
 		const dropPos = !destPath && iconGrid ? iconGrid.screenToGrid(e.clientX, e.clientY) : null;
 		const relOffsets = new Map<string, { dx: number; dy: number }>();
 		if (dropPos && iconGrid) {
@@ -403,14 +405,11 @@
 				}
 			}
 		}
-
 		const schedule = (nameMap: Map<string, string>): void => {
 			if (!dropPos || !iconGrid) return;
 			iconGrid.schedulePositions(computeDropPositions(dropPos, relOffsets, nameMap));
 		};
-
 		const dest = destPath ?? path;
-
 		if (e.button === 0) {
 			if (destPath) await executeDrop('move', path, draggedIds, dest, schedule);
 		} else if (e.button === 2) {
@@ -432,20 +431,16 @@
 
 	function handleExternalDrop(sourcePath: string, fileNames: string[], button: number, x: number, y: number, offsets: Map<string, { dx: number; dy: number }>): void {
 		if (sourcePath === path) return;
-
 		const hitItem = getDropTargetAtScreen(x, y);
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
 		const destPath = targetEntry ? joinPath(path, targetEntry.name) : path;
-
 		const dropBasePos = !targetEntry && iconGrid ? iconGrid.screenToGrid(x, y) : null;
 		const schedule = (nameMap: Map<string, string>): void => {
 			if (!dropBasePos || !iconGrid) return;
 			iconGrid.schedulePositions(computeDropPositions(dropBasePos, offsets, nameMap));
 		};
-
-		if (button === 0) {
-			executeDrop('move', sourcePath, fileNames, destPath, schedule);
-		} else if (button === 2) {
+		if (button === 0) executeDrop('move', sourcePath, fileNames, destPath, schedule);
+		else if (button === 2) {
 			contextMenu = {
 				x,
 				y,
