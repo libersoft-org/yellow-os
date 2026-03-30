@@ -75,8 +75,7 @@
 	}
 </style>
 
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<div class="dialog" role="application" onkeydown={handleKeydown}>
+<div class="dialog" role="dialog" tabindex="-1" onkeydown={handleKeydown}>
 	<div class="content">
 		<Icon img={typeIcon} size="40px" padding="0" colorVariable={typeColor} />
 		<span class="message">{message}</span>

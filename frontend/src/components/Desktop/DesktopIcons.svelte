@@ -39,7 +39,6 @@
 	}
 </style>
 
-<!-- svelte-ignore a11y_no_static_element_interactions -->
-<div class="desktop-icons" onpointerdown={defocusAll}>
+<div class="desktop-icons" role="group" onpointerdown={defocusAll}>
 	<DirectoryView bind:this={directoryView} path={DESKTOP_PATH} columnFirst hideLinkExtension hideEmptyLabel extraEmptySpaceMenuItems={extraMenuItems} onitemsmove={onItemsMove} />
 </div>

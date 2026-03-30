@@ -128,8 +128,7 @@
 	}
 </style>
 
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<div class="file-browser" role="application" tabindex="-1">
+<div class="file-browser" role="group" tabindex="-1">
 	<FileBrowserToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
 		<FileBrowserSidebar {disks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />

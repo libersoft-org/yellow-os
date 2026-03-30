@@ -776,8 +776,7 @@
 	}
 </style>
 
-<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-<div class="directory-view" role="application" tabindex="-1" oncontextmenu={onContextMenu} use:dropZone>
+<div class="directory-view" role="group" tabindex="-1" oncontextmenu={onContextMenu} use:dropZone>
 	{#if viewMode === 'list'}
 		{#if sortedEntries.length === 0}
 			{#if !hideEmptyLabel}
