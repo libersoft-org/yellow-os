@@ -39,6 +39,10 @@
 		color: var(--color-danger);
 		white-space: pre-line;
 	}
+
+	.success {
+		color: var(--color-success);
+	}
 </style>
 
 <div class="reset-screen">
@@ -48,6 +52,9 @@
 		{#each resetState.lines as line}
 			<div>{line}</div>
 		{/each}
+		{#if resetState.success}
+			<div class="success">{resetState.success}</div>
+		{/if}
 		{#if resetState.error}
 			<div class="error">{resetState.error}</div>
 		{/if}

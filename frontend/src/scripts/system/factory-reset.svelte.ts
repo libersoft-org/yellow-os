@@ -1,12 +1,13 @@
 let active = $state(false);
 let lines = $state<string[]>([]);
 let error = $state('');
+let success = $state('');
 
 function addLine(text: string): void {
 	lines = [...lines, text];
 }
 
-export function getResetState(): { active: boolean; lines: string[]; error: string } {
+export function getResetState(): { active: boolean; lines: string[]; error: string; success: string } {
 	return {
 		get active() {
 			return active;
@@ -16,6 +17,9 @@ export function getResetState(): { active: boolean; lines: string[]; error: stri
 		},
 		get error() {
 			return error;
+		},
+		get success() {
+			return success;
 		},
 	};
 }
@@ -53,20 +57,18 @@ const MANUAL_INSTRUCTIONS = 'Some files could not be deleted automatically.\nPle
 export async function startFactoryReset(): Promise<void> {
 	active = true;
 	error = '';
+	success = '';
 	try {
 		addLine('Clearing local storage ...');
 		localStorage.clear();
 		sessionStorage.clear();
-
 		addLine('Wiping OPFS ...');
 		const opfsOk = await wipeOpfs();
-
 		addLine('Clearing IndexedDB ...');
 		wipeIndexedDB();
-
 		if (opfsOk) {
 			addLine('');
-			addLine('Factory reset complete.');
+			success = 'Factory reset complete.';
 			await new Promise(resolve => setTimeout(resolve, 1000));
 			location.reload();
 		} else {

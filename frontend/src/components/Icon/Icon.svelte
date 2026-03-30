@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { MouseEventHandler } from 'svelte/elements';
 	import Clickable from '../Clickable/Clickable.svelte';
-
 	interface Props {
 		img?: string | undefined;
 		alt?: string | undefined;
