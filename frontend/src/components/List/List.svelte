@@ -97,6 +97,10 @@
 		si.clearSelection();
 	}
 
+	export function selectAll(): void {
+		si.selectAll();
+	}
+
 	export function selectSingle(id: string): void {
 		si.selectSingle(id);
 	}

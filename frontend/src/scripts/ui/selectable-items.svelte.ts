@@ -44,6 +44,7 @@ export interface SelectableItems {
 	readonly lastClickedItemId: string | null;
 	isSelected(id: string): boolean;
 	clearSelection(): void;
+	selectAll(): void;
 	selectSingle(id: string): void;
 	setSelection(ids: Set<string>): void;
 	validateSelection(): void;
@@ -304,6 +305,11 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 		},
 		clearSelection(): void {
 			selection.clear();
+			emitSelectionChange();
+		},
+		selectAll(): void {
+			const items = config.getItems();
+			selection.selectAll(items.map(i => i.id));
 			emitSelectionChange();
 		},
 		selectSingle(id: string): void {
