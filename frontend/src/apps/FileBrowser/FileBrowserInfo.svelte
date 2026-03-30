@@ -115,7 +115,7 @@
 				<span class="detail-label">Type</span>
 				<span class="detail-value">{item.type === 'directory' ? 'Directory' : getExtension(item.name)}</span>
 			</div>
-			{#if item.type === 'file' && item.size > 0}
+			{#if item.type === 'file'}
 				<div class="detail-row">
 					<span class="detail-label">Size</span>
 					<span class="detail-value">{formatBytes(item.size)}</span>

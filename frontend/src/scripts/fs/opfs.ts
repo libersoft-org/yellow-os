@@ -64,12 +64,15 @@ export async function createFile(path: string, name: string, content: string = '
 	await writable.close();
 }
 
+import { notifyDirectoryChange } from './opfs-notify.ts';
+
 export async function writeFile(path: string, name: string, content: Blob | string): Promise<void> {
 	const dir = await resolveDirectory(path);
 	const fileHandle = await dir.getFileHandle(name, { create: true });
 	const writable = await fileHandle.createWritable();
 	await writable.write(content);
 	await writable.close();
+	notifyDirectoryChange(path);
 }
 
 export async function readFileText(path: string, name: string): Promise<string> {
