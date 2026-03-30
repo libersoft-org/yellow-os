@@ -354,11 +354,44 @@
 		return [{ icon: '/img/cut.svg', label: 'Move here', onclick: onmove }, { icon: '/img/copy.svg', label: 'Copy here', onclick: oncopy }, { icon: '/img/shortcut.svg', label: 'Create a link', onclick: onlink }, { separator: true }, { icon: '/img/close.svg', label: 'Cancel', onclick: () => {} }];
 	}
 
+	async function executeDrop(mode: 'move' | 'copy' | 'link', sourcePath: string, names: string[], destPath: string, schedule: (nameMap: Map<string, string>) => void): Promise<void> {
+		try {
+			const nameMap = new Map<string, string>();
+			if (mode === 'move') {
+				if (sourcePath === destPath) {
+					for (const name of names) nameMap.set(name, name);
+					schedule(nameMap);
+					return;
+				}
+				const allowed = warnSystemMove(sourcePath, names);
+				if (allowed.length === 0) return;
+				for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+			} else if (mode === 'copy') {
+				for (const name of names) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
+			} else {
+				const srcEntries = sourcePath === path ? sortedEntries : await readDirectory(sourcePath);
+				const entryInfos = names.map(name => {
+					const entry = srcEntries.find(en => en.name === name);
+					return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
+				});
+				nameMap.set('__links', '');
+				const linkMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
+				nameMap.clear();
+				for (const [k, v] of linkMap) nameMap.set(k, v);
+			}
+			schedule(nameMap);
+			notifyDirectoryChange(destPath);
+			if (sourcePath !== destPath) notifyDirectoryChange(sourcePath);
+			if (destPath !== path && sourcePath !== path) notifyDirectoryChange(path);
+		} catch (err) {
+			showErrorDialog(err);
+		}
+	}
+
 	async function onIconDrop(draggedIds: string[], targetId: string | null, e: PointerEvent): Promise<void> {
 		const targetEntry = targetId ? sortedEntries.find(en => en.name === targetId) : null;
 		const destPath = targetEntry?.type === 'directory' ? joinPath(path, targetId!) : null;
 
-		// Capture drop position and relative offsets before any async work
 		const dropPos = !destPath && iconGrid ? iconGrid.screenToGrid(e.clientX, e.clientY) : null;
 		const relOffsets = new Map<string, { dx: number; dy: number }>();
 		if (dropPos && iconGrid) {
@@ -371,73 +404,23 @@
 			}
 		}
 
-		function scheduleNewPositions(nameMap: Map<string, string>): void {
+		const schedule = (nameMap: Map<string, string>): void => {
 			if (!dropPos || !iconGrid) return;
 			iconGrid.schedulePositions(computeDropPositions(dropPos, relOffsets, nameMap));
-		}
+		};
+
+		const dest = destPath ?? path;
 
 		if (e.button === 0) {
-			if (destPath) {
-				const allowed = warnSystemMove(path, draggedIds);
-				if (allowed.length > 0) {
-					try {
-						for (const id of allowed) await moveEntry(path, id, destPath);
-						notifyDirectoryChange(path);
-						notifyDirectoryChange(destPath);
-					} catch (err) {
-						showErrorDialog(err);
-					}
-				}
-			}
+			if (destPath) await executeDrop('move', path, draggedIds, dest, schedule);
 		} else if (e.button === 2) {
 			contextMenu = {
 				x: e.clientX,
 				y: e.clientY,
 				items: buildDropMenu(
-					async () => {
-						try {
-							if (!destPath) {
-								const nameMap = new Map<string, string>();
-								for (const id of draggedIds) nameMap.set(id, id);
-								scheduleNewPositions(nameMap);
-							} else if (destPath !== path) {
-								const allowed = warnSystemMove(path, draggedIds);
-								if (allowed.length > 0) {
-									for (const id of allowed) await moveEntry(path, id, destPath);
-									notifyDirectoryChange(path);
-									notifyDirectoryChange(destPath);
-								}
-							}
-						} catch (err) {
-							showErrorDialog(err);
-						}
-					},
-					async () => {
-						try {
-							const copyDest = destPath ?? path;
-							const nameMap = new Map<string, string>();
-							for (const id of draggedIds) nameMap.set(id, await copyEntryTo(path, id, copyDest));
-							if (!destPath) scheduleNewPositions(nameMap);
-							notifyDirectoryChange(path);
-							if (copyDest !== path) notifyDirectoryChange(copyDest);
-						} catch (err) {
-							showErrorDialog(err);
-						}
-					},
-					async () => {
-						try {
-							const linkDest = destPath ?? path;
-							const entryInfos = draggedIds.map(id => {
-								const entry = sortedEntries.find(en => en.name === id);
-								return { name: id, type: (entry?.type ?? 'file') as 'file' | 'directory' };
-							});
-							const nameMap = await createLinksForEntries(path, entryInfos, linkDest);
-							if (!destPath) scheduleNewPositions(nameMap);
-							notifyDirectoryChange(linkDest);
-						} catch (err) {
-							showErrorDialog(err);
-						}
-					}
+					() => executeDrop('move', path, draggedIds, dest, schedule),
+					() => executeDrop('copy', path, draggedIds, dest, schedule),
+					() => executeDrop('link', path, draggedIds, dest, schedule)
 				),
 			};
 		}
@@ -450,78 +433,26 @@
 	function handleExternalDrop(sourcePath: string, fileNames: string[], button: number, x: number, y: number, offsets: Map<string, { dx: number; dy: number }>): void {
 		if (sourcePath === path) return;
 
-		// Check if drop landed on a directory icon → move into that subdirectory
 		const hitItem = getDropTargetAtScreen(x, y);
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
 		const destPath = targetEntry ? joinPath(path, targetEntry.name) : path;
 
 		const dropBasePos = !targetEntry && iconGrid ? iconGrid.screenToGrid(x, y) : null;
-
-		function scheduleDropPositions(nameMap: Map<string, string>): void {
+		const schedule = (nameMap: Map<string, string>): void => {
 			if (!dropBasePos || !iconGrid) return;
 			iconGrid.schedulePositions(computeDropPositions(dropBasePos, offsets, nameMap));
-		}
+		};
 
 		if (button === 0) {
-			(async (): Promise<void> => {
-				try {
-					const allowed = warnSystemMove(sourcePath, fileNames);
-					if (allowed.length === 0) return;
-					const nameMap = new Map<string, string>();
-					for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
-					scheduleDropPositions(nameMap);
-					notifyDirectoryChange(sourcePath);
-					notifyDirectoryChange(destPath);
-					if (destPath !== path) notifyDirectoryChange(path);
-				} catch (err) {
-					showErrorDialog(err);
-				}
-			})();
+			executeDrop('move', sourcePath, fileNames, destPath, schedule);
 		} else if (button === 2) {
 			contextMenu = {
 				x,
 				y,
 				items: buildDropMenu(
-					async () => {
-						try {
-							const allowed = warnSystemMove(sourcePath, fileNames);
-							if (allowed.length === 0) return;
-							const nameMap = new Map<string, string>();
-							for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
-							scheduleDropPositions(nameMap);
-							notifyDirectoryChange(sourcePath);
-							notifyDirectoryChange(destPath);
-							if (destPath !== path) notifyDirectoryChange(path);
-						} catch (err) {
-							showErrorDialog(err);
-						}
-					},
-					async () => {
-						try {
-							const nameMap = new Map<string, string>();
-							for (const name of fileNames) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
-							scheduleDropPositions(nameMap);
-							notifyDirectoryChange(destPath);
-							if (destPath !== path) notifyDirectoryChange(path);
-						} catch (err) {
-							showErrorDialog(err);
-						}
-					},
-					async () => {
-						try {
-							const sourceEntries = await readDirectory(sourcePath);
-							const entryInfos = fileNames.map(name => {
-								const entry = sourceEntries.find(en => en.name === name);
-								return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
-							});
-							const nameMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
-							scheduleDropPositions(nameMap);
-							notifyDirectoryChange(destPath);
-							if (destPath !== path) notifyDirectoryChange(path);
-						} catch (err) {
-							showErrorDialog(err);
-						}
-					}
+					() => executeDrop('move', sourcePath, fileNames, destPath, schedule),
+					() => executeDrop('copy', sourcePath, fileNames, destPath, schedule),
+					() => executeDrop('link', sourcePath, fileNames, destPath, schedule)
 				),
 			};
 		}
