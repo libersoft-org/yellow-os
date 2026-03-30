@@ -52,6 +52,20 @@
 		item.onclick(e);
 		onclose();
 	}
+
+	function adjustSubmenu(node: HTMLDivElement): void {
+		const rect = node.getBoundingClientRect();
+		const taskbarHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--taskbar-height')) || 0;
+		const maxY = globalThis.innerHeight - taskbarHeight;
+		if (rect.right > globalThis.innerWidth) {
+			node.style.left = 'auto';
+			node.style.right = '100%';
+		}
+		if (rect.bottom > maxY) {
+			node.style.top = 'auto';
+			node.style.bottom = '0';
+		}
+	}
 </script>
 
 <style>
@@ -86,6 +100,8 @@
 		position: absolute;
 		left: 100%;
 		top: 0;
+		right: auto;
+		bottom: auto;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: 10px;
@@ -110,7 +126,7 @@
 					</div>
 				</ListItem>
 				{#if openCategory === item.label}
-					<div class="submenu">
+					<div class="submenu" use:adjustSubmenu>
 						{#each item.children as child}
 							{#if isSeparator(child)}
 								<ContextMenuSeparator />
