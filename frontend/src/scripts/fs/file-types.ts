@@ -2,6 +2,7 @@ import type { Component } from 'svelte';
 import { readFileText } from './opfs.ts';
 import { getAppComponent } from '../system/app-registry.ts';
 import { OS_PATH } from './opfs-init.ts';
+import { getExtension } from './file-entry.ts';
 
 export interface FileTypeHandler {
 	component: Component;
@@ -15,11 +16,6 @@ async function loadAssociations(): Promise<Record<string, string>> {
 	} catch {
 		return {};
 	}
-}
-
-function getExtension(name: string): string {
-	const dot = name.lastIndexOf('.');
-	return dot > 0 ? name.substring(dot + 1).toLowerCase() : '';
 }
 
 export async function getFileHandler(filePath: string, fileName: string): Promise<FileTypeHandler | null> {

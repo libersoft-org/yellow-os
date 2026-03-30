@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
-	import { entryIcon, entryIconColor } from '../../scripts/fs/file-entry.ts';
+	import { entryIcon, entryIconColor, getExtension } from '../../scripts/fs/file-entry.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import { formatBytes } from '../../scripts/system/format.ts';
 	interface Props {
@@ -11,9 +11,9 @@
 	}
 	const { selected, currentPath, entries, width = 220 }: Props = $props();
 
-	function getExtension(name: string): string {
-		const dot = name.lastIndexOf('.');
-		return dot > 0 ? name.substring(dot + 1).toUpperCase() : '—';
+	function getDisplayExtension(name: string): string {
+		const ext = getExtension(name);
+		return ext ? ext.toUpperCase() : '—';
 	}
 
 	function getDirName(path: string): string {
@@ -113,7 +113,7 @@
 		<div class="details">
 			<div class="detail-row">
 				<span class="detail-label">Type</span>
-				<span class="detail-value">{item.type === 'directory' ? 'Directory' : getExtension(item.name)}</span>
+				<span class="detail-value">{item.type === 'directory' ? 'Directory' : getDisplayExtension(item.name)}</span>
 			</div>
 			{#if item.type === 'file'}
 				<div class="detail-row">

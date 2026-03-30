@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
-	import { entryIcon, entryIconColor, loadDirectoryEntries } from '../../scripts/fs/file-entry.ts';
+	import { entryIcon, entryIconColor, loadDirectoryEntries, getExtension } from '../../scripts/fs/file-entry.ts';
 	import { moveEntry, copyEntryTo, readDirectory, joinPath } from '../../scripts/fs/opfs.ts';
 	import { isLinkFile, readLink, resolveLink, createLinksForEntries } from '../../scripts/fs/link.ts';
 	import { openWindow } from '../../scripts/window/window-store.svelte.ts';
@@ -43,11 +43,6 @@
 	type SortDirection = 'asc' | 'desc';
 	let sortField = $state<SortField>('name');
 	let sortDirection = $state<SortDirection>('asc');
-
-	function getExtension(name: string): string {
-		const dot = name.lastIndexOf('.');
-		return dot > 0 ? name.slice(dot + 1).toLowerCase() : '';
-	}
 
 	function compareEntries(a: FileEntry, b: FileEntry, field: SortField, direction: SortDirection): number {
 		let result: number;

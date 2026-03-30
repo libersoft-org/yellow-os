@@ -9,6 +9,11 @@ export interface FileEntry extends OpfsEntry {
 	yappIcon?: string;
 }
 
+export function getExtension(name: string): string {
+	const dot = name.lastIndexOf('.');
+	return dot > 0 ? name.slice(dot + 1).toLowerCase() : '';
+}
+
 const SYSTEM_DIR_ICONS: Record<string, string> = {
 	Trash: '/img/apps/trash.svg',
 	[OS_NAME]: '/img/logo.svg',
