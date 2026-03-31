@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
 	import type { DiskInfo } from './filebrowser.ts';
-	import { entryIcon, entryIconColor, getExtension } from '../../scripts/fs/file-entry.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
+	import EntryInfo from '../../components/EntryInfo/EntryInfo.svelte';
 	import PieChart from '../../components/PieChart/PieChart.svelte';
 	import type { PieChartSegment } from '../../components/PieChart/PieChart.svelte';
 	import { formatBytes } from '../../scripts/system/format.ts';
@@ -24,11 +24,6 @@
 			{ value: currentDisk.free, colorVariable: '--color-surface-3', label: 'Free' },
 		];
 	});
-
-	function getDisplayExtension(name: string): string {
-		const ext = getExtension(name);
-		return ext ? ext.toUpperCase() : '—';
-	}
 
 	function getDirName(path: string): string {
 		if (path === '/') return 'Root';
@@ -127,28 +122,7 @@
 		</div>
 	{:else if selected.length === 1}
 		{@const item = selected[0]!}
-		<div class="name">{item.name}</div>
-		<div class="icon-preview">
-			<Icon img={entryIcon(item)} alt={item.name} size="64px" padding="0" colorVariable={entryIconColor(item)} />
-		</div>
-		<div class="details">
-			<div class="detail-row">
-				<span class="detail-label">Type</span>
-				<span class="detail-value">{item.type === 'directory' ? 'Directory' : getDisplayExtension(item.name)}</span>
-			</div>
-			{#if item.type === 'file'}
-				<div class="detail-row">
-					<span class="detail-label">Size</span>
-					<span class="detail-value">{formatBytes(item.size)}</span>
-				</div>
-			{/if}
-			{#if item.modified > 0}
-				<div class="detail-row">
-					<span class="detail-label">Modified</span>
-					<span class="detail-value">{new Date(item.modified).toLocaleString()}</span>
-				</div>
-			{/if}
-		</div>
+		<EntryInfo entry={item} />
 	{:else}
 		<div class="name">{getDirName(currentPath)}</div>
 		<div class="icon-preview">

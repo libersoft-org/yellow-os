@@ -2,8 +2,6 @@
 
 ## Bugs / changes
 
-- Cancel button when copying 1 file doesnt work
-- File upload from host OS + any copy / move / delete process within web OS - show dialog with loading progress bar with cancel button that interupts it. It should show - progress bar with percentage, current file being copied / moved / deleted, file size (copied / total)
 - Add default folders and files on OPFS to USAGE.md (Trash, [OS NAME], [OS NAME]/Desktop, [OS NAME]/TaskbarMenu, [OS NAME]/Wallpapers, [OS NAME]/file-types.json, [OS NAME]/settings.json, ...)
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme

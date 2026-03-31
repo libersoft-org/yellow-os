@@ -4,7 +4,7 @@
 	import { entryIcon, entryIconColor, loadDirectoryEntries, getExtension } from '../../scripts/fs/file-entry.ts';
 	import { readDirectory, joinPath, emptyTrash } from '../../scripts/fs/opfs.ts';
 	import { isLinkFile, readLink, resolveLink, createLinksForEntries } from '../../scripts/fs/link.ts';
-	import { openWindow } from '../../scripts/window/window-store.svelte.ts';
+	import { openWindow, findWindow } from '../../scripts/window/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/fs/file-types.ts';
 	import { getAppComponent } from '../../scripts/system/app-registry.ts';
 	import { notifyDirectoryChange, onDirectoryChange } from '../../scripts/fs/opfs-notify.ts';
@@ -20,6 +20,8 @@
 	import IconGrid from '../IconGrid/IconGrid.svelte';
 	import List from '../List/List.svelte';
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
+	import Properties from '../../apps/FileBrowser/Properties.svelte';
+	import type { Component } from 'svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	interface Props {
 		path: string;
@@ -341,6 +343,28 @@
 				}
 			},
 		});
+		items.push(
+			{ separator: true },
+			{
+				icon: '/img/dialog/info.svg',
+				label: 'Properties',
+				onclick: () => {
+					const targets = selectedEntries.length > 1 ? selectedEntries : [entry];
+					const multi = targets.length > 1;
+					const windowId = openWindow(Properties as Component, multi ? { entries: targets } : { entry });
+					const win = findWindow(windowId);
+					if (win) {
+						win.title = multi ? `${targets.length} items — Properties` : `${entry.name} — Properties`;
+						win.icon = multi ? '/img/dialog/info.svg' : entryIcon(entry);
+						win.width = 300;
+						win.height = 320;
+						win.minWidth = 250;
+						win.minHeight = 250;
+						win.position = 'center';
+					}
+				},
+			}
+		);
 		return items;
 	}
 
