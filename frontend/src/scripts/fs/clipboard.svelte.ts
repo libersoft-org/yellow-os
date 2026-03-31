@@ -38,20 +38,22 @@ export function clearClipboard(): void {
 	clipboardEntries = [];
 }
 
-export async function pasteClipboard(destPath: string): Promise<void> {
-	if (clipboardEntries.length === 0) return;
+export async function pasteClipboard(destPath: string): Promise<Map<string, string>> {
+	if (clipboardEntries.length === 0) return new Map();
 	const mode = clipboardMode;
 	const entries = [...clipboardEntries];
 	if (mode === 'cut') clearClipboard();
 	const conflictEntries = entries.map(e => ({ sourcePath: e.path, name: e.name }));
+	let nameMap: Map<string, string>;
 	if (mode === 'cut') {
-		await moveWithConflicts(conflictEntries, destPath);
+		nameMap = await moveWithConflicts(conflictEntries, destPath);
 	} else {
-		await copyWithConflicts(conflictEntries, destPath);
+		nameMap = await copyWithConflicts(conflictEntries, destPath);
 	}
 	const sourcePaths = new Set(entries.map(e => e.path));
 	notifyDirectoryChange(destPath);
 	if (mode === 'cut') {
 		for (const p of sourcePaths) notifyDirectoryChange(p);
 	}
+	return nameMap;
 }

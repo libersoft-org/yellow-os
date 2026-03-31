@@ -391,7 +391,20 @@
 						},
 					},
 					{ separator: true },
-					{ icon: '/img/paste.svg', label: 'Paste', disabled: !hasClipboard(), onclick: () => pasteClipboard(path) },
+					{
+						icon: '/img/paste.svg',
+						label: 'Paste',
+						disabled: !hasClipboard(),
+						onclick: async () => {
+							const nameMap = await pasteClipboard(path);
+							if (iconGrid && nameMap.size > 0) {
+								const gridPos = iconGrid.screenToGrid(clickX, clickY);
+								const positions = new Map<string, { gridX: number; gridY: number }>();
+								for (const [, finalName] of nameMap) positions.set(finalName, gridPos);
+								iconGrid.schedulePositions(positions);
+							}
+						},
+					},
 					{ separator: true },
 					{ icon: '/img/file.svg', label: 'New file', onclick: () => openNewEntryDialog(path, 'file', placeAtClick) },
 					{ icon: '/img/directory.svg', label: 'New directory', onclick: () => openNewEntryDialog(path, 'directory', placeAtClick) },
