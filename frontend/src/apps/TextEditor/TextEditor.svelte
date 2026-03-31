@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window/window-context.ts';
-	import { readFileText, writeFile } from '../../scripts/fs/opfs.ts';
+	import { readFileText, readFileBlob, writeFile } from '../../scripts/fs/opfs.ts';
 	import { closeWindow } from '../../scripts/window/window-store.svelte.ts';
 	import { browser } from '$app/environment';
 	import MenuBar from '../../components/MenuBar/MenuBar.svelte';
@@ -8,11 +8,13 @@
 	import StatusBar from '../../components/StatusBar/StatusBar.svelte';
 	import Textarea from '../../components/Textarea/Textarea.svelte';
 	import { setClipboardOwner, getClipboardOwner } from '../../scripts/fs/clipboard.svelte.ts';
+	import { showDialog } from '../../scripts/ui/dialog.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
 	}
 	const { filePath, fileName }: Props = $props();
+	const SIZE_LIMIT = 1024 * 1024;
 
 	const win = getWindow();
 	win.icon = '/img/apps/text-editor.svg';
@@ -35,13 +37,40 @@
 		el.focus();
 	}
 
+	function formatSize(bytes: number): string {
+		if (bytes < 1024) return bytes + ' B';
+		if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+		return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+	}
+
+	function loadFile(): void {
+		readFileText(filePath!, fileName!).then(text => {
+			content = text;
+			savedContent = text;
+		});
+	}
+
 	function init(): void {
 		currentFileName = fileName ?? '';
 		updateTitle();
 		if (browser && filePath && fileName) {
-			readFileText(filePath, fileName).then(text => {
-				content = text;
-				savedContent = text;
+			readFileBlob(filePath, fileName).then(file => {
+				if (file.size > SIZE_LIMIT) {
+					showDialog({
+						title: 'Large file',
+						message: `This file is ${formatSize(file.size)}. Opening large files may slow down the editor. Do you want to continue?`,
+						type: 'question',
+						buttons: [
+							{ label: 'Yes', backgroundColorVariable: '--color-accent', colorVariable: '--color-accent-fg', onclick: loadFile },
+							{ label: 'No', onclick: () => closeWindow(win.id) },
+						],
+						onclosed: () => {
+							if (content === '') closeWindow(win.id);
+						},
+					});
+				} else {
+					loadFile();
+				}
 			});
 		}
 	}
