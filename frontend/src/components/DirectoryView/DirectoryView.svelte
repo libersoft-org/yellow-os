@@ -337,7 +337,7 @@
 					list.push({ name: en.name, type: en.type });
 				}
 				for (const [src, list] of groups) {
-					confirmDeleteMultiple(src, list, e.shiftKey, focusGrid);
+					confirmDeleteMultiple(src, list, e.shiftKey || path === '/Trash', focusGrid);
 				}
 			},
 		});
@@ -459,7 +459,7 @@
 				list.push({ name: en.name, type: en.type });
 			}
 			for (const [src, list] of groups) {
-				confirmDeleteMultiple(src, list, e.shiftKey, focusGrid);
+				confirmDeleteMultiple(src, list, e.shiftKey || path === '/Trash', focusGrid);
 			}
 		}
 		if (e.key === 'F2' && selectedEntries.length === 1) {

@@ -53,12 +53,9 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 					backgroundColorVariable: '--color-danger',
 					colorVariable: '--color-accent-fg',
 					onclick: async () => {
-						try {
-							await deleteEntry(dirPath, entryName);
-							notifyDirectoryChange(dirPath);
-						} catch (err) {
-							showErrorDialog(err);
-						}
+						const failed = await deleteMultiple([{ name: entryName, type: entryType }], e => deleteEntry(dirPath, e.name));
+						notifyDirectoryChange(dirPath);
+						if (failed.length > 0) showDeleteErrors('delete', failed);
 					},
 				},
 				{ label: 'Cancel' },
@@ -76,13 +73,10 @@ export function confirmDelete(dirPath: string, entryName: string, entryType: 'fi
 					backgroundColorVariable: '--color-danger',
 					colorVariable: '--color-accent-fg',
 					onclick: async () => {
-						try {
-							await moveToTrash(dirPath, entryName);
-							notifyDirectoryChange(dirPath);
-							notifyDirectoryChange('/Trash');
-						} catch (err) {
-							showErrorDialog(err);
-						}
+						const failed = await deleteMultiple([{ name: entryName, type: entryType }], e => moveToTrash(dirPath, e.name));
+						notifyDirectoryChange(dirPath);
+						notifyDirectoryChange('/Trash');
+						if (failed.length > 0) showDeleteErrors('move to Trash', failed);
 					},
 				},
 				{ label: 'Cancel' },
