@@ -2,8 +2,7 @@
 
 ## Bugs / changes
 
-- File Browser - when in disk drive root show in file info panel (right one) a pie chart of how much drive space is used / free / total ... pie chart should be a system component
-- File upload from host OS + any copy / move / delete process - show dialog with loading progress bar with cancel button that interupts it
+- File upload from host OS + any copy / move / delete process within web OS - show dialog with loading progress bar with cancel button that interupts it. It should show - progress bar with percentage, current file being copied / moved / deleted, file size (copied / total)
 - Add default folders on OPFS to USAGE.md
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
