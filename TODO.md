@@ -2,6 +2,7 @@
 
 ## Bugs / changes
 
+- Copy / paste of text from host OS to web OS doesn't work
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
