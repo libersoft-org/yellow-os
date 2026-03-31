@@ -40,7 +40,9 @@
 		getDirPath: () => dirPath,
 		getItemIdAt: getItemIdFromDom,
 		toLocalCoords(e: PointerEvent): { x: number; y: number } {
-			return { x: e.clientX, y: e.clientY };
+			if (!containerEl) return { x: e.clientX, y: e.clientY };
+			const rect = containerEl.getBoundingClientRect();
+			return { x: e.clientX - rect.left, y: e.clientY - rect.top };
 		},
 		buildGhostConfig(e: PointerEvent, selectedIds: Set<string>): GhostConfig | null {
 			const ghostItems: DragGhostItem[] = [];
@@ -55,10 +57,13 @@
 		getItemIdsInRect(_x1: number, y1: number, _x2: number, y2: number): string[] {
 			if (!containerEl) return [];
 			const result: string[] = [];
+			const containerRect = containerEl.getBoundingClientRect();
 			const els = containerEl.querySelectorAll('[data-icon-id]');
 			for (const el of els) {
 				const rect = el.getBoundingClientRect();
-				if (rect.bottom > y1 && rect.top < y2) {
+				const elTop = rect.top - containerRect.top;
+				const elBottom = rect.bottom - containerRect.top;
+				if (elBottom > y1 && elTop < y2) {
 					const id = (el as HTMLElement).dataset['iconId'];
 					if (id) result.push(id);
 				}
@@ -141,7 +146,7 @@
 	}
 
 	.drag-rect {
-		position: fixed;
+		position: absolute;
 		border: 1px solid var(--color-accent);
 		background: var(--color-selection);
 		pointer-events: none;

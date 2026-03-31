@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- When multi-selecting items in FileBrowser directory and it has a scrollbar, I cannot select it outside of scrolled view
 - Factory reset - when there are too many logs, it overflows the screen
 - Wallpaper can be colour too (instead of image)
 - Replace hardcoded colours in all components to theme variables

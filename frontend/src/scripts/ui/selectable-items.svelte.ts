@@ -75,6 +75,76 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 	let lastTapItemId: string | null = null;
 	const DOUBLE_TAP_MS = 300;
 
+	// Auto-scroll during rubber-band selection
+	const SCROLL_EDGE = 30;
+	const SCROLL_SPEED = 8;
+	let autoScrollRafId: number | null = null;
+	let lastClientX = 0;
+	let lastClientY = 0;
+	let scrollParent: HTMLElement | null = null;
+
+	function findScrollParent(el: HTMLElement): HTMLElement | null {
+		let node: HTMLElement | null = el.parentElement;
+		while (node) {
+			const style = getComputedStyle(node);
+			if (/(auto|scroll)/.test(style.overflowY) || /(auto|scroll)/.test(style.overflowX)) {
+				return node;
+			}
+			node = node.parentElement;
+		}
+		return null;
+	}
+
+	function updateDragSelect(): void {
+		_dragSelectEnd = config.toLocalCoords({ clientX: lastClientX, clientY: lastClientY } as PointerEvent);
+		const x1 = Math.min(_dragSelectStart.x, _dragSelectEnd.x);
+		const y1 = Math.min(_dragSelectStart.y, _dragSelectEnd.y);
+		const x2 = Math.max(_dragSelectStart.x, _dragSelectEnd.x);
+		const y2 = Math.max(_dragSelectStart.y, _dragSelectEnd.y);
+		const hitIds = config.getItemIdsInRect(x1, y1, x2, y2);
+		const next = new Set(dragPreSelected);
+		for (const id of hitIds) next.add(id);
+		selection.set(next);
+		emitSelectionChange();
+	}
+
+	function autoScrollTick(): void {
+		if (_dragMode !== 'select' || !scrollParent) {
+			autoScrollRafId = null;
+			return;
+		}
+		const rect = scrollParent.getBoundingClientRect();
+		let scrolled = false;
+		if (lastClientY < rect.top + SCROLL_EDGE && scrollParent.scrollTop > 0) {
+			const intensity = 1 - Math.max(0, lastClientY - rect.top) / SCROLL_EDGE;
+			scrollParent.scrollTop -= Math.ceil(SCROLL_SPEED * intensity);
+			scrolled = true;
+		} else if (lastClientY > rect.bottom - SCROLL_EDGE) {
+			const intensity = 1 - Math.max(0, rect.bottom - lastClientY) / SCROLL_EDGE;
+			scrollParent.scrollTop += Math.ceil(SCROLL_SPEED * intensity);
+			scrolled = true;
+		}
+		if (lastClientX < rect.left + SCROLL_EDGE && scrollParent.scrollLeft > 0) {
+			const intensity = 1 - Math.max(0, lastClientX - rect.left) / SCROLL_EDGE;
+			scrollParent.scrollLeft -= Math.ceil(SCROLL_SPEED * intensity);
+			scrolled = true;
+		} else if (lastClientX > rect.right - SCROLL_EDGE) {
+			const intensity = 1 - Math.max(0, rect.right - lastClientX) / SCROLL_EDGE;
+			scrollParent.scrollLeft += Math.ceil(SCROLL_SPEED * intensity);
+			scrolled = true;
+		}
+		if (scrolled) updateDragSelect();
+		autoScrollRafId = requestAnimationFrame(autoScrollTick);
+	}
+
+	function stopAutoScroll(): void {
+		if (autoScrollRafId !== null) {
+			cancelAnimationFrame(autoScrollRafId);
+			autoScrollRafId = null;
+		}
+		scrollParent = null;
+	}
+
 	function emitSelectionChange(): void {
 		config.onselectionchange?.(selection.selected);
 	}
@@ -201,21 +271,21 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 		}
 
 		if (_dragMode === 'select') {
-			_dragSelectEnd = config.toLocalCoords(e);
-			const x1 = Math.min(_dragSelectStart.x, _dragSelectEnd.x);
-			const y1 = Math.min(_dragSelectStart.y, _dragSelectEnd.y);
-			const x2 = Math.max(_dragSelectStart.x, _dragSelectEnd.x);
-			const y2 = Math.max(_dragSelectStart.y, _dragSelectEnd.y);
-
-			const hitIds = config.getItemIdsInRect(x1, y1, x2, y2);
-			const next = new Set(dragPreSelected);
-			for (const id of hitIds) next.add(id);
-			selection.set(next);
-			emitSelectionChange();
+			lastClientX = e.clientX;
+			lastClientY = e.clientY;
+			updateDragSelect();
+			if (autoScrollRafId === null) {
+				const el = config.getContainerEl();
+				if (el) {
+					scrollParent = findScrollParent(el);
+					if (scrollParent) autoScrollRafId = requestAnimationFrame(autoScrollTick);
+				}
+			}
 		}
 	}
 
 	function handleDragEnd(e: PointerEvent): void {
+		stopAutoScroll();
 		if (_dragMode === 'move') {
 			const draggedIds = [...selection.selected];
 			const dirPath = config.getDirPath();
