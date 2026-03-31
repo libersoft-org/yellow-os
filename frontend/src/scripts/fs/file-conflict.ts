@@ -91,8 +91,11 @@ export async function copyWithConflicts(entries: ConflictEntry[], destPath: stri
 		}
 		try {
 			if (resolution === 'replace') {
-				await copyEntryReplace(entry.sourcePath, entry.name, destPath, onprogress);
-				nameMap.set(entry.name, entry.name);
+				if (entry.sourcePath === destPath) nameMap.set(entry.name, entry.name);
+				else {
+					await copyEntryReplace(entry.sourcePath, entry.name, destPath, onprogress);
+					nameMap.set(entry.name, entry.name);
+				}
 			} else {
 				const finalName = await copyEntryTo(entry.sourcePath, entry.name, destPath, onprogress);
 				nameMap.set(entry.name, finalName);

@@ -4,6 +4,7 @@
 
 - File Browser - when copy and then paste in the same directory - select Replace - it throws an error: "Entry not found"
 - File Browser - cut and then paste on some empty space within the same directory - it doesnt move it to that space in grid
+- File Browser - deleting files is extremely slow
 - ProgressDialog - it should show speed rounded to 2 digits
 - Extract a ProgressBar from ProgressDialog as a separate system component
 - Progress bar should have animated strips
