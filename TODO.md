@@ -2,7 +2,7 @@
 
 ## Bugs / changes
 
-- Trash on desktop should be a special type of icon - it should contain empty trash in context menu and should not be deleted in classic way - it should be turned off and on in settings - Desktop - special icons
+- Trash on desktop shouldn't be a shortcut, but a special type of icon (like in Windows), in settings -> Desktop there should be a category for desktop icons - for now there will be just 1 option - Trash. If enabled (default) then we have a replication of "Trash" folder on desktop which is not a shortcut (link), but should behave like an ordinary folder that's in OPFS
 - When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme

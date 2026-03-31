@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
 	import { entryIcon, entryIconColor, loadDirectoryEntries, getExtension } from '../../scripts/fs/file-entry.ts';
-	import { moveEntry, copyEntryTo, readDirectory, joinPath } from '../../scripts/fs/opfs.ts';
+	import { moveEntry, copyEntryTo, readDirectory, joinPath, emptyTrash } from '../../scripts/fs/opfs.ts';
 	import { isLinkFile, readLink, resolveLink, createLinksForEntries } from '../../scripts/fs/link.ts';
 	import { openWindow } from '../../scripts/window/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/fs/file-types.ts';
@@ -120,6 +120,17 @@
 	}
 
 	let externalDragOverId = $state<string | null>(null);
+	let trashEmpty = $state(true);
+	let unsubscribeTrash: (() => void) | null = null;
+
+	async function checkTrashEmpty(): Promise<void> {
+		try {
+			const trashEntries = await readDirectory('/Trash');
+			trashEmpty = trashEntries.length === 0;
+		} catch {
+			trashEmpty = true;
+		}
+	}
 
 	function onGlobalPointerMove(e: PointerEvent): void {
 		if (!isGlobalDragActive()) {
@@ -133,11 +144,14 @@
 	onMount(() => {
 		loadDirectory();
 		subscribeToDirectory();
+		checkTrashEmpty();
+		unsubscribeTrash = onDirectoryChange('/Trash', () => checkTrashEmpty());
 		document.addEventListener('pointermove', onGlobalPointerMove);
 	});
 
 	onDestroy(() => {
 		unsubscribeDir?.();
+		unsubscribeTrash?.();
 		if (typeof document !== 'undefined') document.removeEventListener('pointermove', onGlobalPointerMove);
 	});
 
@@ -200,7 +214,36 @@
 	}
 
 	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
-		const items: ContextMenuItem[] = [{ icon: '/img/open.svg', label: 'Open', onclick: () => openEntry(entry) }];
+		const items: ContextMenuItem[] = [];
+		const isTrashFolder = entry.type === 'directory' && entry.name === 'Trash' && (path === '/' || path === '');
+		if (isTrashFolder) {
+			items.push({
+				icon: '/img/trash.svg',
+				label: 'Empty trash',
+				disabled: trashEmpty,
+				onclick: () => {
+					showDialog({
+						title: 'Empty Trash',
+						message: 'Are you sure you want to permanently delete all items in Trash? This action cannot be undone.',
+						type: 'question' as const,
+						buttons: [
+							{
+								label: 'Empty Trash',
+								backgroundColorVariable: '--color-danger',
+								colorVariable: '--color-accent-fg',
+								onclick: async () => {
+									await emptyTrash();
+									notifyDirectoryChange('/Trash');
+								},
+							},
+							{ label: 'Cancel' },
+						],
+					});
+				},
+			});
+			items.push({ separator: true });
+		}
+		items.push({ icon: '/img/open.svg', label: 'Open', onclick: () => openEntry(entry) });
 		if (entry.type === 'directory' && onnavigate) {
 			items.push({
 				icon: '/img/open.svg',

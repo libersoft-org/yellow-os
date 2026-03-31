@@ -218,3 +218,10 @@ export async function moveToTrash(path: string, name: string): Promise<void> {
 	}
 	await moveEntry(path, name, '/Trash');
 }
+
+export async function emptyTrash(): Promise<void> {
+	const dir = await resolveDirectory('/Trash');
+	for await (const [name] of (dir as any).entries() as AsyncIterable<[string, FileSystemHandle]>) {
+		await dir.removeEntry(name, { recursive: true });
+	}
+}
