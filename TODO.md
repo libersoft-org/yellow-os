@@ -2,14 +2,12 @@
 
 ## Bugs / changes
 
-- Copy / paste of text from host OS to web OS doesn't work
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
 ## New features
 
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
-- Run WASM files as apps (test the App Player application)
 - Add system open / save as ... file dialog
 - Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...
