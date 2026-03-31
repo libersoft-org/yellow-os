@@ -351,7 +351,7 @@
 				onclick: () => {
 					const targets = selectedEntries.length > 1 ? selectedEntries : [entry];
 					const multi = targets.length > 1;
-					const windowId = openWindow(Properties as Component, multi ? { entries: targets } : { entry });
+					const windowId = openWindow(Properties as Component, multi ? { entries: targets, path } : { entry, path });
 					const win = findWindow(windowId);
 					if (win) {
 						win.title = multi ? `${targets.length} items — Properties` : `${entry.name} — Properties`;

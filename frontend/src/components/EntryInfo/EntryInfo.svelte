@@ -2,18 +2,21 @@
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
 	import { entryIcon, entryIconColor, getExtension } from '../../scripts/fs/file-entry.ts';
 	import { formatBytes } from '../../scripts/system/format.ts';
+	import { entriesStats } from '../../scripts/fs/opfs.ts';
 	import Icon from '../Icon/Icon.svelte';
 	interface Props {
 		entry?: FileEntry | undefined;
 		entries?: FileEntry[] | undefined;
+		recursive?: boolean | undefined;
+		path?: string | undefined;
 	}
-	const { entry, entries }: Props = $props();
-
+	const { entry, entries, recursive, path }: Props = $props();
 	const items = $derived(entries ?? (entry ? [entry] : []));
 	const single = $derived(items.length === 1 ? items[0]! : null);
 	const dirCount = $derived(items.filter(e => e.type === 'directory').length);
 	const fileCount = $derived(items.filter(e => e.type === 'file').length);
 	const totalSize = $derived(formatBytes(items.filter(e => e.type === 'file').reduce((sum, e) => sum + e.size, 0)));
+	const statsPromise = $derived(recursive && path && items.length > 0 ? entriesStats(path, items) : null);
 
 	function getDisplayExtension(name: string): string {
 		const ext = getExtension(name);
@@ -72,6 +75,24 @@
 </style>
 
 <div class="entry-info">
+	{#snippet multiDetails(dirs: number, files: number, size: string)}
+		{#if dirs > 0}
+			<div class="detail-row">
+				<span class="detail-label">Directories</span>
+				<span class="detail-value">{dirs}</span>
+			</div>
+		{/if}
+		{#if files > 0}
+			<div class="detail-row">
+				<span class="detail-label">Files</span>
+				<span class="detail-value">{files}</span>
+			</div>
+			<div class="detail-row">
+				<span class="detail-label">Total size</span>
+				<span class="detail-value">{size}</span>
+			</div>
+		{/if}
+	{/snippet}
 	{#if single}
 		<div class="name">{single.name}</div>
 		<div class="icon-preview">
@@ -87,6 +108,14 @@
 					<span class="detail-label">Size</span>
 					<span class="detail-value">{formatBytes(single.size)}</span>
 				</div>
+			{:else if statsPromise}
+				{#await statsPromise}
+					<div class="detail-row">
+						<span class="detail-label">Calculating…</span>
+					</div>
+				{:then stats}
+					{@render multiDetails(stats.directories, stats.files, formatBytes(stats.totalSize))}
+				{/await}
 			{/if}
 			{#if single.modified > 0}
 				<div class="detail-row">
@@ -98,21 +127,16 @@
 	{:else if items.length > 1}
 		<div class="name">{items.length} items selected</div>
 		<div class="details">
-			{#if dirCount > 0}
-				<div class="detail-row">
-					<span class="detail-label">Directories</span>
-					<span class="detail-value">{dirCount}</span>
-				</div>
-			{/if}
-			{#if fileCount > 0}
-				<div class="detail-row">
-					<span class="detail-label">Files</span>
-					<span class="detail-value">{fileCount}</span>
-				</div>
-				<div class="detail-row">
-					<span class="detail-label">Total size</span>
-					<span class="detail-value">{totalSize}</span>
-				</div>
+			{#if statsPromise}
+				{#await statsPromise}
+					<div class="detail-row">
+						<span class="detail-label">Calculating…</span>
+					</div>
+				{:then stats}
+					{@render multiDetails(stats.directories, stats.files, formatBytes(stats.totalSize))}
+				{/await}
+			{:else}
+				{@render multiDetails(dirCount, fileCount, totalSize)}
 			{/if}
 		</div>
 	{/if}

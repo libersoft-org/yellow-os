@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- When multiselect files + directories and then right click -> Properties (in context menu) - it should count file and directory sizes even including all subdirectories (recursively) and its files. This should not be the same as when just multiselecting files and directories in File Browser and watching right info panel - this panel should show only sizes of selected files and number of directories / files in current directory (not included subdirectories recursively)
 - Add default folders and files on OPFS to USAGE.md (Trash, [OS NAME], [OS NAME]/Desktop, [OS NAME]/TaskbarMenu, [OS NAME]/Wallpapers, [OS NAME]/file-types.json, [OS NAME]/settings.json, ...)
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme

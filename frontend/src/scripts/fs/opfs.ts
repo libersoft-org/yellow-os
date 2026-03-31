@@ -349,3 +349,49 @@ export async function entrySize(path: string, name: string): Promise<number> {
 	const file = await fileHandle.getFile();
 	return file.size;
 }
+
+export interface EntriesStats {
+	files: number;
+	directories: number;
+	totalSize: number;
+}
+
+async function directoryStats(handle: FileSystemDirectoryHandle): Promise<EntriesStats> {
+	let files = 0,
+		directories = 0,
+		totalSize = 0;
+	for await (const [, child] of (handle as any).entries() as AsyncIterable<[string, FileSystemHandle]>) {
+		if (child.kind === 'directory') {
+			directories++;
+			const sub = await directoryStats(child as FileSystemDirectoryHandle);
+			files += sub.files;
+			directories += sub.directories;
+			totalSize += sub.totalSize;
+		} else {
+			files++;
+			totalSize += (await (child as FileSystemFileHandle).getFile()).size;
+		}
+	}
+	return { files, directories, totalSize };
+}
+
+export async function entriesStats(path: string, entries: OpfsEntry[]): Promise<EntriesStats> {
+	let files = 0,
+		directories = 0,
+		totalSize = 0;
+	const dir = await resolveDirectory(path);
+	for (const entry of entries) {
+		if (entry.type === 'directory') {
+			directories++;
+			const dirHandle = await dir.getDirectoryHandle(entry.name);
+			const sub = await directoryStats(dirHandle);
+			files += sub.files;
+			directories += sub.directories;
+			totalSize += sub.totalSize;
+		} else {
+			files++;
+			totalSize += entry.size;
+		}
+	}
+	return { files, directories, totalSize };
+}

@@ -4,8 +4,9 @@
 	interface Props {
 		entry?: FileEntry | undefined;
 		entries?: FileEntry[] | undefined;
+		path?: string | undefined;
 	}
-	const { entry, entries }: Props = $props();
+	const { entry, entries, path }: Props = $props();
 </script>
 
 <style>
@@ -17,5 +18,5 @@
 </style>
 
 <div class="properties">
-	<EntryInfo {entry} {entries} />
+	<EntryInfo {entry} {entries} recursive {path} />
 </div>
