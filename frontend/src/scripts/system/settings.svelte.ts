@@ -1,11 +1,14 @@
 import { readFileText, writeFile, exists, readFileBlob } from '../fs/opfs.ts';
 import { OS_PATH, WALLPAPERS_PATH, ensureOpfsReady } from '../fs/opfs-init.ts';
 import { browser } from '$app/environment';
+export type WallpaperMode = 'image' | 'color';
 export type NotificationPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 export type NotificationAnimation = 'slide' | 'fade' | 'none';
 
 export interface SystemSettings {
 	wallpaper: string;
+	wallpaperMode: WallpaperMode;
+	wallpaperColor: string;
 	desktopCount: number;
 	desktopTrash: boolean;
 	taskbarShowText: boolean;
@@ -16,6 +19,8 @@ export interface SystemSettings {
 const SETTINGS_FILE = 'settings.json';
 const defaults: SystemSettings = {
 	wallpaper: 'waves-dark.webp',
+	wallpaperMode: 'image',
+	wallpaperColor: '#1a1a2e',
 	desktopCount: 4,
 	desktopTrash: true,
 	taskbarShowText: true,
@@ -50,6 +55,8 @@ export async function loadSettings(): Promise<void> {
 			const text = await readFileText(OS_PATH, SETTINGS_FILE);
 			const parsed = JSON.parse(text) as Partial<SystemSettings>;
 			if (parsed.wallpaper !== undefined) settings.wallpaper = parsed.wallpaper;
+			if (parsed.wallpaperMode !== undefined) settings.wallpaperMode = parsed.wallpaperMode;
+			if (parsed.wallpaperColor !== undefined) settings.wallpaperColor = parsed.wallpaperColor;
 			if (parsed.desktopCount !== undefined) settings.desktopCount = parsed.desktopCount;
 			if (parsed.desktopTrash !== undefined) settings.desktopTrash = parsed.desktopTrash;
 			if (parsed.taskbarShowText !== undefined) settings.taskbarShowText = parsed.taskbarShowText;
@@ -66,7 +73,7 @@ export async function loadSettings(): Promise<void> {
 
 export async function saveSetting<K extends keyof SystemSettings>(key: K, value: SystemSettings[K]): Promise<void> {
 	settings[key] = value;
-	if (key === 'wallpaper') await updateWallpaperUrl();
+	if (key === 'wallpaper' || key === 'wallpaperMode') await updateWallpaperUrl();
 	await writeFile(OS_PATH, SETTINGS_FILE, JSON.stringify(settings, null, '\t'));
 }
 

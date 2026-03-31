@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Wallpaper can be colour too (instead of image) - let user to switch it
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
@@ -40,7 +39,7 @@
 - Edit README (maybe done) and INSTALL.md
 - Add logout screen + button in taskbar menu
 - More themes (light, dark etc.)
-- API for app development
+- API for app development (using system components like buttons, toolbars, dialogs etc.)
 - Security - app sandboxing, XSS prevention, CSRF protection, API rate limits
 - App installer
 - App store

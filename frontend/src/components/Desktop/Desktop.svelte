@@ -6,7 +6,8 @@
 	import { handleKeyboardShortcut, handleKeyUp } from '../../scripts/window/window-shortcuts.ts';
 	import { desktop, switchDesktop, clearSlide } from '../../scripts/system/desktop.svelte.ts';
 	import { settings, settingsReady, wallpaperUrl } from '../../scripts/system/settings.svelte.ts';
-	const wallpaperCss = $derived(wallpaperUrl.value ? `url('${wallpaperUrl.value}')` : 'none');
+	const wallpaperCss = $derived(settings.wallpaperMode === 'image' && wallpaperUrl.value ? `url('${wallpaperUrl.value}')` : 'none');
+	const wallpaperBg = $derived(settings.wallpaperMode === 'color' ? settings.wallpaperColor : '#000');
 	const desktopCount = $derived(settingsReady.value ? settings.desktopCount : 1);
 	import AppSwitcher from '../AppSwitcher/AppSwitcher.svelte';
 	import NotificationContainer from '../Notification/NotificationContainer.svelte';
@@ -133,7 +134,7 @@
 <div class="viewport">
 	{#key desktop.slideId}
 		{#if sliding}
-			<div class="desktop {desktop.slideDirection === 'left' ? 'leave-to-left' : 'leave-to-right'}" style:background-image={wallpaperCss}>
+			<div class="desktop {desktop.slideDirection === 'left' ? 'leave-to-left' : 'leave-to-right'}" style:background-image={wallpaperCss} style:background-color={wallpaperBg}>
 				<div class="window-area" role="presentation">
 					<DesktopIcons />
 					<WindowManager desktopId={desktop.previous!} />
@@ -142,7 +143,7 @@
 			</div>
 		{/if}
 	{/key}
-	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" style:background-image={wallpaperCss} onanimationend={onAnimationEnd}>
+	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" style:background-image={wallpaperCss} style:background-color={wallpaperBg} onanimationend={onAnimationEnd}>
 		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown}>
 			<DesktopIcons />
 			<WindowManager />
