@@ -30,3 +30,7 @@ export async function loadWallpapers(): Promise<WallpaperItem[]> {
 export function selectWallpaper(filename: string): void {
 	saveSetting('wallpaper', filename);
 }
+
+export function setDesktopTrash(enabled: boolean): void {
+	saveSetting('desktopTrash', enabled);
+}

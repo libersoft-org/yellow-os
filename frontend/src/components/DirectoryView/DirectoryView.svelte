@@ -12,8 +12,9 @@
 	import { downloadEntries } from '../../scripts/fs/download.ts';
 	import { showDialog, showErrorDialog } from '../../scripts/ui/dialog.ts';
 	import { setClipboard, hasClipboard, pasteClipboard, getClipboard } from '../../scripts/fs/clipboard.svelte.ts';
-	import { ensureOpfsReady } from '../../scripts/fs/opfs-init.ts';
+	import { ensureOpfsReady, OS_PATH } from '../../scripts/fs/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/ui/drag-state.svelte.ts';
+	import { settings } from '../../scripts/system/settings.svelte.ts';
 	import type { IconGridItemData } from '../IconGrid/icon-grid.ts';
 	import IconGrid from '../IconGrid/IconGrid.svelte';
 	import List from '../List/List.svelte';
@@ -61,10 +62,24 @@
 		return direction === 'desc' ? -result : result;
 	}
 
+	const DESKTOP_PATH = OS_PATH + '/Desktop';
+	const virtualEntries = $derived<FileEntry[]>(path === DESKTOP_PATH && settings.desktopTrash ? [{ name: 'Trash', type: 'directory' as const, size: 0, modified: 0, virtualPath: '/Trash' }] : []);
+	const allEntries = $derived.by(() => {
+		const virtual = virtualEntries ?? [];
+		if (virtual.length === 0) return entries;
+		const virtualNames = new Set(virtual.map(e => e.name));
+		return [
+			...virtual,
+			...entries.filter(e => {
+				if (isLinkFile(e.name) && virtualNames.has(e.name.slice(0, -5))) return false;
+				return !virtualNames.has(e.name);
+			}),
+		];
+	});
 	const sortedEntries = $derived.by(() => {
 		const field = sortField;
 		const direction = sortDirection;
-		return entries.toSorted((a, b) => {
+		return allEntries.toSorted((a, b) => {
 			if (a.type !== b.type) return a.type === 'directory' ? -1 : 1;
 			return compareEntries(a, b, field, direction);
 		});
@@ -74,6 +89,16 @@
 	function displayLabel(name: string): string {
 		if (hideLinkExtension && isLinkFile(name)) return name.slice(0, -5);
 		return name;
+	}
+
+	function entryFullPath(entry: FileEntry): string {
+		return entry.virtualPath ?? joinPath(path, entry.name);
+	}
+
+	function entrySourcePath(entry: FileEntry): string {
+		if (!entry.virtualPath) return path;
+		const i = entry.virtualPath.lastIndexOf('/');
+		return i <= 0 ? '/' : entry.virtualPath.slice(0, i);
 	}
 
 	const iconViewItems = $derived<IconGridItemData[]>(
@@ -181,7 +206,7 @@
 
 	async function openEntry(entry: FileEntry): Promise<void> {
 		if (entry.type === 'directory') {
-			const fullPath = joinPath(path, entry.name);
+			const fullPath = entryFullPath(entry);
 			if (onnavigate) {
 				onnavigate(fullPath);
 			} else {
@@ -215,7 +240,7 @@
 
 	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
 		const items: ContextMenuItem[] = [];
-		const isTrashFolder = entry.type === 'directory' && entry.name === 'Trash' && (path === '/' || path === '');
+		const isTrashFolder = entry.type === 'directory' && entry.name === 'Trash' && (path === '/' || path === '' || entry.virtualPath === '/Trash');
 		if (isTrashFolder) {
 			items.push({
 				icon: '/img/trash.svg',
@@ -250,12 +275,13 @@
 				label: 'Open in new window',
 				onclick: () => {
 					const FileBrowser = getAppComponent('file-browser');
-					const fullPath = joinPath(path, entry.name);
+					const fullPath = entryFullPath(entry);
 					if (FileBrowser) openWindow(FileBrowser, { path: fullPath });
 				},
 			});
 		}
 		if (entry.type === 'file') items.push({ icon: '/img/apps/text-editor.svg', label: 'Edit', onclick: () => editEntry(entry) });
+		const srcPath = entrySourcePath(entry);
 		const toCopy = selectedEntries.length > 1 ? selectedEntries : [entry];
 		items.push(
 			{ separator: true },
@@ -264,7 +290,7 @@
 				label: 'Copy',
 				onclick: () =>
 					setClipboard(
-						toCopy.map(en => ({ path, name: en.name, type: en.type })),
+						toCopy.map(en => ({ path: entrySourcePath(en), name: en.name, type: en.type })),
 						'copy'
 					),
 			},
@@ -273,11 +299,11 @@
 				label: 'Cut',
 				onclick: () =>
 					setClipboard(
-						toCopy.map(en => ({ path, name: en.name, type: en.type })),
+						toCopy.map(en => ({ path: entrySourcePath(en), name: en.name, type: en.type })),
 						'cut'
 					),
 			},
-			...(entry.type === 'directory' ? [{ icon: '/img/paste.svg', label: 'Paste', disabled: !hasClipboard(), onclick: () => pasteClipboard(joinPath(path, entry.name)) }] : []),
+			...(entry.type === 'directory' ? [{ icon: '/img/paste.svg', label: 'Paste', disabled: !hasClipboard(), onclick: () => pasteClipboard(entryFullPath(entry)) }] : []),
 			{ separator: true }
 		);
 		const toDownload = selectedEntries.length > 1 ? selectedEntries : [entry];
@@ -286,24 +312,31 @@
 			label: 'Download',
 			onclick: () =>
 				downloadEntries(
-					path,
+					srcPath,
 					toDownload.map(en => ({ name: en.name, type: en.type }))
 				),
 		});
 		if (selectedEntries.length <= 1) {
-			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(path, entry.name, entry.type, handleRenamed, focusGrid) });
+			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(srcPath, entry.name, entry.type, handleRenamed, focusGrid) });
 		}
 		items.push({
 			icon: '/img/trash.svg',
 			label: 'Delete',
 			onclick: (e: MouseEvent) => {
 				const toDelete = selectedEntries.length > 1 ? selectedEntries : [entry];
-				confirmDeleteMultiple(
-					path,
-					toDelete.map(en => ({ name: en.name, type: en.type })),
-					e.shiftKey,
-					focusGrid
-				);
+				const groups = new Map<string, { name: string; type: 'file' | 'directory' }[]>();
+				for (const en of toDelete) {
+					const src = entrySourcePath(en);
+					let list = groups.get(src);
+					if (!list) {
+						list = [];
+						groups.set(src, list);
+					}
+					list.push({ name: en.name, type: en.type });
+				}
+				for (const [src, list] of groups) {
+					confirmDeleteMultiple(src, list, e.shiftKey, focusGrid);
+				}
 			},
 		});
 		return items;
@@ -380,7 +413,7 @@
 		if (isCopy(e) && selectedEntries.length > 0) {
 			e.preventDefault();
 			setClipboard(
-				selectedEntries.map(en => ({ path, name: en.name, type: en.type })),
+				selectedEntries.map(en => ({ path: entrySourcePath(en), name: en.name, type: en.type })),
 				'copy'
 			);
 			return;
@@ -388,7 +421,7 @@
 		if (isCut(e) && selectedEntries.length > 0) {
 			e.preventDefault();
 			setClipboard(
-				selectedEntries.map(en => ({ path, name: en.name, type: en.type })),
+				selectedEntries.map(en => ({ path: entrySourcePath(en), name: en.name, type: en.type })),
 				'cut'
 			);
 			return;
@@ -400,16 +433,24 @@
 		}
 		if (e.key === 'Delete' && selectedEntries.length > 0) {
 			e.preventDefault();
-			confirmDeleteMultiple(
-				path,
-				selectedEntries.map(en => ({ name: en.name, type: en.type })),
-				e.shiftKey,
-				focusGrid
-			);
+			const groups = new Map<string, { name: string; type: 'file' | 'directory' }[]>();
+			for (const en of selectedEntries) {
+				const src = entrySourcePath(en);
+				let list = groups.get(src);
+				if (!list) {
+					list = [];
+					groups.set(src, list);
+				}
+				list.push({ name: en.name, type: en.type });
+			}
+			for (const [src, list] of groups) {
+				confirmDeleteMultiple(src, list, e.shiftKey, focusGrid);
+			}
 		}
 		if (e.key === 'F2' && selectedEntries.length === 1) {
 			e.preventDefault();
-			openRenameDialog(path, selectedEntries[0]!.name, selectedEntries[0]!.type, handleRenamed, focusGrid);
+			const en = selectedEntries[0]!;
+			openRenameDialog(entrySourcePath(en), en.name, en.type, handleRenamed, focusGrid);
 		}
 	}
 
@@ -467,7 +508,7 @@
 
 	async function onIconDrop(draggedIds: string[], targetId: string | null, e: PointerEvent): Promise<void> {
 		const targetEntry = targetId ? sortedEntries.find(en => en.name === targetId) : null;
-		const destPath = targetEntry?.type === 'directory' ? joinPath(path, targetId!) : null;
+		const destPath = targetEntry?.type === 'directory' ? entryFullPath(targetEntry) : null;
 		const dropPos = !destPath && iconGrid ? iconGrid.screenToGrid(e.clientX, e.clientY) : null;
 		const relOffsets = new Map<string, { dx: number; dy: number }>();
 		if (dropPos && iconGrid) {
@@ -507,7 +548,7 @@
 		if (sourcePath === path) return;
 		const hitItem = getDropTargetAtScreen(x, y);
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
-		const destPath = targetEntry ? joinPath(path, targetEntry.name) : path;
+		const destPath = targetEntry ? entryFullPath(targetEntry) : path;
 		const dropBasePos = !targetEntry && iconGrid ? iconGrid.screenToGrid(x, y) : null;
 		const schedule = (nameMap: Map<string, string>): void => {
 			if (!dropBasePos || !iconGrid) return;

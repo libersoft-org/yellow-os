@@ -1,9 +1,11 @@
 <script lang="ts">
 	import { settings } from '../../scripts/system/settings.svelte.ts';
-	import { loadWallpapers, selectWallpaper } from './settings-desktop.ts';
+	import { loadWallpapers, selectWallpaper, setDesktopTrash } from './settings-desktop.ts';
 	import type { WallpaperItem } from './settings-desktop.ts';
 	import SettingsTitle from './components/SettingsTitle.svelte';
 	import SettingsDesktopWallpaperItem from './components/SettingsDesktopWallpaperItem.svelte';
+	import SettingsOptionRow from './components/SettingsOptionRow.svelte';
+	import SettingsOption from './components/SettingsOption.svelte';
 	let wallpapers = $state<WallpaperItem[]>([]);
 
 	loadWallpapers().then(items => {
@@ -26,6 +28,10 @@
 </style>
 
 <div class="settings-desktop">
+	<SettingsTitle label="Desktop icons" />
+	<SettingsOptionRow>
+		<SettingsOption active={settings.desktopTrash} onclick={() => setDesktopTrash(!settings.desktopTrash)}>Trash</SettingsOption>
+	</SettingsOptionRow>
 	<SettingsTitle label="Wallpaper" />
 	<div class="wallpaper-grid">
 		{#each wallpapers as wp}

@@ -7,6 +7,7 @@ import { OS_NAME } from './opfs.ts';
 export interface FileEntry extends OpfsEntry {
 	linkIcon?: string;
 	yappIcon?: string;
+	virtualPath?: string;
 }
 
 export function getExtension(name: string): string {

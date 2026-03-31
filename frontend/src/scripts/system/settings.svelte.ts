@@ -7,6 +7,7 @@ export type NotificationAnimation = 'slide' | 'fade' | 'none';
 export interface SystemSettings {
 	wallpaper: string;
 	desktopCount: number;
+	desktopTrash: boolean;
 	taskbarShowText: boolean;
 	notificationPosition: NotificationPosition;
 	notificationDuration: number;
@@ -16,6 +17,7 @@ const SETTINGS_FILE = 'settings.json';
 const defaults: SystemSettings = {
 	wallpaper: 'waves-dark.webp',
 	desktopCount: 4,
+	desktopTrash: true,
 	taskbarShowText: true,
 	notificationPosition: 'bottom-right',
 	notificationDuration: 10,
@@ -49,6 +51,7 @@ export async function loadSettings(): Promise<void> {
 			const parsed = JSON.parse(text) as Partial<SystemSettings>;
 			if (parsed.wallpaper !== undefined) settings.wallpaper = parsed.wallpaper;
 			if (parsed.desktopCount !== undefined) settings.desktopCount = parsed.desktopCount;
+			if (parsed.desktopTrash !== undefined) settings.desktopTrash = parsed.desktopTrash;
 			if (parsed.taskbarShowText !== undefined) settings.taskbarShowText = parsed.taskbarShowText;
 			if (parsed.notificationPosition !== undefined) settings.notificationPosition = parsed.notificationPosition;
 			if (parsed.notificationDuration !== undefined) settings.notificationDuration = parsed.notificationDuration;

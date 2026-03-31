@@ -17,10 +17,7 @@ const defaultFileTypes: Record<string, string> = {
 	ts: 'text-editor',
 	yapp: 'app-player',
 };
-const defaultDesktopLinks: LinkData[] = [
-	{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' },
-	{ appId: 'file-browser', label: 'Trash', icon: '/img/apps/trash.svg', props: { path: '/Trash' } },
-];
+const defaultDesktopLinks: LinkData[] = [{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' }];
 const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 	Programs: [
 		{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' },

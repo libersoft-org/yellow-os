@@ -2,7 +2,7 @@
 
 ## Bugs / changes
 
-- Trash on desktop shouldn't be a shortcut, but a special type of icon (like in Windows), in settings -> Desktop there should be a category for desktop icons - for now there will be just 1 option - Trash. If enabled (default) then we have a replication (something like symlink or hardlink) of "Trash" folder on desktop which is not a shortcut (link), but should behave like an ordinary directory that's in OPFS (even with that Empty trash option)
+- Wallpaper can be colour too (instead of image)
 - When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
