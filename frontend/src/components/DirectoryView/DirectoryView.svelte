@@ -12,7 +12,7 @@
 	import { downloadEntries } from '../../scripts/fs/download.ts';
 	import { showDialog, showErrorDialog } from '../../scripts/ui/dialog.ts';
 	import { setClipboard, hasClipboard, pasteClipboard, getClipboard } from '../../scripts/fs/clipboard.svelte.ts';
-	import { moveWithConflicts, copyWithConflicts } from '../../scripts/fs/file-conflict.ts';
+	import { moveWithConflicts, copyWithConflicts, uploadNativeFiles } from '../../scripts/fs/file-conflict.ts';
 	import { ensureOpfsReady, OS_PATH } from '../../scripts/fs/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/ui/drag-state.svelte.ts';
 	import { settings } from '../../scripts/system/settings.svelte.ts';
@@ -37,6 +37,7 @@
 	let entries = $state<FileEntry[]>([]);
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let _selectedIds = $state(new Set<string>());
+	let nativeDragOver = $state(false);
 	let iconGrid = $state<IconGrid>();
 	let listView = $state<List>();
 	type SortField = 'name' | 'modified' | 'extension' | 'size';
@@ -573,6 +574,30 @@
 		}
 	}
 
+	function onNativeDragOver(e: DragEvent): void {
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		e.dataTransfer.dropEffect = 'copy';
+		nativeDragOver = true;
+	}
+
+	function onNativeDragLeave(e: DragEvent): void {
+		const el = e.currentTarget as HTMLElement;
+		if (e.relatedTarget && el.contains(e.relatedTarget as Node)) return;
+		nativeDragOver = false;
+	}
+
+	async function onNativeDrop(e: DragEvent): Promise<void> {
+		nativeDragOver = false;
+		if (!e.dataTransfer?.types.includes('Files')) return;
+		e.preventDefault();
+		try {
+			await uploadNativeFiles(e.dataTransfer, path);
+		} catch (err) {
+			showErrorDialog(err);
+		}
+	}
+
 	export function clearSelection(): void {
 		if (viewMode === 'list') listView?.clearSelection();
 		else iconGrid?.clearSelection();
@@ -588,9 +613,27 @@
 		height: 100%;
 		outline: none;
 	}
+
+	.native-drop-overlay {
+		position: absolute;
+		inset: 0;
+		border: 2px dashed var(--color-accent);
+		background: var(--color-selection);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 16px;
+		color: var(--color-accent);
+		pointer-events: none;
+		z-index: 20;
+		border-radius: 8px;
+	}
 </style>
 
-<div class="directory-view" role="group" tabindex="-1" oncontextmenu={onContextMenu} use:dropZone>
+<div class="directory-view" role="group" tabindex="-1" oncontextmenu={onContextMenu} ondragover={onNativeDragOver} ondragleave={onNativeDragLeave} ondrop={onNativeDrop} use:dropZone>
+	{#if nativeDragOver}
+		<div class="native-drop-overlay">Drop files here to upload</div>
+	{/if}
 	{#if viewMode === 'list'}
 		<List bind:this={listView} items={iconViewItems} dirPath={path} {externalDragOverId} {cutItemIds} getInitialSelection={() => _selectedIds} onselectionchange={onGridSelectionChange} ondblclick={onDblClick} ondrop={onIconDrop} onkeyaction={handleKeydown}>
 			{#snippet empty()}
