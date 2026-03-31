@@ -50,11 +50,8 @@ export async function pasteClipboard(destPath: string): Promise<Map<string, stri
 	if (mode === 'cut') clearClipboard();
 	const conflictEntries = entries.map(e => ({ sourcePath: e.path, name: e.name }));
 	let nameMap: Map<string, string>;
-	if (mode === 'cut') {
-		nameMap = await moveWithConflicts(conflictEntries, destPath);
-	} else {
-		nameMap = await copyWithConflicts(conflictEntries, destPath);
-	}
+	if (mode === 'cut') nameMap = await moveWithConflicts(conflictEntries, destPath);
+	else nameMap = await copyWithConflicts(conflictEntries, destPath);
 	const sourcePaths = new Set(entries.map(e => e.path));
 	notifyDirectoryChange(destPath);
 	if (mode === 'cut') {
