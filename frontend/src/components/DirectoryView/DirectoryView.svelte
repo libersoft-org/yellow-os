@@ -106,7 +106,7 @@
 	}
 
 	function trashAwareIcon(e: FileEntry): string {
-		if (e.name === 'Trash' && e.type === 'directory') return trashEmpty ? '/img/apps/trash-empty.svg' : '/img/apps/trash-full.svg';
+		if (e.name === 'Trash' && e.type === 'directory') return trashEmpty ? '/img/trash-empty.svg' : '/img/trash-full.svg';
 		return entryIcon(e);
 	}
 

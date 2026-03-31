@@ -16,7 +16,7 @@ export function getExtension(name: string): string {
 }
 
 const SYSTEM_DIR_ICONS: Record<string, string> = {
-	Trash: '/img/apps/trash.svg',
+	Trash: '/img/trash-full.svg',
 	[OS_NAME]: '/img/logo.svg',
 };
 
