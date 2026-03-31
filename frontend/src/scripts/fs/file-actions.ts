@@ -3,18 +3,26 @@ import { deleteEntry, renameEntry, moveToTrash, createFile, createDirectory, uni
 import { showDialog, showErrorDialog } from '../ui/dialog.ts';
 import { openWindow, findWindow, onWindowClosed } from '../window/window-store.svelte.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
+import { showProgressDialog } from './file-progress.svelte.ts';
 import NewEntryDialog from '../../apps/FileBrowser/NewEntryDialog.svelte';
 import RenameDialog from '../../apps/FileBrowser/RenameDialog.svelte';
 
 async function deleteMultiple(entries: { name: string; type: 'file' | 'directory' }[], action: (e: { name: string; type: 'file' | 'directory' }) => Promise<void>): Promise<string[]> {
+	const { state: progress, close: closeProgress } = showProgressDialog('delete', entries.length);
 	const failed: string[] = [];
-	for (const e of entries) {
+	for (let i = 0; i < entries.length; i++) {
+		if (progress.cancelled) break;
+		const e = entries[i]!;
+		progress.currentFile = e.name;
+		progress.fileIndex = i;
 		try {
 			await action(e);
 		} catch {
 			failed.push(e.name);
 		}
 	}
+	progress.fileIndex = entries.length;
+	closeProgress();
 	return failed;
 }
 
