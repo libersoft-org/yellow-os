@@ -1,8 +1,17 @@
 <script lang="ts">
 	import Spinner from '../Spinner/Spinner.svelte';
 	import { getResetState } from '../../scripts/system/factory-reset.svelte.ts';
-
 	const resetState = getResetState();
+	let logEl: HTMLElement | undefined = $state();
+	const _autoScroll = $derived.by(() => {
+		const _len = resetState.lines.length;
+		const el = logEl;
+		if (el)
+			requestAnimationFrame(() => {
+				el.scrollTop = el.scrollHeight;
+			});
+		return _len;
+	});
 </script>
 
 <style>
@@ -33,6 +42,9 @@
 		font-size: 14px;
 		color: var(--color-text-dim);
 		min-height: 24px;
+		max-height: 50vh;
+		overflow-y: auto;
+		width: 80%;
 	}
 
 	.error {
@@ -48,7 +60,7 @@
 <div class="reset-screen">
 	<div class="title">Factory reset</div>
 	<Spinner size="64px" colorVariable="--color-accent" />
-	<div class="log">
+	<div class="log" bind:this={logEl} data-count={_autoScroll}>
 		{#each resetState.lines as line}
 			<div>{line}</div>
 		{/each}

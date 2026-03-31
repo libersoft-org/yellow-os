@@ -2,8 +2,8 @@
 
 ## Bugs / changes
 
-- Factory reset - when there are too many logs, it overflows the screen
 - Wallpaper can be colour too (instead of image)
+- Wallpaper - Allow find it in file structure using open file dialog (when available)
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
