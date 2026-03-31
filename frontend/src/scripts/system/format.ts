@@ -1,10 +1,11 @@
-export function formatBytes(bytes: number, decimals: number = 2): string {
+export function formatBytes(bytes: number, decimals: number = 2, strict: boolean = false): string {
 	if (bytes === 0) return '0 B';
 	const k = 1024;
 	const dm = decimals < 0 ? 0 : decimals;
 	const sizes = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
 	const i = Math.floor(Math.log(bytes) / Math.log(k));
-	return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+	const num = (bytes / Math.pow(k, i)).toFixed(dm);
+	return (strict ? num : String(parseFloat(num))) + ' ' + sizes[i];
 }
 
 export function parseBytes(value: string | number): number {

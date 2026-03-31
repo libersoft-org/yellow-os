@@ -3,9 +3,8 @@
 ## Bugs / changes
 
 - File Browser - deleting files is extremely slow
-- ProgressDialog - it should show speed rounded to 2 digits
 - Extract a ProgressBar from ProgressDialog as a separate system component
-- Progress bar should have animated strips
+- Progress bar should have animated strips (when not paused) - prop animated - default false
 - File upload from host OS + any copy / move / delete process within web OS - show dialog with loading progress bar with cancel button that interupts it. It should show - progress bar with percentage, current file being copied / moved / deleted, file size (copied / total)
 - Add default folders on OPFS to USAGE.md
 - Replace hardcoded colours in all components to theme variables

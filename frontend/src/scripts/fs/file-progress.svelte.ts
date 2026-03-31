@@ -11,6 +11,7 @@ export interface ProgressState {
 	bytesCopied: number;
 	bytesTotal: number;
 	cancelled: boolean;
+	startTime: number;
 }
 
 let _progressComponent: Component<any> | null = null;
@@ -23,6 +24,7 @@ const _emptyState: ProgressState = {
 	bytesCopied: 0,
 	bytesTotal: 0,
 	cancelled: false,
+	startTime: 0,
 };
 
 let _progress: ProgressState = $state({ ..._emptyState });
@@ -43,6 +45,7 @@ export function showProgressDialog(type: OperationType, fileCount: number): { st
 	_progress.bytesCopied = 0;
 	_progress.bytesTotal = 0;
 	_progress.cancelled = false;
+	_progress.startTime = Date.now();
 
 	if (!_progressComponent) return { state: _progress, close(): void {} };
 

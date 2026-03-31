@@ -13,7 +13,16 @@
 
 	const percentage = $derived(progress.bytesTotal > 0 ? Math.round((progress.bytesCopied / progress.bytesTotal) * 100) : progress.fileCount > 0 ? Math.round((progress.fileIndex / progress.fileCount) * 100) : 0);
 
-	const progressLabel = $derived(progress.bytesTotal > 0 ? `${formatBytes(progress.bytesCopied)} / ${formatBytes(progress.bytesTotal)}` : `${progress.fileIndex} / ${progress.fileCount}`);
+	const speed = $derived.by((): number => {
+		if (progress.bytesCopied === 0 || progress.startTime === 0) return 0;
+		const elapsed = (Date.now() - progress.startTime) / 1000;
+		if (elapsed < 0.1) return 0;
+		return progress.bytesCopied / elapsed;
+	});
+
+	const progressLabel = $derived(progress.bytesTotal > 0 ? `${formatBytes(progress.bytesCopied, 2, true)} / ${formatBytes(progress.bytesTotal, 2, true)}` : `${progress.fileIndex} / ${progress.fileCount}`);
+
+	const speedLabel = $derived(speed > 0 ? `${formatBytes(speed, 2, true)}/s` : '');
 </script>
 
 <style>
@@ -41,8 +50,10 @@
 		white-space: nowrap;
 	}
 
-	.size-info {
+	.size-info,
+	.speed-info {
 		font-size: 12px;
+		font-family: var(--font-family-mono);
 		color: var(--color-text-dim);
 	}
 
@@ -92,6 +103,7 @@
 	<div class="file-info">
 		<span class="current-file" title={progress.currentFile}>{progress.currentFile}</span>
 		<span class="size-info">{progressLabel}</span>
+		{#if speedLabel}<span class="speed-info">{speedLabel}</span>{/if}
 	</div>
 	<div class="progress-bar-container">
 		<div class="progress-bar-fill" style:width="{percentage}%"></div>
