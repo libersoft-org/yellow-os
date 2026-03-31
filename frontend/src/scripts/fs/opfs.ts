@@ -214,7 +214,7 @@ export async function copyEntryAutoRename(sourcePath: string, name: string, dest
 	return copyEntryTo(sourcePath, name, destPath);
 }
 
-export async function moveEntry(sourcePath: string, name: string, destPath: string, onprogress?: (bytes: number) => void): Promise<string> {
+export async function moveEntry(sourcePath: string, name: string, destPath: string, _onprogress?: (bytes: number) => void): Promise<string> {
 	if (isSystemEntry(sourcePath, name)) return name;
 	const fullSourcePath = joinPath(sourcePath, name);
 	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) {
@@ -228,7 +228,7 @@ export async function moveEntry(sourcePath: string, name: string, destPath: stri
 	return targetName;
 }
 
-export async function moveEntryReplace(sourcePath: string, name: string, destPath: string, onprogress?: (bytes: number) => void): Promise<void> {
+export async function moveEntryReplace(sourcePath: string, name: string, destPath: string, _onprogress?: (bytes: number) => void): Promise<void> {
 	if (isSystemEntry(sourcePath, name)) return;
 	const fullSourcePath = joinPath(sourcePath, name);
 	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) throw new Error(`Cannot move "${name}" into itself.`);
