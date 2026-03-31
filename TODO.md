@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- On desktop / file browser - when right clicked on something and select "cut" and then paste it in the same directory, it just changes its name. Instead of renaming in this screnario, just move icons to a place where it should be pasted (test with ctrl + x / ctrl + v)
 - Trash on desktop should be a special type of icon - it should contain empty trash in context menu and should not be deleted in classic way - it should be turned off and on in settings - Desktop - special icons
 - When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables

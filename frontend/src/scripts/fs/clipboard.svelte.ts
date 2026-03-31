@@ -49,8 +49,9 @@ export async function pasteClipboard(destPath: string): Promise<void> {
 	for (const entry of entries) {
 		try {
 			sourcePaths.add(entry.path);
-			if (mode === 'cut') await moveEntry(entry.path, entry.name, destPath);
-			else await copyEntryTo(entry.path, entry.name, destPath);
+			if (mode === 'cut') {
+				if (entry.path !== destPath) await moveEntry(entry.path, entry.name, destPath);
+			} else await copyEntryTo(entry.path, entry.name, destPath);
 		} catch {
 			failed.push(entry.name);
 		}
