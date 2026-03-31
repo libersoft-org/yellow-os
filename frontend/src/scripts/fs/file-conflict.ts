@@ -189,9 +189,10 @@ async function uploadEntry(entry: FileSystemEntry, destPath: string, globalRes: 
 	}
 }
 
-export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: string): Promise<void> {
+export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: string): Promise<string[]> {
 	const globalRes = { value: null as ConflictResolution | null };
 	const cancelled = { value: false };
+	const uploaded: string[] = [];
 	const fsEntries: FileSystemEntry[] = [];
 	for (let i = 0; i < dataTransfer.items.length; i++) {
 		const item = dataTransfer.items[i]!;
@@ -200,7 +201,9 @@ export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: st
 	}
 	if (fsEntries.length > 0) {
 		for (const entry of fsEntries) {
+			const before = cancelled.value;
 			await uploadEntry(entry, destPath, globalRes, cancelled);
+			if (!cancelled.value || !before) uploaded.push(entry.name);
 			if (cancelled.value) break;
 		}
 	} else {
@@ -220,7 +223,9 @@ export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: st
 				if (resolution === 'replace') await deleteEntry(destPath, file.name);
 			}
 			await writeFile(destPath, file.name, file);
+			uploaded.push(file.name);
 		}
 	}
 	notifyDirectoryChange(destPath);
+	return uploaded;
 }

@@ -591,8 +591,14 @@
 		nativeDragOver = false;
 		if (!e.dataTransfer?.types.includes('Files')) return;
 		e.preventDefault();
+		const dropPos = iconGrid ? iconGrid.screenToGrid(e.clientX, e.clientY) : null;
 		try {
-			await uploadNativeFiles(e.dataTransfer, path);
+			const uploaded = await uploadNativeFiles(e.dataTransfer, path);
+			if (dropPos && iconGrid && uploaded.length > 0) {
+				const positions = new Map<string, { gridX: number; gridY: number }>();
+				for (let i = 0; i < uploaded.length; i++) positions.set(uploaded[i]!, { gridX: dropPos.gridX + i, gridY: dropPos.gridY });
+				iconGrid.schedulePositions(positions);
+			}
 		} catch (err) {
 			showErrorDialog(err);
 		}

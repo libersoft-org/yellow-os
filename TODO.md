@@ -2,6 +2,7 @@
 
 ## Bugs / changes
 
+- Text Editor - if file is bigger than 1 MB, show dialog if user really wants to open it.
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
