@@ -98,28 +98,7 @@
 
 <div class="info-panel" style:width="{width}px">
 	{#if selected.length > 1}
-		{@const selDirs = selected.filter(e => e.type === 'directory').length}
-		{@const selFiles = selected.filter(e => e.type === 'file').length}
-		{@const selSize = formatBytes(selected.filter(e => e.type === 'file').reduce((sum, e) => sum + e.size, 0))}
-		<div class="name">{selected.length} items selected</div>
-		<div class="details">
-			{#if selDirs > 0}
-				<div class="detail-row">
-					<span class="detail-label">Directories</span>
-					<span class="detail-value">{selDirs}</span>
-				</div>
-			{/if}
-			{#if selFiles > 0}
-				<div class="detail-row">
-					<span class="detail-label">Files</span>
-					<span class="detail-value">{selFiles}</span>
-				</div>
-				<div class="detail-row">
-					<span class="detail-label">Total size</span>
-					<span class="detail-value">{selSize}</span>
-				</div>
-			{/if}
-		</div>
+		<EntryInfo entries={selected} />
 	{:else if selected.length === 1}
 		{@const item = selected[0]!}
 		<EntryInfo entry={item} />
