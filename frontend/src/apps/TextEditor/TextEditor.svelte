@@ -7,7 +7,7 @@
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
 	import StatusBar from '../../components/StatusBar/StatusBar.svelte';
 	import Textarea from '../../components/Textarea/Textarea.svelte';
-	import { setClipboardOwner, getClipboardOwner } from '../../scripts/fs/clipboard.svelte.ts';
+	import { setClipboardOwner, hasClipboard } from '../../scripts/fs/clipboard.svelte.ts';
 	import { showDialog } from '../../scripts/ui/dialog.ts';
 	interface Props {
 		filePath?: string;
@@ -162,7 +162,7 @@
 	}
 
 	function paste(): void {
-		if (!editorEl || getClipboardOwner() === 'files') return;
+		if (!editorEl || hasClipboard()) return;
 		navigator.clipboard.readText().then(text => {
 			if (!editorEl || !text) return;
 			const start = editorEl.selectionStart;
@@ -199,7 +199,7 @@
 			return;
 		}
 		if (isPaste) {
-			if (getClipboardOwner() === 'files') {
+			if (hasClipboard()) {
 				e.preventDefault();
 				return;
 			}
