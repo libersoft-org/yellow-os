@@ -118,19 +118,8 @@ export async function deleteEntry(path: string, name: string): Promise<void> {
 export async function renameEntry(path: string, oldName: string, newName: string): Promise<void> {
 	if (isSystemEntry(path, oldName)) return;
 	const dir = await resolveDirectory(path);
-	const oldHandle = await dir.getDirectoryHandle(oldName).catch(() => null);
-	if (oldHandle) {
-		await copyDirectory(oldHandle, dir, newName);
-		await dir.removeEntry(oldName, { recursive: true });
-	} else {
-		const fileHandle = await dir.getFileHandle(oldName);
-		const file = await fileHandle.getFile();
-		const newHandle = await dir.getFileHandle(newName, { create: true });
-		const writable = await newHandle.createWritable();
-		await writable.write(file);
-		await writable.close();
-		await dir.removeEntry(oldName);
-	}
+	const handle = await dir.getDirectoryHandle(oldName).catch(() => dir.getFileHandle(oldName));
+	await (handle as any).move(newName);
 }
 
 async function copyDirectory(source: FileSystemDirectoryHandle, parentDir: FileSystemDirectoryHandle, newName: string, onprogress?: (bytes: number) => void): Promise<void> {
@@ -231,19 +220,27 @@ export async function moveEntry(sourcePath: string, name: string, destPath: stri
 	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) {
 		throw new Error(`Cannot move "${name}" into itself.`);
 	}
-	const finalName = await copyEntryTo(sourcePath, name, destPath, onprogress);
 	const sourceDir = await resolveDirectory(sourcePath);
-	await sourceDir.removeEntry(name, { recursive: true });
-	return finalName;
+	const destDir = await resolveDirectory(destPath);
+	const targetName = await findUniqueName(destDir, name);
+	const handle = await sourceDir.getDirectoryHandle(name).catch(() => sourceDir.getFileHandle(name));
+	await (handle as any).move(destDir, targetName);
+	return targetName;
 }
 
 export async function moveEntryReplace(sourcePath: string, name: string, destPath: string, onprogress?: (bytes: number) => void): Promise<void> {
 	if (isSystemEntry(sourcePath, name)) return;
 	const fullSourcePath = joinPath(sourcePath, name);
 	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) throw new Error(`Cannot move "${name}" into itself.`);
-	await copyEntryReplace(sourcePath, name, destPath, onprogress);
 	const sourceDir = await resolveDirectory(sourcePath);
-	await sourceDir.removeEntry(name, { recursive: true });
+	const destDir = await resolveDirectory(destPath);
+	try {
+		await destDir.removeEntry(name, { recursive: true });
+	} catch {
+		/* does not exist */
+	}
+	const handle = await sourceDir.getDirectoryHandle(name).catch(() => sourceDir.getFileHandle(name));
+	await (handle as any).move(destDir, name);
 }
 
 export async function exists(path: string, name: string): Promise<boolean> {
