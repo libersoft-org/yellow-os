@@ -62,6 +62,7 @@ export async function copyWithConflicts(entries: ConflictEntry[], destPath: stri
 	const onprogress = (bytes: number): void => {
 		progress.bytesCopied += bytes;
 	};
+	const cancelled = (): boolean => progress.cancelled;
 	for (let i = 0; i < entries.length; i++) {
 		if (progress.cancelled) break;
 		const entry = entries[i]!;
@@ -70,7 +71,7 @@ export async function copyWithConflicts(entries: ConflictEntry[], destPath: stri
 		progress.fileIndex = i;
 		if (!hasConflict) {
 			try {
-				const finalName = await copyEntryTo(entry.sourcePath, entry.name, destPath, onprogress);
+				const finalName = await copyEntryTo(entry.sourcePath, entry.name, destPath, onprogress, cancelled);
 				nameMap.set(entry.name, finalName);
 			} catch (err) {
 				showErrorDialog(err);
@@ -93,11 +94,11 @@ export async function copyWithConflicts(entries: ConflictEntry[], destPath: stri
 			if (resolution === 'replace') {
 				if (entry.sourcePath === destPath) nameMap.set(entry.name, entry.name);
 				else {
-					await copyEntryReplace(entry.sourcePath, entry.name, destPath, onprogress);
+					await copyEntryReplace(entry.sourcePath, entry.name, destPath, onprogress, cancelled);
 					nameMap.set(entry.name, entry.name);
 				}
 			} else {
-				const finalName = await copyEntryTo(entry.sourcePath, entry.name, destPath, onprogress);
+				const finalName = await copyEntryTo(entry.sourcePath, entry.name, destPath, onprogress, cancelled);
 				nameMap.set(entry.name, finalName);
 			}
 		} catch (err) {
@@ -192,7 +193,7 @@ async function getAllDirectoryEntries(dirEntry: FileSystemDirectoryEntry): Promi
 	return all;
 }
 
-async function uploadEntry(entry: FileSystemEntry, destPath: string, globalRes: { value: ConflictResolution | null }, cancelled: { value: boolean }, onprogress: ((bytes: number) => void) | null): Promise<void> {
+async function uploadEntry(entry: FileSystemEntry, destPath: string, globalRes: { value: ConflictResolution | null }, cancelled: { value: boolean }, onprogress: ((bytes: number) => void) | null, isCancelled: () => boolean): Promise<void> {
 	if (cancelled.value) return;
 	if (entry.isFile) {
 		const file = await readFileSystemEntry(entry as FileSystemFileEntry);
@@ -214,14 +215,14 @@ async function uploadEntry(entry: FileSystemEntry, destPath: string, globalRes: 
 			}
 			if (resolution === 'replace') await deleteEntry(destPath, entry.name);
 		}
-		await writeFile(destPath, entry.name, file, onprogress ?? undefined);
+		await writeFile(destPath, entry.name, file, onprogress ?? undefined, isCancelled);
 	} else if (entry.isDirectory) {
 		const dirEntry = entry as FileSystemDirectoryEntry;
 		const subPath = destPath + '/' + entry.name;
 		if (!(await exists(destPath, entry.name))) await createDirectory(destPath, entry.name);
 		const children = await getAllDirectoryEntries(dirEntry);
 		for (const child of children) {
-			await uploadEntry(child, subPath, globalRes, cancelled, onprogress);
+			await uploadEntry(child, subPath, globalRes, cancelled, onprogress, isCancelled);
 			if (cancelled.value) return;
 		}
 	}
@@ -288,7 +289,7 @@ export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: st
 			}
 			const before = cancelled.value;
 			progress.currentFile = entry.name;
-			await uploadEntry(entry, destPath, globalRes, cancelled, onprogress);
+			await uploadEntry(entry, destPath, globalRes, cancelled, onprogress, () => progress.cancelled);
 			if (!cancelled.value || !before) uploaded.push(entry.name);
 			progress.fileIndex++;
 			if (cancelled.value) break;
@@ -323,7 +324,7 @@ export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: st
 				}
 				if (resolution === 'replace') await deleteEntry(destPath, file.name);
 			}
-			await writeFile(destPath, file.name, file, onprogress);
+			await writeFile(destPath, file.name, file, onprogress, () => progress.cancelled);
 			uploaded.push(file.name);
 		}
 		progress.fileIndex = files.length;

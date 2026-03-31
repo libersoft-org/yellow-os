@@ -53,7 +53,7 @@
 
 	.size-info,
 	.speed-info {
-		font-size: 12px;
+		font-size: 14px;
 		font-family: var(--font-family-mono);
 		color: var(--color-text-dim);
 	}

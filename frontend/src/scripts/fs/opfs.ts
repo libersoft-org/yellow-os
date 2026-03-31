@@ -68,27 +68,40 @@ import { notifyDirectoryChange } from './opfs-notify.ts';
 
 const CHUNK_SIZE = 256 * 1024;
 
-async function writeChunked(writable: FileSystemWritableFileStream, blob: Blob, onprogress?: (bytes: number) => void): Promise<void> {
+async function writeChunked(writable: FileSystemWritableFileStream, blob: Blob, onprogress?: (bytes: number) => void, cancelled?: () => boolean): Promise<boolean> {
 	if (!onprogress || blob.size === 0) {
 		await writable.write(blob);
-		return;
+		return false;
 	}
 	let offset = 0;
 	while (offset < blob.size) {
+		if (cancelled?.()) {
+			await writable.abort();
+			return true;
+		}
 		const end = Math.min(offset + CHUNK_SIZE, blob.size);
 		const chunk = blob.slice(offset, end);
 		await writable.write(chunk);
 		onprogress(end - offset);
 		offset = end;
 	}
+	return false;
 }
 
-export async function writeFile(path: string, name: string, content: Blob | string, onprogress?: (bytes: number) => void): Promise<void> {
+export async function writeFile(path: string, name: string, content: Blob | string, onprogress?: (bytes: number) => void, cancelled?: () => boolean): Promise<void> {
 	const dir = await resolveDirectory(path);
 	const fileHandle = await dir.getFileHandle(name, { create: true });
 	const writable = await fileHandle.createWritable();
 	if (onprogress && content instanceof Blob) {
-		await writeChunked(writable, content, onprogress);
+		const wasCancelled = await writeChunked(writable, content, onprogress, cancelled);
+		if (wasCancelled) {
+			try {
+				await dir.removeEntry(name);
+			} catch {
+				/* ignore */
+			}
+			return;
+		}
 	} else {
 		await writable.write(content);
 	}
@@ -122,16 +135,25 @@ export async function renameEntry(path: string, oldName: string, newName: string
 	await (handle as any).move(newName);
 }
 
-async function copyDirectory(source: FileSystemDirectoryHandle, parentDir: FileSystemDirectoryHandle, newName: string, onprogress?: (bytes: number) => void): Promise<void> {
+async function copyDirectory(source: FileSystemDirectoryHandle, parentDir: FileSystemDirectoryHandle, newName: string, onprogress?: (bytes: number) => void, cancelled?: () => boolean): Promise<void> {
 	const newDir = await parentDir.getDirectoryHandle(newName, { create: true });
 	for await (const [name, handle] of (source as any).entries() as AsyncIterable<[string, FileSystemHandle]>) {
+		if (cancelled?.()) return;
 		if (handle.kind === 'directory') {
-			await copyDirectory(handle as FileSystemDirectoryHandle, newDir, name, onprogress);
+			await copyDirectory(handle as FileSystemDirectoryHandle, newDir, name, onprogress, cancelled);
 		} else {
 			const file = await (handle as FileSystemFileHandle).getFile();
 			const newFile = await newDir.getFileHandle(name, { create: true });
 			const writable = await newFile.createWritable();
-			await writeChunked(writable, file, onprogress);
+			const wasCancelled = await writeChunked(writable, file, onprogress, cancelled);
+			if (wasCancelled) {
+				try {
+					await newDir.removeEntry(name);
+				} catch {
+					/* ignore */
+				}
+				return;
+			}
 			await writable.close();
 		}
 	}
@@ -166,7 +188,7 @@ export async function uniqueName(path: string, name: string): Promise<string> {
 	return findUniqueName(dir, name);
 }
 
-export async function copyEntryTo(sourcePath: string, name: string, destPath: string, onprogress?: (bytes: number) => void): Promise<string> {
+export async function copyEntryTo(sourcePath: string, name: string, destPath: string, onprogress?: (bytes: number) => void, cancelled?: () => boolean): Promise<string> {
 	const fullSourcePath = joinPath(sourcePath, name);
 	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) {
 		throw new Error(`Cannot copy "${name}" into itself.`);
@@ -176,19 +198,34 @@ export async function copyEntryTo(sourcePath: string, name: string, destPath: st
 	const targetName = await findUniqueName(destDir, name);
 	const dirHandle = await sourceDir.getDirectoryHandle(name).catch(() => null);
 	if (dirHandle) {
-		await copyDirectory(dirHandle, destDir, targetName, onprogress);
+		await copyDirectory(dirHandle, destDir, targetName, onprogress, cancelled);
+		if (cancelled?.()) {
+			try {
+				await destDir.removeEntry(targetName, { recursive: true });
+			} catch {
+				/* ignore */
+			}
+		}
 	} else {
 		const fileHandle = await sourceDir.getFileHandle(name);
 		const file = await fileHandle.getFile();
 		const newFile = await destDir.getFileHandle(targetName, { create: true });
 		const writable = await newFile.createWritable();
-		await writeChunked(writable, file, onprogress);
+		const wasCancelled = await writeChunked(writable, file, onprogress, cancelled);
+		if (wasCancelled) {
+			try {
+				await destDir.removeEntry(targetName);
+			} catch {
+				/* ignore */
+			}
+			return targetName;
+		}
 		await writable.close();
 	}
 	return targetName;
 }
 
-export async function copyEntryReplace(sourcePath: string, name: string, destPath: string, onprogress?: (bytes: number) => void): Promise<void> {
+export async function copyEntryReplace(sourcePath: string, name: string, destPath: string, onprogress?: (bytes: number) => void, cancelled?: () => boolean): Promise<void> {
 	const fullSourcePath = joinPath(sourcePath, name);
 	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) throw new Error(`Cannot copy "${name}" into itself.`);
 	const sourceDir = await resolveDirectory(sourcePath);
@@ -199,13 +236,29 @@ export async function copyEntryReplace(sourcePath: string, name: string, destPat
 		/* does not exist */
 	}
 	const dirHandle = await sourceDir.getDirectoryHandle(name).catch(() => null);
-	if (dirHandle) await copyDirectory(dirHandle, destDir, name, onprogress);
-	else {
+	if (dirHandle) {
+		await copyDirectory(dirHandle, destDir, name, onprogress, cancelled);
+		if (cancelled?.()) {
+			try {
+				await destDir.removeEntry(name, { recursive: true });
+			} catch {
+				/* ignore */
+			}
+		}
+	} else {
 		const fileHandle = await sourceDir.getFileHandle(name);
 		const file = await fileHandle.getFile();
 		const newFile = await destDir.getFileHandle(name, { create: true });
 		const writable = await newFile.createWritable();
-		await writeChunked(writable, file, onprogress);
+		const wasCancelled = await writeChunked(writable, file, onprogress, cancelled);
+		if (wasCancelled) {
+			try {
+				await destDir.removeEntry(name);
+			} catch {
+				/* ignore */
+			}
+			return;
+		}
 		await writable.close();
 	}
 }
