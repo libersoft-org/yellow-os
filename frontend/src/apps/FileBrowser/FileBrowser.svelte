@@ -140,7 +140,7 @@
 		</div>
 		{#if showInfo}
 			<FileBrowserSeparator onresize={onInfoSeparatorResize} />
-			<FileBrowserInfo selected={selectedEntries} {currentPath} {entries} width={infoWidth} />
+			<FileBrowserInfo selected={selectedEntries} {currentPath} {entries} {disks} width={infoWidth} />
 		{/if}
 	</div>
 </div>

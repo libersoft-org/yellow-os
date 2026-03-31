@@ -1,15 +1,29 @@
 <script lang="ts">
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
+	import type { DiskInfo } from './filebrowser.ts';
 	import { entryIcon, entryIconColor, getExtension } from '../../scripts/fs/file-entry.ts';
 	import Icon from '../../components/Icon/Icon.svelte';
+	import PieChart from '../../components/PieChart/PieChart.svelte';
+	import type { PieChartSegment } from '../../components/PieChart/PieChart.svelte';
 	import { formatBytes } from '../../scripts/system/format.ts';
 	interface Props {
 		selected: FileEntry[];
 		currentPath: string;
 		entries: FileEntry[];
+		disks: DiskInfo[];
 		width?: number;
 	}
-	const { selected, currentPath, entries, width = 220 }: Props = $props();
+	const { selected, currentPath, entries, disks, width = 220 }: Props = $props();
+
+	const currentDisk = $derived(disks.find(d => d.path === currentPath));
+	const diskSegments = $derived.by((): PieChartSegment[] => {
+		if (!currentDisk) return [];
+		const used = currentDisk.total - currentDisk.free;
+		return [
+			{ value: used, colorVariable: '--color-accent', label: 'Used' },
+			{ value: currentDisk.free, colorVariable: '--color-surface-3', label: 'Free' },
+		];
+	});
 
 	function getDisplayExtension(name: string): string {
 		const ext = getExtension(name);
@@ -71,6 +85,13 @@
 	.detail-label {
 		color: var(--color-text-dim);
 		flex-shrink: 0;
+	}
+
+	.separator {
+		width: 100%;
+		height: 1px;
+		background: var(--color-border);
+		margin: 4px 0;
 	}
 
 	.detail-value {
@@ -147,5 +168,23 @@
 				<span class="detail-value">{totalSize}</span>
 			</div>
 		</div>
+		{#if currentDisk}
+			<div class="separator"></div>
+			<PieChart segments={diskSegments} size={90} strokeWidth={18} />
+			<div class="details">
+				<div class="detail-row">
+					<span class="detail-label">Total</span>
+					<span class="detail-value">{formatBytes(currentDisk.total)}</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Used</span>
+					<span class="detail-value">{formatBytes(currentDisk.total - currentDisk.free)}</span>
+				</div>
+				<div class="detail-row">
+					<span class="detail-label">Free</span>
+					<span class="detail-value">{formatBytes(currentDisk.free)}</span>
+				</div>
+			</div>
+		{/if}
 	{/if}
 </div>
