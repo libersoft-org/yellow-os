@@ -178,6 +178,32 @@ export async function copyEntryTo(sourcePath: string, name: string, destPath: st
 	return targetName;
 }
 
+export async function copyEntryReplace(sourcePath: string, name: string, destPath: string): Promise<void> {
+	const fullSourcePath = joinPath(sourcePath, name);
+	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) throw new Error(`Cannot copy "${name}" into itself.`);
+	const sourceDir = await resolveDirectory(sourcePath);
+	const destDir = await resolveDirectory(destPath);
+	try {
+		await destDir.removeEntry(name, { recursive: true });
+	} catch {
+		/* does not exist */
+	}
+	const dirHandle = await sourceDir.getDirectoryHandle(name).catch(() => null);
+	if (dirHandle) await copyDirectory(dirHandle, destDir, name);
+	else {
+		const fileHandle = await sourceDir.getFileHandle(name);
+		const file = await fileHandle.getFile();
+		const newFile = await destDir.getFileHandle(name, { create: true });
+		const writable = await newFile.createWritable();
+		await writable.write(file);
+		await writable.close();
+	}
+}
+
+export async function copyEntryAutoRename(sourcePath: string, name: string, destPath: string): Promise<string> {
+	return copyEntryTo(sourcePath, name, destPath);
+}
+
 export async function moveEntry(sourcePath: string, name: string, destPath: string): Promise<string> {
 	if (isSystemEntry(sourcePath, name)) return name;
 	const fullSourcePath = joinPath(sourcePath, name);
@@ -188,6 +214,15 @@ export async function moveEntry(sourcePath: string, name: string, destPath: stri
 	const sourceDir = await resolveDirectory(sourcePath);
 	await sourceDir.removeEntry(name, { recursive: true });
 	return finalName;
+}
+
+export async function moveEntryReplace(sourcePath: string, name: string, destPath: string): Promise<void> {
+	if (isSystemEntry(sourcePath, name)) return;
+	const fullSourcePath = joinPath(sourcePath, name);
+	if (destPath === fullSourcePath || destPath.startsWith(fullSourcePath + '/')) throw new Error(`Cannot move "${name}" into itself.`);
+	await copyEntryReplace(sourcePath, name, destPath);
+	const sourceDir = await resolveDirectory(sourcePath);
+	await sourceDir.removeEntry(name, { recursive: true });
 }
 
 export async function exists(path: string, name: string): Promise<boolean> {

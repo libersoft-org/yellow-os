@@ -2,7 +2,7 @@
 	import { onDestroy, onMount } from 'svelte';
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
 	import { entryIcon, entryIconColor, loadDirectoryEntries, getExtension } from '../../scripts/fs/file-entry.ts';
-	import { moveEntry, copyEntryTo, readDirectory, joinPath, emptyTrash } from '../../scripts/fs/opfs.ts';
+	import { readDirectory, joinPath, emptyTrash } from '../../scripts/fs/opfs.ts';
 	import { isLinkFile, readLink, resolveLink, createLinksForEntries } from '../../scripts/fs/link.ts';
 	import { openWindow } from '../../scripts/window/window-store.svelte.ts';
 	import { getFileHandler, getEditHandler } from '../../scripts/fs/file-types.ts';
@@ -12,6 +12,7 @@
 	import { downloadEntries } from '../../scripts/fs/download.ts';
 	import { showDialog, showErrorDialog } from '../../scripts/ui/dialog.ts';
 	import { setClipboard, hasClipboard, pasteClipboard, getClipboard } from '../../scripts/fs/clipboard.svelte.ts';
+	import { moveWithConflicts, copyWithConflicts } from '../../scripts/fs/file-conflict.ts';
 	import { ensureOpfsReady, OS_PATH } from '../../scripts/fs/opfs-init.ts';
 	import { registerDropZone, isGlobalDragActive } from '../../scripts/ui/drag-state.svelte.ts';
 	import { settings } from '../../scripts/system/settings.svelte.ts';
@@ -474,28 +475,32 @@
 
 	async function executeDrop(mode: 'move' | 'copy' | 'link', sourcePath: string, names: string[], destPath: string, schedule: (nameMap: Map<string, string>) => void): Promise<void> {
 		try {
-			const nameMap = new Map<string, string>();
+			let nameMap: Map<string, string>;
 			if (mode === 'move') {
 				if (sourcePath === destPath) {
-					for (const name of names) nameMap.set(name, name);
+					nameMap = new Map(names.map(n => [n, n]));
 					schedule(nameMap);
 					return;
 				}
 				const allowed = warnSystemMove(sourcePath, names);
 				if (allowed.length === 0) return;
-				for (const name of allowed) nameMap.set(name, await moveEntry(sourcePath, name, destPath));
+				nameMap = await moveWithConflicts(
+					allowed.map(n => ({ sourcePath, name: n })),
+					destPath
+				);
 			} else if (mode === 'copy') {
-				for (const name of names) nameMap.set(name, await copyEntryTo(sourcePath, name, destPath));
+				nameMap = await copyWithConflicts(
+					names.map(n => ({ sourcePath, name: n })),
+					destPath
+				);
 			} else {
 				const srcEntries = sourcePath === path ? sortedEntries : await readDirectory(sourcePath);
 				const entryInfos = names.map(name => {
 					const entry = srcEntries.find(en => en.name === name);
 					return { name, type: (entry?.type ?? 'file') as 'file' | 'directory' };
 				});
-				nameMap.set('__links', '');
 				const linkMap = await createLinksForEntries(sourcePath, entryInfos, destPath);
-				nameMap.clear();
-				for (const [k, v] of linkMap) nameMap.set(k, v);
+				nameMap = new Map(linkMap);
 			}
 			schedule(nameMap);
 			notifyDirectoryChange(destPath);

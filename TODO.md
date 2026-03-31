@@ -2,8 +2,9 @@
 
 ## Bugs / changes
 
+- When multi-selecting items in FileBrowser directory and it has a scrollbar, I cannot select it outside of scrolled view
+- Factory reset - when there are too many logs, it overflows the screen
 - Wallpaper can be colour too (instead of image)
-- When moving the file with the same name from one directory to another, it should show dialog asking what to do - replace, automatically rename moved / copied files or skip, cancel
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
