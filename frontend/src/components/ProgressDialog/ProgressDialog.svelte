@@ -2,6 +2,7 @@
 	import { formatBytes } from '../../scripts/system/format.ts';
 	import { getProgress } from '../../scripts/fs/file-progress.svelte.ts';
 	import Button from '../../components/Button/Button.svelte';
+	import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
 
 	interface Props {
 		oncancel: () => void;
@@ -57,33 +58,6 @@
 		color: var(--color-text-dim);
 	}
 
-	.progress-bar-container {
-		width: 100%;
-		height: 18px;
-		background: var(--color-surface-2);
-		border-radius: 9px;
-		overflow: hidden;
-		position: relative;
-	}
-
-	.progress-bar-fill {
-		height: 100%;
-		background: var(--color-accent);
-		border-radius: 9px;
-		transition: width 0.15s ease;
-	}
-
-	.progress-bar-text {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 11px;
-		font-weight: 600;
-		color: var(--color-text);
-	}
-
 	.footer {
 		display: flex;
 		justify-content: space-between;
@@ -105,10 +79,7 @@
 		<span class="size-info">{progressLabel}</span>
 		{#if speedLabel}<span class="speed-info">{speedLabel}</span>{/if}
 	</div>
-	<div class="progress-bar-container">
-		<div class="progress-bar-fill" style:width="{percentage}%"></div>
-		<div class="progress-bar-text">{percentage}%</div>
-	</div>
+	<ProgressBar {percentage} animated />
 	<div class="footer">
 		<div class="buttons">
 			<Button backgroundColorVariable="--color-danger" colorVariable="--color-accent-fg" onclick={oncancel}>Cancel</Button>
