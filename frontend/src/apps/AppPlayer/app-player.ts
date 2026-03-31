@@ -1,4 +1,4 @@
-import { readFileText, readFileBlob } from '../../scripts/fs/opfs.ts';
+import { readFileText, readFileBlob, readDirectory } from '../../scripts/fs/opfs.ts';
 export interface YappManifest {
 	name?: string;
 	entry: string;
@@ -44,9 +44,83 @@ export async function buildBlobUrl(yappDir: string, entryPath: string): Promise<
 	const { dir, name } = resolveFilePath(yappDir, entryPath);
 	const file = await readFileBlob(dir, name);
 	const text = await file.text();
+	const baseDir = resolveBaseDir(yappDir, entryPath);
+	const assetMap = await buildAssetBase64Map(baseDir, name);
+	const fetchInterceptScript = buildFetchInterceptScript(assetMap);
 	const rewritten = await rewriteReferences(text, yappDir, entryPath);
-	const blob = new Blob([rewritten], { type: 'text/html' });
+	const injected = injectScriptAfterHead(rewritten, fetchInterceptScript);
+	const blob = new Blob([injected], { type: 'text/html' });
 	return URL.createObjectURL(blob);
+}
+
+interface AssetEntry {
+	base64: string;
+	type: string;
+}
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+	const bytes = new Uint8Array(buffer);
+	let binary = '';
+	const chunkSize = 8192;
+	for (let i = 0; i < bytes.length; i += chunkSize) {
+		binary += String.fromCharCode(...bytes.subarray(i, i + chunkSize));
+	}
+	return btoa(binary);
+}
+
+function guessMimeType(name: string): string {
+	const ext = name.split('.').pop()?.toLowerCase() ?? '';
+	const types: Record<string, string> = {
+		wasm: 'application/wasm',
+		js: 'text/javascript',
+		css: 'text/css',
+		json: 'application/json',
+		png: 'image/png',
+		jpg: 'image/jpeg',
+		jpeg: 'image/jpeg',
+		gif: 'image/gif',
+		svg: 'image/svg+xml',
+		webp: 'image/webp',
+	};
+	return types[ext] ?? 'application/octet-stream';
+}
+
+async function buildAssetBase64Map(baseDir: string, excludeFileName: string): Promise<Map<string, AssetEntry>> {
+	const map = new Map<string, AssetEntry>();
+	try {
+		const entries = await readDirectory(baseDir);
+		for (const entry of entries) {
+			if (entry.type !== 'file' || entry.name === excludeFileName) continue;
+			try {
+				const blob = await readFileBlob(baseDir, entry.name);
+				const buffer = await blob.arrayBuffer();
+				const base64 = arrayBufferToBase64(buffer);
+				const type = blob.type || guessMimeType(entry.name);
+				map.set(entry.name, { base64, type });
+			} catch {
+				/* skip unreadable files */
+			}
+		}
+	} catch {
+		/* directory not readable */
+	}
+	return map;
+}
+
+function buildFetchInterceptScript(assetMap: Map<string, AssetEntry>): string {
+	const entries = Array.from(assetMap.entries())
+		.map(([name, { base64, type }]) => `${JSON.stringify(name)}:[${JSON.stringify(base64)},${JSON.stringify(type)}]`)
+		.join(',');
+	return `<script>(function(){var m={${entries}};var _f=window.fetch;window.fetch=function(r,o){if(typeof r==='string'){var n=r.split('/').pop();var d=m[n]||m[r];if(d){var b=atob(d[0]);var a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return Promise.resolve(new Response(a.buffer,{headers:{'content-type':d[1]}}));}}return _f(r,o);};})()${'<'}/script>`;
+}
+
+function injectScriptAfterHead(html: string, script: string): string {
+	const headMatch = html.match(/<head[^>]*>/i);
+	if (headMatch) {
+		const idx = html.indexOf(headMatch[0]) + headMatch[0].length;
+		return html.substring(0, idx) + script + html.substring(idx);
+	}
+	return script + html;
 }
 
 async function rewriteReferences(html: string, yappDir: string, entryPath: string): Promise<string> {

@@ -29,7 +29,7 @@ export function entryIcon(entry: FileEntry): string {
 
 export function entryIconColor(entry: FileEntry): string {
 	if (entry.type === 'directory') return '--color-accent';
-	if (isYappFile(entry.name)) return '--color-accent';
+	if (isYappFile(entry.name)) return entry.yappIcon ? '' : '--color-accent';
 	return '--color-text-dim';
 }
 
