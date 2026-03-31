@@ -7,7 +7,6 @@
 
 ## New features
 
-- Show a different icon for empty trash and full trash (when something is inside)
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Run WASM files as apps (test the App Player application)
 - Add system open / save as ... file dialog
@@ -18,8 +17,8 @@
 - Text Editor - add document print on printer
 - Image viewer
 - Image editor (like MS Paint)
-- Terminal (for interacting with file system)
 - Media player
+- Terminal (for interacting with file system)
 - Web browser (iframe-based)
 - Sticky notes
 - Desktop widgets (weather, news etc.)

@@ -105,10 +105,15 @@
 		return i <= 0 ? '/' : entry.virtualPath.slice(0, i);
 	}
 
+	function trashAwareIcon(e: FileEntry): string {
+		if (e.name === 'Trash' && e.type === 'directory') return trashEmpty ? '/img/apps/trash-empty.svg' : '/img/apps/trash-full.svg';
+		return entryIcon(e);
+	}
+
 	const iconViewItems = $derived<IconGridItemData[]>(
 		sortedEntries.map(e => ({
 			id: e.name,
-			icon: entryIcon(e),
+			icon: trashAwareIcon(e),
 			label: displayLabel(e.name),
 			iconColor: entryIconColor(e),
 			droppable: e.type === 'directory',
@@ -247,7 +252,7 @@
 		const isTrashDirectory = entry.type === 'directory' && entry.name === 'Trash' && (path === '/' || path === '' || entry.virtualPath === '/Trash');
 		if (isTrashDirectory) {
 			items.push({
-				icon: '/img/trash.svg',
+				icon: '/img/trash-full.svg',
 				label: 'Empty trash',
 				disabled: trashEmpty,
 				onclick: () => {
@@ -324,7 +329,7 @@
 			items.push({ icon: '/img/rename.svg', label: 'Rename', onclick: () => openRenameDialog(srcPath, entry.name, entry.type, handleRenamed, focusGrid) });
 		}
 		items.push({
-			icon: '/img/trash.svg',
+			icon: '/img/trash-full.svg',
 			label: 'Delete',
 			onclick: (e: MouseEvent) => {
 				const toDelete = selectedEntries.length > 1 ? selectedEntries : [entry];
