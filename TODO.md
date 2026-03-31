@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Add default folders and files on OPFS to USAGE.md (Trash, [OS NAME], [OS NAME]/Desktop, [OS NAME]/TaskbarMenu, [OS NAME]/Wallpapers, [OS NAME]/file-types.json, [OS NAME]/settings.json, ...)
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
@@ -31,7 +30,7 @@
 - For unknown file types show app selection - run just this time / run always
 - When taskbar windows are icon only (withtout text) add tooltip
 - Forbid dragging windows outside of screen
-- File Browser - Add Pack / unpack / browse files and folders into ZIP / other compression formats within OPFS
+- File Browser - Add Pack / unpack / browse files and directories into ZIP / other compression formats within OPFS
 - Cleanup code
 - Tray icons
 - Quick launch

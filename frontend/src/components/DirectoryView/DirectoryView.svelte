@@ -244,8 +244,8 @@
 
 	function getIconMenuItems(entry: FileEntry): ContextMenuItem[] {
 		const items: ContextMenuItem[] = [];
-		const isTrashFolder = entry.type === 'directory' && entry.name === 'Trash' && (path === '/' || path === '' || entry.virtualPath === '/Trash');
-		if (isTrashFolder) {
+		const isTrashDirectory = entry.type === 'directory' && entry.name === 'Trash' && (path === '/' || path === '' || entry.virtualPath === '/Trash');
+		if (isTrashDirectory) {
 			items.push({
 				icon: '/img/trash.svg',
 				label: 'Empty trash',

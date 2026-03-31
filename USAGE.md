@@ -47,6 +47,21 @@ These shortcuts require a focused (selected) window. Hold **Meta** (Win / Cmd) a
 | Ctrl + A  | Select all icons                                |
 | F2        | Rename selected file or directory (single item) |
 
+## Default file system structure
+
+On first launch, YellowOS creates the following directories and files in the browser's OPFS (Origin Private File System):
+
+```
+/
+├── Trash/                              # Trashed files
+└── YellowOS/
+    ├── Desktop/                        # Default desktop shortcuts
+    ├── TaskbarMenu/                    # Default taskbar menu shortcuts
+    ├── Wallpapers/                     # Default system wallpapers
+    ├── file-types.json                 # File extension → app mapping
+    └── settings.json                   # System settings (created on first change)
+```
+
 ## Custom files
 
 ### `.link` files (shortcuts)
@@ -55,19 +70,19 @@ A `.link` file is a JSON file that creates a shortcut to a built-in application.
 
 ```json
 {
-  "appId": "calculator",
-  "label": "Calculator",
-  "icon": "/img/apps/calculator.svg",
-  "props": {}
+	"appId": "calculator",
+	"label": "Calculator",
+	"icon": "/img/apps/calculator.svg",
+	"props": {}
 }
 ```
 
-| Field   | Type   | Required | Description                                       |
-| ------- | ------ | -------- | ------------------------------------------------- |
-| `appId` | string | yes      | ID of the built-in app (see list below)           |
-| `label` | string | yes      | Display name shown under the icon                 |
-| `icon`  | string | yes      | Path to the icon image (relative to web root)     |
-| `props` | object | no       | Props passed to the app component when opened     |
+| Field   | Type   | Required | Description                                   |
+| ------- | ------ | -------- | --------------------------------------------- |
+| `appId` | string | yes      | ID of the built-in app (see list below)       |
+| `label` | string | yes      | Display name shown under the icon             |
+| `icon`  | string | yes      | Path to the icon image (relative to web root) |
+| `props` | object | no       | Props passed to the app component when opened |
 
 Available `appId` values: `about`, `app-player`, `calculator`, `file-browser`, `text-editor`, `pong`, `snake`, `settings`.
 
@@ -77,42 +92,42 @@ A `.yapp` file is a JSON manifest that defines a custom application running insi
 
 ```json
 {
-  "name": "My App",
-  "entry": "index.html",
-  "icon": "icon.svg",
-  "window": {
-    "width": 640,
-    "height": 480,
-    "minWidth": 200,
-    "minHeight": 150,
-    "resizable": true,
-    "position": "center"
-  }
+	"name": "My App",
+	"entry": "index.html",
+	"icon": "icon.svg",
+	"window": {
+		"width": 640,
+		"height": 480,
+		"minWidth": 200,
+		"minHeight": 150,
+		"resizable": true,
+		"position": "center"
+	}
 }
 ```
 
-| Field    | Type   | Required | Description                                              |
-| -------- | ------ | -------- | -------------------------------------------------------- |
-| `name`   | string | no       | Application name shown in the window titlebar            |
+| Field    | Type   | Required | Description                                                                           |
+| -------- | ------ | -------- | ------------------------------------------------------------------------------------- |
+| `name`   | string | no       | Application name shown in the window titlebar                                         |
 | `entry`  | string | yes      | Path to the HTML entry file (relative to `.yapp` location or absolute from OPFS root) |
-| `icon`   | string | no       | Path to the app icon                                     |
-| `window` | object | no       | Window configuration (see below)                         |
+| `icon`   | string | no       | Path to the app icon                                                                  |
+| `window` | object | no       | Window configuration (see below)                                                      |
 
 #### Window options
 
-| Field           | Type    | Default     | Description                           |
-| --------------- | ------- | ----------- | ------------------------------------- |
-| `width`         | number  | 640         | Initial window width in pixels        |
-| `height`        | number  | 480         | Initial window height in pixels       |
-| `minWidth`      | number  | 200         | Minimum window width                  |
-| `minHeight`     | number  | 150         | Minimum window height                 |
-| `maxWidth`      | number  | ∞           | Maximum window width (`null` = no limit) |
-| `maxHeight`     | number  | ∞           | Maximum window height (`null` = no limit) |
-| `resizable`     | boolean | true        | Whether the window can be resized     |
-| `canMinimize`   | boolean | true        | Whether minimize button is shown      |
-| `canMaximize`   | boolean | true        | Whether maximize button is shown      |
-| `showInTaskbar` | boolean | true        | Whether the window appears in taskbar |
-| `position`      | string  | `"default"` | `"default"` (cascade) or `"center"`  |
+| Field           | Type    | Default     | Description                                 |
+| --------------- | ------- | ----------- | ------------------------------------------- |
+| `width`         | number  | 640         | Initial window width in pixels              |
+| `height`        | number  | 480         | Initial window height in pixels             |
+| `minWidth`      | number  | 200         | Minimum window width                        |
+| `minHeight`     | number  | 150         | Minimum window height                       |
+| `maxWidth`      | number  | ∞           | Maximum window width (`null` = no limit)    |
+| `maxHeight`     | number  | ∞           | Maximum window height (`null` = no limit)   |
+| `resizable`     | boolean | true        | Whether the window can be resized           |
+| `canMinimize`   | boolean | true        | Whether minimize button is shown            |
+| `canMaximize`   | boolean | true        | Whether maximize button is shown            |
+| `showInTaskbar` | boolean | true        | Whether the window appears in taskbar       |
+| `position`      | string  | `"default"` | `"default"` (cascade) or `"center"`         |
 | `state`         | string  | `"normal"`  | `"normal"`, `"maximized"`, or `"minimized"` |
 
 #### Example directory structure
