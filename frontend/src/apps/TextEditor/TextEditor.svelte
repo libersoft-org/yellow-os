@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window/window-context.ts';
 	import { readFileText, readFileBlob, writeFile } from '../../scripts/fs/opfs.ts';
-	import { closeWindow } from '../../scripts/window/window-store.svelte.ts';
+	import { closeWindow, onBeforeClose } from '../../scripts/window/window-store.svelte.ts';
 	import { browser } from '$app/environment';
 	import MenuBar from '../../components/MenuBar/MenuBar.svelte';
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
@@ -112,6 +112,49 @@
 	function printDocument(): void {
 		printText(content, { title: currentFileName || 'Untitled' });
 	}
+
+	let forceClose = false;
+
+	function confirmClose(): void {
+		forceClose = true;
+		closeWindow(win.id);
+	}
+
+	function askSaveBeforeClose(): void {
+		requestAnimationFrame(() => {
+			showDialog({
+				title: 'Text Editor',
+				message: `Do you want to save changes to "${currentFileName}"?`,
+				type: 'question',
+				buttons: [
+					{
+						label: 'Yes',
+						backgroundColorVariable: '--color-accent',
+						colorVariable: '--color-accent-fg',
+						onclick: () => {
+							writeFile(filePath!, fileName!, content).then(() => {
+								savedContent = content;
+								confirmClose();
+							});
+						},
+					},
+					{
+						label: 'No',
+						onclick: confirmClose,
+					},
+					{ label: 'Cancel' },
+				],
+			});
+		});
+	}
+
+	onBeforeClose(win.id, (): boolean => {
+		if (forceClose) return true;
+		if (!filePath || !fileName) return true;
+		if (!hasChanges) return true;
+		askSaveBeforeClose();
+		return false;
+	});
 
 	function exit(): void {
 		closeWindow(win.id);
