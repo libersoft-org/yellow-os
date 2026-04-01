@@ -7,7 +7,6 @@
 
 ## New features
 
-- Image Viewer - add image print on printer
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Add system open / save as ... file dialog
 - Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit

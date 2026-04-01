@@ -15,6 +15,7 @@
 	import Thumbnails from './Thumbnails.svelte';
 	import { isImageFile, getMimeType, renderCroppedImage, renderTransformedImage, type CropRect } from './image-viewer.ts';
 	import { WALLPAPERS_PATH } from '../../scripts/fs/opfs-init.ts';
+	import { printImage } from '../../scripts/system/print.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -59,7 +60,7 @@
 	const menus = $derived<MenuBarMenu[]>([
 		{
 			label: 'File',
-			items: [{ label: 'Save', shortcut: 'Ctrl+S', disabled: !modified, onclick: saveImage }, { separator: true }, { label: 'Delete', shortcut: 'Del', disabled: !currentName, onclick: () => doDelete(false) }, { label: 'Permanently Delete', shortcut: 'Shift+Del', disabled: !currentName, onclick: () => doDelete(true) }, { separator: true }, { label: 'Exit', onclick: () => closeWindow(win.id) }],
+			items: [{ label: 'Save', shortcut: 'Ctrl+S', disabled: !modified, onclick: saveImage }, { separator: true }, { label: 'Print', shortcut: 'Ctrl+P', disabled: !imageSrc, onclick: printCurrentImage }, { separator: true }, { label: 'Delete', shortcut: 'Del', disabled: !currentName, onclick: () => doDelete(false) }, { label: 'Permanently Delete', shortcut: 'Shift+Del', disabled: !currentName, onclick: () => doDelete(true) }, { separator: true }, { label: 'Exit', onclick: () => closeWindow(win.id) }],
 		},
 		{
 			label: 'View',
@@ -303,6 +304,10 @@
 		});
 	}
 
+	function printCurrentImage(): void {
+		if (imageSrc) printImage(imageSrc, { title: currentName || 'Image' });
+	}
+
 	const KEY_MAP: Record<string, () => void> = {
 		ArrowLeft: navigatePrev,
 		ArrowRight: navigateNext,
@@ -333,6 +338,11 @@
 				cropping = false;
 				return;
 			}
+		}
+		if (e.ctrlKey && e.key.toLowerCase() === 'p') {
+			e.preventDefault();
+			printCurrentImage();
+			return;
 		}
 		if (e.ctrlKey && (e.key === 's' || e.key === 'S')) {
 			e.preventDefault();
@@ -416,7 +426,7 @@
 
 <div class="image-viewer" role="application" use:keyboardAction>
 	<MenuBar {menus} />
-	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={() => doDelete(false)} />
+	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} hasImage={!!imageSrc} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={doDelete} onprint={printCurrentImage} />
 	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onapplycrop={applyCrop} oncancelcrop={cancelCrop} onfitrequest={fitToWindow} />
 	{#if siblings.length > 1}
 		<Thumbnails bind:this={thumbnailsEl} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />

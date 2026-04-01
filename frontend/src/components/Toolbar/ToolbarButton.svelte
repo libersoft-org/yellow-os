@@ -5,7 +5,7 @@
 		img: string;
 		alt: string;
 		title: string;
-		onclick: () => void;
+		onclick: (e: MouseEvent) => void;
 		enabled?: boolean | undefined;
 		active?: boolean | undefined;
 	}
