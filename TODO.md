@@ -2,6 +2,7 @@
 
 ## Bugs / changes
 
+- Write list of features in README
 - Fix bugs in image viewer - crop, save button icon etc., optimize code and abstract whatever can be abstracted
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
