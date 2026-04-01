@@ -239,6 +239,7 @@
 		} else {
 			const handler = await getFileHandler(path, entry.name);
 			if (handler) openWindow(handler.component, handler.props);
+			else showDialog({ title: 'Cannot open file', message: `There is no application associated with the file type of "${entry.name}".`, type: 'error', buttons: [{ label: 'OK' }] });
 		}
 	}
 
