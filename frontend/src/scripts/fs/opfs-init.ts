@@ -16,6 +16,19 @@ const defaultFileTypes: Record<string, string> = {
 	js: 'text-editor',
 	ts: 'text-editor',
 	yapp: 'app-player',
+	png: 'image-viewer',
+	jpg: 'image-viewer',
+	jpeg: 'image-viewer',
+	jpe: 'image-viewer',
+	jfif: 'image-viewer',
+	gif: 'image-viewer',
+	webp: 'image-viewer',
+	avif: 'image-viewer',
+	apng: 'image-viewer',
+	svg: 'image-viewer',
+	bmp: 'image-viewer',
+	ico: 'image-viewer',
+	cur: 'image-viewer',
 };
 const defaultDesktopLinks: LinkData[] = [{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' }];
 const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
@@ -24,6 +37,7 @@ const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 		{ appId: 'app-player', label: 'App Player', icon: '/img/apps/app-player.svg' },
 		{ appId: 'calculator', label: 'Calculator', icon: '/img/apps/calculator.svg' },
 		{ appId: 'text-editor', label: 'Text Editor', icon: '/img/apps/text-editor.svg' },
+		{ appId: 'image-viewer', label: 'Image Viewer', icon: '/img/apps/image-viewer.svg' },
 	],
 	Games: [
 		{ appId: 'pong', label: 'Pong', icon: '/img/apps/pong.svg' },

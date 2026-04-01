@@ -2,21 +2,21 @@
 
 ## Bugs / changes
 
+- Fix bugs in image viewer - crop, save button icon etc., optimize code and abstract whatever can be abstracted
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
 ## New features
 
+- Media player
+- Text Editor - add document print on printer
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Add system open / save as ... file dialog
 - Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...
 - Use open dialog in app player when clicking on drag area
 - Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
-- Text Editor - add document print on printer
-- Image viewer
 - Image editor (like MS Paint)
-- Media player
 - Terminal (for interacting with file system)
 - Web browser (iframe-based)
 - Sticky notes

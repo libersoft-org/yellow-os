@@ -7,12 +7,14 @@ import TextEditor from '../../apps/TextEditor/TextEditor.svelte';
 import Pong from '../../apps/Pong/Pong.svelte';
 import Snake from '../../apps/Snake/Snake.svelte';
 import Settings from '../../apps/Settings/Settings.svelte';
+import ImageViewer from '../../apps/ImageViewer/ImageViewer.svelte';
 
 const registry: Record<string, Component> = {
 	about: About,
 	'app-player': AppPlayer,
 	calculator: Calculator,
 	'file-browser': FileBrowser,
+	'image-viewer': ImageViewer,
 	'text-editor': TextEditor,
 	pong: Pong,
 	snake: Snake,
