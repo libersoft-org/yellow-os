@@ -40,8 +40,12 @@
 	}
 
 	onMount(() => {
-		const first = buttonsEl?.querySelector<HTMLElement>('[role="button"]');
-		if (first) first.focus();
+		requestAnimationFrame(() =>
+			requestAnimationFrame(() => {
+				const first = buttonsEl?.querySelector<HTMLElement>('[role="button"]');
+				if (first) first.focus();
+			})
+		);
 	});
 </script>
 

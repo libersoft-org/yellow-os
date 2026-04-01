@@ -20,6 +20,7 @@
 	}
 	const { filePath: initDir, fileName: initName }: Props = $props();
 	const win = getWindow();
+	win.title = 'Image Viewer';
 	win.icon = '/img/apps/image-viewer.svg';
 	win.width = 800;
 	win.height = 600;
@@ -108,7 +109,7 @@
 		cropping = false;
 		currentDir = dir;
 		currentName = name;
-		win.title = name;
+		win.title = 'Image Viewer - ' + name;
 		try {
 			const blob = await readFileBlob(dir, name);
 			fileSize = blob.size;

@@ -25,6 +25,7 @@
 	}
 
 	function focusContent(): void {
+		if (contentEl?.contains(document.activeElement) && document.activeElement !== contentEl) return;
 		const el = contentEl?.querySelector<HTMLElement>('[role="grid"], [role="application"], canvas, iframe') ?? contentEl?.querySelector<HTMLElement>('[tabindex]');
 		if (el) el.focus();
 		else contentEl?.focus();

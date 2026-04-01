@@ -102,7 +102,7 @@
 		</div>
 	</div>
 	<div class="buttons">
-		<Button onclick={handleCancel}>Cancel</Button>
 		<Button backgroundColorVariable="--color-accent" colorVariable="--color-accent-fg" onclick={handleConfirm}>Rename</Button>
+		<Button onclick={handleCancel}>Cancel</Button>
 	</div>
 </div>

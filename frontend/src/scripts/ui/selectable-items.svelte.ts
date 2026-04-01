@@ -404,6 +404,7 @@ export function createSelectableItems(config: SelectableItemsConfig): Selectable
 		},
 		setSelection(ids: Set<string>): void {
 			selection.set(ids);
+			emitSelectionChange();
 		},
 		validateSelection,
 		handlePress,
