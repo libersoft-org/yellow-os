@@ -35,6 +35,7 @@ Official website: **https://yellow-os.com**
 - **Calculator** - for your very own calculations
 - **File Browser** - browse, manage and organize files and folders
 - **Image Viewer** - view and edit images
+- **Media Player** - play your favourite video and audio files
 - **Text Editor** - edit your text files
 
 ### Games

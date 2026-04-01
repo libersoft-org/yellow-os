@@ -8,6 +8,7 @@ import Pong from '../../apps/Pong/Pong.svelte';
 import Snake from '../../apps/Snake/Snake.svelte';
 import Settings from '../../apps/Settings/Settings.svelte';
 import ImageViewer from '../../apps/ImageViewer/ImageViewer.svelte';
+import MediaPlayer from '../../apps/MediaPlayer/MediaPlayer.svelte';
 
 const registry: Record<string, Component> = {
 	about: About,
@@ -15,6 +16,7 @@ const registry: Record<string, Component> = {
 	calculator: Calculator,
 	'file-browser': FileBrowser,
 	'image-viewer': ImageViewer,
+	'media-player': MediaPlayer,
 	'text-editor': TextEditor,
 	pong: Pong,
 	snake: Snake,

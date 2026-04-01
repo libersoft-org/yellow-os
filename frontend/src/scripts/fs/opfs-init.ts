@@ -29,6 +29,20 @@ const defaultFileTypes: Record<string, string> = {
 	bmp: 'image-viewer',
 	ico: 'image-viewer',
 	cur: 'image-viewer',
+	mp3: 'media-player',
+	wav: 'media-player',
+	ogg: 'media-player',
+	oga: 'media-player',
+	flac: 'media-player',
+	aac: 'media-player',
+	m4a: 'media-player',
+	opus: 'media-player',
+	weba: 'media-player',
+	mp4: 'media-player',
+	m4v: 'media-player',
+	webm: 'media-player',
+	ogv: 'media-player',
+	'3gp': 'media-player',
 };
 const defaultDesktopLinks: LinkData[] = [{ appId: 'file-browser', label: 'File Browser', icon: '/img/apps/file-browser.svg' }];
 const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
@@ -38,6 +52,7 @@ const defaultTaskbarMenuStructure: Record<string, LinkData[]> = {
 		{ appId: 'calculator', label: 'Calculator', icon: '/img/apps/calculator.svg' },
 		{ appId: 'text-editor', label: 'Text Editor', icon: '/img/apps/text-editor.svg' },
 		{ appId: 'image-viewer', label: 'Image Viewer', icon: '/img/apps/image-viewer.svg' },
+		{ appId: 'media-player', label: 'Media Player', icon: '/img/apps/media-player.svg' },
 	],
 	Games: [
 		{ appId: 'pong', label: 'Pong', icon: '/img/apps/pong.svg' },
