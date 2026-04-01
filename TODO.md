@@ -8,7 +8,6 @@
 ## New features
 
 - git-stats.sh - Add number of active development days, number of commits (in summary)
-- Image Viewer - Add "Open" icon - add open dialog for opening the image file
 - Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Image editor (like MS Paint)

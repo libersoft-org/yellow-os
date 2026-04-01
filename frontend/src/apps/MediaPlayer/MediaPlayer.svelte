@@ -9,6 +9,8 @@
 	import StatusbarItem from '../../components/Statusbar/StatusbarItem.svelte';
 	import Icon from '../../components/Icon/Icon.svelte';
 	import { isMediaFile, getMediaType } from './media-player.ts';
+	import { showOpenDialog } from '../../components/Storage/storage.svelte.ts';
+	import { showDialog } from '../../scripts/ui/dialog.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -21,6 +23,7 @@
 	win.height = 480;
 	win.position = 'center';
 
+	let currentDir = $state('/');
 	let currentName = $state('');
 	let mediaSrc = $state('');
 	let mediaType = $state<'audio' | 'video'>('audio');
@@ -33,6 +36,7 @@
 		if (mediaSrc) URL.revokeObjectURL(mediaSrc);
 		mediaSrc = '';
 		fileSize = 0;
+		currentDir = dir;
 		currentName = name;
 		mediaType = getMediaType(name);
 		win.title = 'Media Player - ' + name;
@@ -69,6 +73,16 @@
 
 	function mediaPlayerDropZone(el: HTMLElement): { destroy(): void } {
 		return { destroy: registerDropZone(el, handleOPFSDrop) };
+	}
+
+	async function open(): Promise<void> {
+		const result = await showOpenDialog({ title: 'Open Media File', path: currentDir });
+		if (!result) return;
+		if (!isMediaFile(result.name)) {
+			showDialog({ title: 'Cannot open file', message: `"${result.name}" is not a supported media file.`, type: 'error', buttons: [{ label: 'OK' }] });
+			return;
+		}
+		loadMedia(result.path, result.name);
 	}
 
 	function handleVideoLoaded(e: Event): void {
@@ -166,10 +180,23 @@
 				<audio src={mediaSrc} controls autoplay></audio>
 			{/if}
 		{:else}
-			<div class="drop-zone" class:dragging role="button" tabindex="0" ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop} use:mediaPlayerDropZone>
+			<div
+				class="drop-zone"
+				class:dragging
+				role="button"
+				tabindex="0"
+				onclick={open}
+				onkeydown={e => {
+					if (e.key === 'Enter') open();
+				}}
+				ondragover={handleDragOver}
+				ondragleave={handleDragLeave}
+				ondrop={handleDrop}
+				use:mediaPlayerDropZone
+			>
 				<Icon img="/img/apps/media-player.svg" size="48px" padding="0" colorVariable="--color-text" />
 				<p>Open an audio or video file</p>
-				<p class="hint">Double-click in File Browser<br />or drag & drop it here</p>
+				<p class="hint">Click here to browse, double-click in File Browser<br />or drag & drop it here</p>
 			</div>
 		{/if}
 	</div>
