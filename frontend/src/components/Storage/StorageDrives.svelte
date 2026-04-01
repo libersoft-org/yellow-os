@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { DiskInfo } from './filebrowser.ts';
+	import type { DiskInfo } from './storage.ts';
 	import { formatBytes } from '../../scripts/system/format.ts';
-	import IconGridItem from '../../components/IconGrid/IconGridItem.svelte';
-	import ListItem from '../../components/List/ListItem.svelte';
+	import IconGridItem from '../IconGrid/IconGridItem.svelte';
+	import ListItem from '../List/ListItem.svelte';
 	interface Props {
 		disks: DiskInfo[];
 		currentPath: string;
@@ -13,13 +13,13 @@
 </script>
 
 <style>
-	.sidebar {
+	.drives {
 		flex-shrink: 0;
 		overflow-y: auto;
 		padding: 8px 0;
 	}
 
-	.sidebar .items {
+	.drives .items {
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
@@ -27,7 +27,7 @@
 	}
 </style>
 
-<div class="sidebar" style:width="{width}px">
+<div class="drives" style:width="{width}px">
 	<div class="items">
 		{#each disks as disk}
 			<ListItem onclick={() => onnavigate(disk.path)} active={currentPath === disk.path || currentPath.startsWith(disk.path === '/' ? '/' : disk.path + '/')}>

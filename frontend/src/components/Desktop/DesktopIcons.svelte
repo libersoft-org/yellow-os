@@ -2,7 +2,7 @@
 	import { defocusAll, openWindow } from '../../scripts/window/window-store.svelte.ts';
 	import { OS_PATH } from '../../scripts/fs/opfs-init.ts';
 	import { getAppComponent } from '../../scripts/system/app-registry.ts';
-	import DirectoryView from '../DirectoryView/DirectoryView.svelte';
+	import StorageBrowser from '../Storage/StorageBrowser.svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	const DESKTOP_PATH = OS_PATH + '/Desktop';
 	const extraMenuItems: ContextMenuItem[] = [
@@ -16,7 +16,7 @@
 			},
 		},
 	];
-	let directoryView = $state<DirectoryView>();
+	let directoryView = $state<StorageBrowser>();
 
 	function onItemsMove(_moves: { id: string; gridX: number; gridY: number }[]): void {
 		// TODO: persist desktop icon positions
@@ -36,5 +36,5 @@
 </style>
 
 <div class="desktop-icons" role="group" onpointerdown={defocusAll}>
-	<DirectoryView bind:this={directoryView} path={DESKTOP_PATH} columnFirst hideLinkExtension hideEmptyLabel extraEmptySpaceMenuItems={extraMenuItems} onitemsmove={onItemsMove} />
+	<StorageBrowser bind:this={directoryView} path={DESKTOP_PATH} columnFirst hideLinkExtension hideEmptyLabel extraEmptySpaceMenuItems={extraMenuItems} onitemsmove={onItemsMove} />
 </div>

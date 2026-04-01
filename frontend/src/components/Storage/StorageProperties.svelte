@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
-	import EntryInfo from '../../components/EntryInfo/EntryInfo.svelte';
+	import StorageEntryInfo from './StorageEntryInfo.svelte';
 	interface Props {
 		entry?: FileEntry | undefined;
 		entries?: FileEntry[] | undefined;
@@ -18,5 +18,5 @@
 </style>
 
 <div class="properties">
-	<EntryInfo {entry} {entries} recursive {path} />
+	<StorageEntryInfo {entry} {entries} recursive {path} />
 </div>

@@ -1,22 +1,21 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window/window-context.ts';
 	import { closeWindow } from '../../scripts/window/window-store.svelte.ts';
-	import Icon from '../../components/Icon/Icon.svelte';
-	import Button from '../../components/Button/Button.svelte';
-	import Input from '../../components/Input/Input.svelte';
+	import Icon from '../Icon/Icon.svelte';
+	import Button from '../Button/Button.svelte';
+	import Input from '../Input/Input.svelte';
 	interface Props {
 		entryType: 'file' | 'directory';
-		currentName: string;
-		onrename: (newName: string) => void;
+		oncreate: (name: string) => void;
 	}
-	const { entryType, currentName, onrename }: Props = $props();
+	const { entryType, oncreate }: Props = $props();
 	const win = getWindow();
 	let name = $state(initialName());
 	let errorMessage = $state('');
 	const icon = $derived(entryType === 'directory' ? '/img/directory.svg' : '/img/file.svg');
 
 	function initialName(): string {
-		return currentName;
+		return entryType === 'file' ? 'New file.txt' : 'New directory';
 	}
 
 	function validate(value: string): boolean {
@@ -28,17 +27,13 @@
 			errorMessage = 'Name cannot contain / or \\.';
 			return false;
 		}
-		if (value.trim() === currentName) {
-			errorMessage = 'Name is the same.';
-			return false;
-		}
 		errorMessage = '';
 		return true;
 	}
 
 	function handleConfirm(): void {
 		if (!validate(name)) return;
-		onrename(name.trim());
+		oncreate(name.trim());
 		closeWindow(win.id);
 	}
 
@@ -96,13 +91,13 @@
 	<div class="content">
 		<Icon img={icon} size="40px" padding="0" colorVariable="--color-accent" />
 		<div class="fields">
-			<span class="label">Rename {entryType}:</span>
+			<span class="label">Enter name for new {entryType}:</span>
 			<Input bind:value={name} autofocus selectAll onkeydown={handleKeydown} />
 			<span class="error">{errorMessage}</span>
 		</div>
 	</div>
 	<div class="buttons">
-		<Button backgroundColorVariable="--color-accent" colorVariable="--color-accent-fg" onclick={handleConfirm}>Rename</Button>
 		<Button onclick={handleCancel}>Cancel</Button>
+		<Button backgroundColorVariable="--color-accent" colorVariable="--color-accent-fg" onclick={handleConfirm}>Create</Button>
 	</div>
 </div>

@@ -4,8 +4,8 @@ import { showDialog, showErrorDialog } from '../ui/dialog.ts';
 import { openWindow, findWindow, onWindowClosed } from '../window/window-store.svelte.ts';
 import { notifyDirectoryChange } from './opfs-notify.ts';
 import { showProgressDialog } from './file-progress.svelte.ts';
-import NewEntryDialog from '../../apps/FileBrowser/NewEntryDialog.svelte';
-import RenameDialog from '../../apps/FileBrowser/RenameDialog.svelte';
+import StorageNew from '../../components/Storage/StorageNew.svelte';
+import StorageRename from '../../components/Storage/StorageRename.svelte';
 
 async function deleteMultiple(entries: { name: string; type: 'file' | 'directory' }[], action: (e: { name: string; type: 'file' | 'directory' }) => Promise<void>): Promise<string[]> {
 	const { state: progress, close: closeProgress } = showProgressDialog('delete', entries.length);
@@ -150,7 +150,7 @@ export function openRenameDialog(dirPath: string, entryName: string, entryType: 
 		showDialog({ title: 'Error', message: `"${entryName}" is a system directory and cannot be renamed.`, type: 'warning', buttons: [{ label: 'OK' }], ...(onclosed ? { onclosed } : {}) });
 		return;
 	}
-	const windowId = openWindow(RenameDialog as Component, {
+	const windowId = openWindow(StorageRename as Component, {
 		entryType,
 		currentName: entryName,
 		onrename: async (newName: string) => {
@@ -181,7 +181,7 @@ export function openRenameDialog(dirPath: string, entryName: string, entryType: 
 }
 
 export function openNewEntryDialog(dirPath: string, entryType: 'file' | 'directory', oncreated?: (finalName: string) => void): void {
-	const windowId = openWindow(NewEntryDialog as Component, {
+	const windowId = openWindow(StorageNew as Component, {
 		entryType,
 		oncreate: async (name: string) => {
 			try {

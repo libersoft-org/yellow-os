@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window/window-context.ts';
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
-	import type { DiskInfo } from './filebrowser.ts';
+	import type { DiskInfo } from '../../components/Storage/storage.ts';
 	import { getStorageEstimate } from '../../scripts/fs/opfs.ts';
-	import FileBrowserToolbar from './FileBrowserToolbar.svelte';
-	import FileBrowserSidebar from './FileBrowserSidebar.svelte';
-	import FileBrowserSeparator from './FileBrowserSeparator.svelte';
-	import FileBrowserInfo from './FileBrowserInfo.svelte';
-	import DirectoryView from '../../components/DirectoryView/DirectoryView.svelte';
+	import StorageToolbar from '../../components/Storage/StorageToolbar.svelte';
+	import StorageDrives from '../../components/Storage/StorageDrives.svelte';
+	import PanelSeparator from '../../components/PanelSeparator/PanelSeparator.svelte';
+	import StorageInfo from '../../components/Storage/StorageInfo.svelte';
+	import StorageBrowser from '../../components/Storage/StorageBrowser.svelte';
 	import { browser } from '$app/environment';
 	const win = getWindow();
 	win.title = 'File Browser';
@@ -129,18 +129,18 @@
 </style>
 
 <div class="file-browser" role="group" tabindex="-1">
-	<FileBrowserToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
+	<StorageToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
-		<FileBrowserSidebar {disks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
-		<FileBrowserSeparator onresize={onSeparatorResize} />
+		<StorageDrives {disks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
+		<PanelSeparator onresize={onSeparatorResize} />
 		<div class="grid-area">
 			{#key currentPath}
-				<DirectoryView path={currentPath} {viewMode} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
+				<StorageBrowser path={currentPath} {viewMode} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
 			{/key}
 		</div>
 		{#if showInfo}
-			<FileBrowserSeparator onresize={onInfoSeparatorResize} />
-			<FileBrowserInfo selected={selectedEntries} {currentPath} {entries} {disks} width={infoWidth} />
+			<PanelSeparator onresize={onInfoSeparatorResize} />
+			<StorageInfo selected={selectedEntries} {currentPath} {entries} {disks} width={infoWidth} />
 		{/if}
 	</div>
 </div>

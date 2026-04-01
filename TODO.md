@@ -2,18 +2,21 @@
 
 ## Bugs / changes
 
+- Text editor - when word wrapping is on, multiline counter is not showing the row number properly (it should skip multiline rows)
+- If user tries to open a file that is not associated with any app (in file-types.json), throw a dialog error with OK only and text that there is no app associated with this file type
+- PanelSeparator component should be horizontal too
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
 ## New features
 
-- Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Add system open / save as ... file dialog
 - Text Editor - If file was not saved yet (new unsaved file with some text in editor), show file save dialog, if file was saved before changes, just save it and exit
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...
 - App Player - Add open dialog when clicking on drag area
 - Image Viewer - Add open dialog for opening the image file
 - Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
+- Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Image editor (like MS Paint)
 - Terminal (for interacting with file system)
 - Web browser (iframe-based)

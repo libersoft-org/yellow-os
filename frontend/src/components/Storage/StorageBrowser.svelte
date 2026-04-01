@@ -20,7 +20,7 @@
 	import IconGrid from '../IconGrid/IconGrid.svelte';
 	import List from '../List/List.svelte';
 	import ContextMenu from '../ContextMenu/ContextMenu.svelte';
-	import Properties from '../../apps/FileBrowser/Properties.svelte';
+	import StorageProperties from './StorageProperties.svelte';
 	import type { Component } from 'svelte';
 	import type { ContextMenuItem } from '../ContextMenu/context-menu.ts';
 	interface Props {
@@ -356,7 +356,7 @@
 				onclick: () => {
 					const targets = selectedEntries.length > 1 ? selectedEntries : [entry];
 					const multi = targets.length > 1;
-					const windowId = openWindow(Properties as Component, multi ? { entries: targets, path } : { entry, path });
+					const windowId = openWindow(StorageProperties as Component, multi ? { entries: targets, path } : { entry, path });
 					const win = findWindow(windowId);
 					if (win) {
 						win.title = multi ? `${targets.length} items — Properties` : `${entry.name} — Properties`;
@@ -657,7 +657,7 @@
 </script>
 
 <style>
-	.directory-view {
+	.storage-browser {
 		position: relative;
 		width: 100%;
 		height: 100%;
@@ -680,7 +680,7 @@
 	}
 </style>
 
-<div class="directory-view" role="group" tabindex="-1" oncontextmenu={onContextMenu} ondragover={onNativeDragOver} ondragleave={onNativeDragLeave} ondrop={onNativeDrop} use:dropZone>
+<div class="storage-browser" role="group" tabindex="-1" oncontextmenu={onContextMenu} ondragover={onNativeDragOver} ondragleave={onNativeDragLeave} ondrop={onNativeDrop} use:dropZone>
 	{#if nativeDragOver}
 		<div class="native-drop-overlay">Drop files here to upload</div>
 	{/if}

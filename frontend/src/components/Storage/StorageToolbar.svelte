@@ -1,8 +1,8 @@
 <script lang="ts">
-	import Breadcrumb, { type BreadcrumbSegment } from '../../components/Breadcrumb/Breadcrumb.svelte';
-	import Toolbar from '../../components/Toolbar/Toolbar.svelte';
-	import ToolbarButton from '../../components/Toolbar/ToolbarButton.svelte';
-	import ToolbarSeparator from '../../components/Toolbar/ToolbarSeparator.svelte';
+	import Breadcrumb, { type BreadcrumbSegment } from '../Breadcrumb/Breadcrumb.svelte';
+	import Toolbar from '../Toolbar/Toolbar.svelte';
+	import ToolbarButton from '../Toolbar/ToolbarButton.svelte';
+	import ToolbarSeparator from '../Toolbar/ToolbarSeparator.svelte';
 	interface Props {
 		canGoBack: boolean;
 		canGoForward: boolean;

@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
-	import type { DiskInfo } from './filebrowser.ts';
-	import Icon from '../../components/Icon/Icon.svelte';
-	import EntryInfo from '../../components/EntryInfo/EntryInfo.svelte';
-	import PieChart from '../../components/PieChart/PieChart.svelte';
-	import type { PieChartSegment } from '../../components/PieChart/PieChart.svelte';
+	import type { DiskInfo } from './storage.ts';
+	import Icon from '../Icon/Icon.svelte';
+	import StorageEntryInfo from './StorageEntryInfo.svelte';
+	import PieChart from '../PieChart/PieChart.svelte';
+	import type { PieChartSegment } from '../PieChart/PieChart.svelte';
 	import { formatBytes } from '../../scripts/system/format.ts';
 	interface Props {
 		selected: FileEntry[];
@@ -23,17 +23,15 @@
 			{ value: currentDisk.free, colorVariable: '--color-surface-3', label: 'Free' },
 		];
 	});
+	const dirCount = $derived(entries.filter(e => e.type === 'directory').length);
+	const fileCount = $derived(entries.filter(e => e.type === 'file').length);
+	const totalSize = $derived(formatBytes(entries.filter(e => e.type === 'file').reduce((sum, e) => sum + e.size, 0)));
 
 	function getDirName(path: string): string {
 		if (path === '/') return 'Root';
 		const parts = path.split('/').filter(Boolean);
 		return parts[parts.length - 1] ?? 'Root';
 	}
-
-	const dirCount = $derived(entries.filter(e => e.type === 'directory').length);
-	const fileCount = $derived(entries.filter(e => e.type === 'file').length);
-
-	const totalSize = $derived(formatBytes(entries.filter(e => e.type === 'file').reduce((sum, e) => sum + e.size, 0)));
 </script>
 
 <style>
@@ -97,10 +95,10 @@
 
 <div class="info-panel" style:width="{width}px">
 	{#if selected.length > 1}
-		<EntryInfo entries={selected} />
+		<StorageEntryInfo entries={selected} />
 	{:else if selected.length === 1}
 		{@const item = selected[0]!}
-		<EntryInfo entry={item} />
+		<StorageEntryInfo entry={item} />
 	{:else}
 		<div class="name">{getDirName(currentPath)}</div>
 		<div class="icon-preview">
