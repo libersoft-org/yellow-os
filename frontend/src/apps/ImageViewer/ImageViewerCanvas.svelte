@@ -21,9 +21,11 @@
 		onzoomchange: (zoom: number, mode: 'fit' | 'actual' | 'custom') => void;
 		onpanchange: (x: number, y: number) => void;
 		onrectchange: (rect: CropRect) => void;
+		onapplycrop: () => void;
+		oncancelcrop: () => void;
 		onfitrequest: () => void;
 	}
-	const { imageSrc, imageWidth, imageHeight, displayWidth, displayHeight, zoom, zoomMode, rotation, flipH, flipV, panX, panY, cropping, cropRect, currentName, onzoomchange, onpanchange, onrectchange, onfitrequest }: Props = $props();
+	const { imageSrc, imageWidth, imageHeight, displayWidth, displayHeight, zoom, zoomMode, rotation, flipH, flipV, panX, panY, cropping, cropRect, currentName, onzoomchange, onpanchange, onrectchange, onapplycrop, oncancelcrop, onfitrequest }: Props = $props();
 	let containerEl = $state<HTMLDivElement>();
 	let panning = $state(false);
 	let panStart = $state({ x: 0, y: 0, panX: 0, panY: 0 });
@@ -134,7 +136,7 @@
 		<div class="checker" style:width="{displayWidth * zoom}px" style:height="{displayHeight * zoom}px" style:transform="translate({panX}px, {panY}px)"></div>
 		<img class="main-image" src={imageSrc} alt={currentName} style:width="{imageWidth}px" style:height="{imageHeight}px" style:transform={imageTransform()} />
 		{#if cropping}
-			<CropOverlay {cropRect} {zoom} {imageWidth} {imageHeight} {onrectchange} --pan-x="{panX}px" --pan-y="{panY}px" />
+			<CropOverlay {cropRect} {zoom} {imageWidth} {imageHeight} {onrectchange} onapply={onapplycrop} oncancel={oncancelcrop} --pan-x="{panX}px" --pan-y="{panY}px" />
 		{/if}
 	{/if}
 </div>

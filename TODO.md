@@ -2,6 +2,7 @@
 
 ## Bugs / changes
 
+- Unify function as "function", not arrow functions
 - Image Viewer - crop doesn't work properly, it appears on a wrong place, cannot extend it over the whole image
 - Image Viewer - optimize code and abstract whatever can be abstracted
 - Write list of features in README

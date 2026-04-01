@@ -70,7 +70,7 @@
 		},
 		{
 			label: 'Image',
-			items: [{ label: 'Rotate Left', shortcut: ',', onclick: rotateLeft }, { label: 'Rotate Right', shortcut: '.', onclick: rotateRight }, { label: 'Flip Horizontal', shortcut: 'H', checked: flipH, onclick: toggleFlipH }, { label: 'Flip Vertical', shortcut: 'V', checked: flipV, onclick: toggleFlipV }, { separator: true }, { label: 'Crop', shortcut: 'C', checked: cropping, onclick: startCrop }, { label: 'Apply Crop', shortcut: 'Enter', disabled: !cropping, onclick: applyCrop }],
+			items: [{ label: 'Rotate Left', shortcut: ',', onclick: rotateLeft }, { label: 'Rotate Right', shortcut: '.', onclick: rotateRight }, { label: 'Flip Horizontal', shortcut: 'H', checked: flipH, onclick: toggleFlipH }, { label: 'Flip Vertical', shortcut: 'V', checked: flipV, onclick: toggleFlipV }, { separator: true }, { label: 'Crop', shortcut: 'C', checked: cropping, onclick: startCrop }],
 		},
 		{
 			label: 'Navigate',
@@ -393,6 +393,10 @@
 		cropRect = r;
 	}
 
+	function cancelCrop(): void {
+		cropping = false;
+	}
+
 	function handleThumbSelect(name: string): void {
 		if (name !== currentName) loadImage(currentDir, name);
 	}
@@ -449,7 +453,7 @@
 <div class="image-viewer" role="application" use:keyboardAction>
 	<MenuBar {menus} />
 	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={handleDelete} />
-	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onfitrequest={fitToWindow} />
+	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onapplycrop={applyCrop} oncancelcrop={cancelCrop} onfitrequest={fitToWindow} />
 	{#if siblings.length > 1}
 		<ThumbStrip bind:this={thumbStrip} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />
 	{/if}

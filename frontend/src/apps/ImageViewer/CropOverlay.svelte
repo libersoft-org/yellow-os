@@ -1,13 +1,16 @@
 <script lang="ts">
 	import { clamp, type CropRect } from './image-viewer.ts';
+	import Button from '../../components/Button/Button.svelte';
 	interface Props {
 		cropRect: CropRect;
 		zoom: number;
 		imageWidth: number;
 		imageHeight: number;
 		onrectchange: (rect: CropRect) => void;
+		onapply: () => void;
+		oncancel: () => void;
 	}
-	const { cropRect, zoom, imageWidth, imageHeight, onrectchange }: Props = $props();
+	const { cropRect, zoom, imageWidth, imageHeight, onrectchange, onapply, oncancel }: Props = $props();
 	let dragging = $state(false);
 	let dragType = $state('');
 	let dragStart = $state({ mx: 0, my: 0, x: 0, y: 0, w: 0, h: 0 });
@@ -84,14 +87,21 @@
 	function handlePointerUp(): void {
 		dragging = false;
 	}
+
+	function handleApply(): void {
+		onapply();
+	}
+
+	function handleCancel(): void {
+		oncancel();
+	}
 </script>
 
 <style>
 	.crop-overlay {
 		position: absolute;
-		top: 0;
-		left: 0;
 		pointer-events: none;
+		overflow: visible;
 	}
 
 	.crop-dim {
@@ -135,6 +145,18 @@
 	.crop-handle.w {
 		cursor: ew-resize;
 	}
+
+	.crop-buttons {
+		pointer-events: all;
+		display: flex;
+		gap: 4px;
+		justify-content: flex-end;
+		padding: 4px;
+	}
+
+	.crop-buttons :global(.button) {
+		padding: 8px;
+	}
 </style>
 
 <svg class="crop-overlay" role="application" width={imageWidth * zoom} height={imageHeight * zoom} style:transform="translate(var(--pan-x, 0px), var(--pan-y, 0px))" onpointerdown={handlePointerDown} onpointermove={handlePointerMove} onpointerup={handlePointerUp}>
@@ -155,4 +177,10 @@
 	<rect data-crop-handle="s" class="crop-handle s" x={cropRect.x * zoom + (cropRect.w * zoom) / 2 - 6} y={cropRect.y * zoom + cropRect.h * zoom - 6} width={12} height={12} />
 	<rect data-crop-handle="w" class="crop-handle w" x={cropRect.x * zoom - 6} y={cropRect.y * zoom + (cropRect.h * zoom) / 2 - 6} width={12} height={12} />
 	<rect data-crop-handle="e" class="crop-handle e" x={cropRect.x * zoom + cropRect.w * zoom - 6} y={cropRect.y * zoom + (cropRect.h * zoom) / 2 - 6} width={12} height={12} />
+	<foreignObject x={(cropRect.x + cropRect.w) * zoom - 80} y={cropRect.y * zoom} width={80} height={40} style="overflow: visible">
+		<div class="crop-buttons">
+			<Button onclick={handleApply} backgroundColorVariable="--color-success" colorVariable="--color-accent-fg"><img src="/img/check.svg" alt="Apply" width="16" height="16" /></Button>
+			<Button onclick={handleCancel} backgroundColorVariable="--color-danger" colorVariable="--color-accent-fg"><img src="/img/cross.svg" alt="Cancel" width="16" height="16" /></Button>
+		</div>
+	</foreignObject>
 </svg>
