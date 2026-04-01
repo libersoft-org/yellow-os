@@ -49,8 +49,7 @@
 	let canvas = $state<ImageViewerCanvas>();
 
 	const currentIndex = $derived(siblings.indexOf(currentName));
-	const hasPrev = $derived(currentIndex > 0);
-	const hasNext = $derived(currentIndex < siblings.length - 1);
+	const canNavigate = $derived(siblings.length > 1);
 	const isSwapped = $derived(rotation === 90 || rotation === 270);
 	const displayWidth = $derived(isSwapped ? imageHeight : imageWidth);
 	const displayHeight = $derived(isSwapped ? imageWidth : imageHeight);
@@ -218,19 +217,19 @@
 
 	function navigatePrev(): void {
 		if (siblings.length < 2) return;
-		const idx = hasPrev ? currentIndex - 1 : siblings.length - 1;
+		const idx = currentIndex > 0 ? currentIndex - 1 : siblings.length - 1;
 		loadImage(currentDir, siblings[idx]!);
 	}
 
 	function navigateNext(): void {
 		if (siblings.length < 2) return;
-		const idx = hasNext ? currentIndex + 1 : 0;
+		const idx = currentIndex < siblings.length - 1 ? currentIndex + 1 : 0;
 		loadImage(currentDir, siblings[idx]!);
 	}
 
 	function doDelete(permanent: boolean): void {
 		const name = currentName;
-		const nextName = hasNext ? siblings[currentIndex + 1]! : hasPrev ? siblings[currentIndex - 1]! : null;
+		const nextName = siblings.length > 1 ? (currentIndex < siblings.length - 1 ? siblings[currentIndex + 1]! : siblings[currentIndex - 1]!) : null;
 		const action = permanent ? 'permanently delete' : 'move to Trash';
 		const title = permanent ? 'Permanently Delete' : 'Delete';
 		const buttonLabel = permanent ? 'Delete' : 'Move to Trash';
@@ -416,7 +415,7 @@
 </style>
 
 <div class="image-viewer" role="application" use:keyboardAction>
-	<ImageViewerToolbar {hasPrev} {hasNext} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={handleDelete} />
+	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={handleDelete} />
 	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onfitrequest={fitToWindow} />
 	{#if siblings.length > 1}
 		<ThumbStrip bind:this={thumbStrip} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />

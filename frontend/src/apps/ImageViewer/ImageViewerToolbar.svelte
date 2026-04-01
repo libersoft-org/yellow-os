@@ -3,8 +3,7 @@
 	import ToolbarButton from '../../components/Toolbar/ToolbarButton.svelte';
 	import ToolbarSeparator from '../../components/Toolbar/ToolbarSeparator.svelte';
 	interface Props {
-		hasPrev: boolean;
-		hasNext: boolean;
+		canNavigate: boolean;
 		zoomMode: 'fit' | 'actual' | 'custom';
 		flipH: boolean;
 		flipV: boolean;
@@ -24,12 +23,12 @@
 		onsave: () => void;
 		ondelete: () => void;
 	}
-	const { hasPrev, hasNext, zoomMode, flipH, flipV, cropping, modified, onnavprev, onnavnext, onzoomin, onzoomout, onzoomfit, onzoomactual, onrotateleft, onrotateright, onfliph, onflipv, oncrop, onsave, ondelete }: Props = $props();
+	const { canNavigate, zoomMode, flipH, flipV, cropping, modified, onnavprev, onnavnext, onzoomin, onzoomout, onzoomfit, onzoomactual, onrotateleft, onrotateright, onfliph, onflipv, oncrop, onsave, ondelete }: Props = $props();
 </script>
 
 <Toolbar>
-	<ToolbarButton enabled={hasPrev} onclick={onnavprev} title="Previous image (←)" img="/img/arrow-left.svg" alt="Previous" />
-	<ToolbarButton enabled={hasNext} onclick={onnavnext} title="Next image (→)" img="/img/arrow-right.svg" alt="Next" />
+	<ToolbarButton enabled={canNavigate} onclick={onnavprev} title="Previous image (←)" img="/img/arrow-left.svg" alt="Previous" />
+	<ToolbarButton enabled={canNavigate} onclick={onnavnext} title="Next image (→)" img="/img/arrow-right.svg" alt="Next" />
 	<ToolbarSeparator />
 	<ToolbarButton onclick={onzoomout} title="Zoom out (−)" img="/img/apps/ImageViewer/zoom-out.svg" alt="Zoom out" />
 	<ToolbarButton onclick={onzoomin} title="Zoom in (+)" img="/img/apps/ImageViewer/zoom-in.svg" alt="Zoom in" />
