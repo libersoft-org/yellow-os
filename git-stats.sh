@@ -27,8 +27,12 @@ echo ""
 total_added=$(git log --numstat --pretty="" | awk '{ if ($1 != "-") s += $1 } END { print s+0 }')
 total_removed=$(git log --numstat --pretty="" | awk '{ if ($2 != "-") s += $2 } END { print s+0 }')
 total_net=$((total_added - total_removed))
+total_commits=$(git rev-list --count HEAD)
+active_days=$(git log --format="%ad" --date=short | sort -u | wc -l | tr -d ' ')
 
 printf "Added:   %8d lines\n" "$total_added"
 printf "Removed: %8d lines\n" "$total_removed"
 printf "Net:     %8d lines\n" "$total_net"
+printf "Commits: %8d\n" "$total_commits"
+printf "Active days: %4d\n" "$active_days"
 echo ""

@@ -18,7 +18,7 @@ Official website: **https://yellow-os.com**
 
 **Yellow OS** is a web operating system written in:
 
-- **Backend:** Bun
+- **Backend:** Not used yet (prepared as Bun application)
 - **Frontend:** Svelte
 
 ## Features

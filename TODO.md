@@ -7,21 +7,20 @@
 
 ## New features
 
-- git-stats.sh - Add number of active development days, number of commits (in summary)
 - Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
+- Taskbar position in settings + add more panels
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Image editor (like MS Paint)
 - Terminal (for interacting with file system)
 - Web browser (iframe-based)
 - Sticky notes
 - Desktop widgets (weather, news etc.)
-- Taskbar position in settings + add more panels
 - System sounds (welcome, dialog error etc.)
+- FileBrowser (Storage) - for unknown file types show app selection instead of error + 2 buttons - run just this time / run always
 - File Browser - Add StatusBar component to the bottom with basic info (useful when right info panel is not opened)
 - File Browser - Search files / directories
 - File Browser - Add Pack / unpack / browse files and directories into ZIP / other compression formats within OPFS
 - Settings - Add File system settings - File types (list, add, delete, modify)
-- For unknown file types show app selection - run just this time / run always
 - When taskbar windows are icon only (without text) add tooltip
 - Forbid dragging windows outside of screen
 - Cleanup code
@@ -29,7 +28,7 @@
 - Quick launch
 - Add win.tray in apps + action on left / right click + double click
 - Make a set of components for easy app development - menu bar, input, button, dialog / message box etc.
-- Edit README (maybe done) and INSTALL.md
+- Edit INSTALL.md
 - Add logout screen + button in taskbar menu
 - More themes (light, dark etc.)
 - API for app development (using system components like buttons, toolbars, dialogs etc.)
