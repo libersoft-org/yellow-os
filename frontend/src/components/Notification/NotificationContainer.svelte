@@ -3,12 +3,10 @@
 	import { settings } from '../../scripts/system/settings.svelte.ts';
 	import { onMount, onDestroy, tick } from 'svelte';
 	import Notification from './Notification.svelte';
-
 	const position = $derived(settings.notificationPosition);
 	const isTop = $derived(position.startsWith('top'));
 	const isRight = $derived(position.endsWith('right'));
 	const ordered = $derived(isTop ? [...notifications].reverse() : notifications);
-
 	let container: HTMLDivElement | undefined = $state();
 
 	async function scrollToNewest(): Promise<void> {

@@ -24,7 +24,6 @@
 		empty?: Snippet | undefined;
 	}
 	let { items, dirPath, cellWidth = 100, cellHeight = 100, iconSize = '40px', getInitialSelection, onclick, ondblclick, onselectionchange, onitemsmove, ondrop, onkeyaction, externalDragOverId, cutItemIds, columnFirst, empty }: Props = $props();
-
 	let containerEl: HTMLElement | undefined = $state();
 	let containerWidth = $state(0);
 	let containerHeight = $state(0);

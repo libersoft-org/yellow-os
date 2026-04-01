@@ -2,7 +2,6 @@
 	import { onMount, onDestroy } from 'svelte';
 	import CropOverlay from './CropOverlay.svelte';
 	import type { CropRect } from './image-viewer.ts';
-
 	interface Props {
 		imageSrc: string;
 		imageWidth: number;
@@ -24,9 +23,7 @@
 		onrectchange: (rect: CropRect) => void;
 		onfitrequest: () => void;
 	}
-
 	const { imageSrc, imageWidth, imageHeight, displayWidth, displayHeight, zoom, zoomMode, rotation, flipH, flipV, panX, panY, cropping, cropRect, currentName, onzoomchange, onpanchange, onrectchange, onfitrequest }: Props = $props();
-
 	let containerEl = $state<HTMLDivElement>();
 	let panning = $state(false);
 	let panStart = $state({ x: 0, y: 0, panX: 0, panY: 0 });

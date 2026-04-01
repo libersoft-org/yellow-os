@@ -3,26 +3,19 @@
 	import { getProgress } from '../../scripts/fs/file-progress.svelte.ts';
 	import Button from '../../components/Button/Button.svelte';
 	import ProgressBar from '../../components/ProgressBar/ProgressBar.svelte';
-
 	interface Props {
 		oncancel: () => void;
 	}
-
 	const { oncancel }: Props = $props();
-
 	const progress = getProgress();
-
 	const percentage = $derived(progress.bytesTotal > 0 ? Math.round((progress.bytesCopied / progress.bytesTotal) * 100) : progress.fileCount > 0 ? Math.round((progress.fileIndex / progress.fileCount) * 100) : 0);
-
 	const speed = $derived.by((): number => {
 		if (progress.bytesCopied === 0 || progress.startTime === 0) return 0;
 		const elapsed = (Date.now() - progress.startTime) / 1000;
 		if (elapsed < 0.1) return 0;
 		return progress.bytesCopied / elapsed;
 	});
-
 	const progressLabel = $derived(progress.bytesTotal > 0 ? `${formatBytes(progress.bytesCopied, 2, true)} / ${formatBytes(progress.bytesTotal, 2, true)}` : `${progress.fileIndex} / ${progress.fileCount}`);
-
 	const speedLabel = $derived(speed > 0 ? `${formatBytes(speed, 2, true)}/s` : '');
 </script>
 

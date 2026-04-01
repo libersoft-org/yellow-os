@@ -15,7 +15,6 @@
 	}
 	const { filePath, fileName }: Props = $props();
 	const SIZE_LIMIT = 1024 * 1024;
-
 	const win = getWindow();
 	win.icon = '/img/apps/text-editor.svg';
 	win.width = 640;

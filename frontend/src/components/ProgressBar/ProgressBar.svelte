@@ -3,9 +3,7 @@
 		percentage: number;
 		animated?: boolean;
 	}
-
 	const { percentage, animated = false }: Props = $props();
-
 	let barWidth: number = $state(0);
 </script>
 

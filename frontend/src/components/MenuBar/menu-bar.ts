@@ -5,13 +5,10 @@ export interface MenuBarAction {
 	checked?: boolean;
 	onclick: () => void;
 }
-
 export interface MenuBarSeparator {
 	separator: true;
 }
-
 export type MenuBarSubmenuEntry = MenuBarAction | MenuBarSeparator;
-
 export interface MenuBarMenu {
 	label: string;
 	items: MenuBarSubmenuEntry[];

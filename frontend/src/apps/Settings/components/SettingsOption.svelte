@@ -1,13 +1,11 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import Clickable from '../../../components/Clickable/Clickable.svelte';
-
 	interface Props {
 		active?: boolean;
 		onclick?: (() => void) | undefined;
 		children: Snippet;
 	}
-
 	let { active = false, onclick, children }: Props = $props();
 </script>
 

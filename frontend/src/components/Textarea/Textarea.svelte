@@ -13,10 +13,8 @@
 		onmount?: (el: HTMLTextAreaElement) => void;
 	}
 	let { value = $bindable(), placeholder = '', lineNumbers = false, wordWrap = false, oninput, onkeydown, onselect, onpointerup, onkeyup, onmount }: Props = $props();
-
 	let gutterEl: HTMLDivElement | undefined = $state();
 	let scrollTop = $state(0);
-
 	const mount: Action<HTMLTextAreaElement> = node => {
 		onmount?.(node);
 	};

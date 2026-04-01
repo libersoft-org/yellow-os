@@ -8,7 +8,6 @@
 		dragging: boolean;
 		translateX: number;
 	}
-
 	let { icon, title, active, dragging, translateX }: Props = $props();
 </script>
 

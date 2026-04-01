@@ -22,6 +22,7 @@
 		Numpad7: 6,
 		Numpad8: 7,
 	};
+
 	function onDesktopPointerDown(e: PointerEvent): void {
 		if (e.target === e.currentTarget) defocusAll();
 	}

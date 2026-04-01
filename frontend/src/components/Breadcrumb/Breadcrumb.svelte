@@ -10,7 +10,6 @@
 		onnavigate: (path: string) => void;
 	}
 	const { segments, onnavigate }: Props = $props();
-
 	let canScrollLeft = $state(false);
 	let canScrollRight = $state(false);
 	let itemsEl: HTMLDivElement | undefined = $state();

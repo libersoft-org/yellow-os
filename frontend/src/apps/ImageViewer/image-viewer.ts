@@ -1,7 +1,5 @@
 import { getExtension } from '../../scripts/fs/file-entry.ts';
-
 export const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'jpe', 'jfif', 'gif', 'webp', 'avif', 'apng', 'svg', 'bmp', 'ico', 'cur']);
-
 const MIME_MAP: Record<string, string> = {
 	png: 'image/png',
 	jpg: 'image/jpeg',

@@ -6,7 +6,6 @@
 	import SettingsTaskbar from './SettingsTaskbar.svelte';
 	import SettingsNotifications from './SettingsNotifications.svelte';
 	import SettingsReset from './SettingsReset.svelte';
-
 	const win = getWindow();
 	win.title = 'Settings';
 	win.icon = '/img/apps/settings.svg';

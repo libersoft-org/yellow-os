@@ -9,7 +9,6 @@
 	import type { LinkData } from '../../scripts/fs/link.ts';
 	import { ensureOpfsReady, OS_PATH } from '../../scripts/fs/opfs-init.ts';
 	import { browser } from '$app/environment';
-
 	interface MenuApp {
 		label: string;
 		icon: string;

@@ -4,17 +4,14 @@ export interface ContextMenuAction {
 	onclick: (e: MouseEvent) => void;
 	disabled?: boolean | undefined;
 }
-
 export interface ContextMenuSeparator {
 	separator: true;
 }
-
 export interface ContextMenuCategory {
 	icon?: string | undefined;
 	label: string;
 	children: ContextMenuItem[];
 }
-
 export type ContextMenuItem = ContextMenuAction | ContextMenuSeparator | ContextMenuCategory;
 
 export function isSeparator(item: ContextMenuItem): item is ContextMenuSeparator {

@@ -14,7 +14,6 @@
 		width?: number;
 	}
 	const { selected, currentPath, entries, disks, width = 220 }: Props = $props();
-
 	const currentDisk = $derived(disks.find(d => d.path === currentPath));
 	const diskSegments = $derived.by((): PieChartSegment[] => {
 		if (!currentDisk) return [];

@@ -16,10 +16,8 @@
 	const chrome = getChrome();
 	const outerWidth = $derived(win.width + chrome.width);
 	const outerHeight = $derived(win.height + chrome.height);
-
 	const winId = $derived(win.id);
 	const resize = createResizeHandler(() => winId);
-
 	let contentEl: HTMLDivElement | undefined = $state();
 
 	function onWindowPointerDown(): void {
