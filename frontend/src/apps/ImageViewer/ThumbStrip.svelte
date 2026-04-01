@@ -27,25 +27,25 @@
 		display: flex;
 		align-items: center;
 		gap: 4px;
-		padding: 4px calc(50% - 30px);
+		padding: 4px calc(50% - 60px);
 		background: var(--color-surface-2);
 		border-top: 1px solid var(--color-border);
 		overflow-x: auto;
 		overflow-y: hidden;
 		flex-shrink: 0;
-		height: 64px;
-		scrollbar-width: thin;
+		height: 128px;
+		scrollbar-width: none;
 	}
 
 	.thumb-strip::-webkit-scrollbar {
-		height: 4px;
+		display: none;
 	}
 
 	.thumb {
 		flex-shrink: 0;
-		width: 56px;
-		height: 56px;
-		border-radius: 4px;
+		width: 112px;
+		height: 112px;
+		border-radius: 10px;
 		overflow: hidden;
 		cursor: pointer;
 		border: 2px solid transparent;

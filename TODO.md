@@ -2,6 +2,7 @@
 
 ## Bugs / changes
 
+- Image Viewer - crop doesn't work properly, it appears on a wrong place, cannot extend it over the whole image
 - Write list of features in README
 - Fix bugs in image viewer - crop, save button icon etc., optimize code and abstract whatever can be abstracted
 - Replace hardcoded colours in all components to theme variables
