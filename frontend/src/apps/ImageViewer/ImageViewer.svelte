@@ -374,7 +374,9 @@
 	function init(): void {
 		if (initDir && initName) {
 			loadImage(initDir, initName);
-			loadSiblings().then(() => loadThumbnails());
+			loadSiblings()
+				.then(() => loadThumbnails())
+				.then(() => thumbStrip?.scrollToActive());
 		} else {
 			currentDir = WALLPAPERS_PATH;
 			loadSiblings().then(async () => {

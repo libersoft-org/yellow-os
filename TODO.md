@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Image Viewer - when image file is opened from File browser, it doesn't appear in the middle of ThumbStrip
 - Image Viewer - Rename ThumbStrip to Thumbnails and abstract ThumbnailItem to a separate component
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
