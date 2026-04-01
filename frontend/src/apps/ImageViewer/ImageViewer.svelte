@@ -16,6 +16,7 @@
 	import { isImageFile, getMimeType, renderCroppedImage, renderTransformedImage, type CropRect } from './image-viewer.ts';
 	import { WALLPAPERS_PATH } from '../../scripts/fs/opfs-init.ts';
 	import { printImage } from '../../scripts/system/print.ts';
+	import { showOpenDialog } from '../../components/Storage/storage.svelte.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -60,7 +61,7 @@
 	const menus = $derived<MenuBarMenu[]>([
 		{
 			label: 'File',
-			items: [{ label: 'Save', shortcut: 'Ctrl+S', disabled: !modified, onclick: saveImage }, { separator: true }, { label: 'Print', shortcut: 'Ctrl+P', disabled: !imageSrc, onclick: printCurrentImage }, { separator: true }, { label: 'Delete', shortcut: 'Del', disabled: !currentName, onclick: () => doDelete(false) }, { label: 'Permanently Delete', shortcut: 'Shift+Del', disabled: !currentName, onclick: () => doDelete(true) }, { separator: true }, { label: 'Exit', onclick: () => closeWindow(win.id) }],
+			items: [{ label: 'Open...', shortcut: 'Ctrl+O', onclick: open }, { label: 'Save', shortcut: 'Ctrl+S', disabled: !modified, onclick: saveImage }, { separator: true }, { label: 'Print', shortcut: 'Ctrl+P', disabled: !imageSrc, onclick: printCurrentImage }, { separator: true }, { label: 'Delete', shortcut: 'Del', disabled: !currentName, onclick: () => doDelete(false) }, { label: 'Permanently Delete', shortcut: 'Shift+Del', disabled: !currentName, onclick: () => doDelete(true) }, { separator: true }, { label: 'Exit', onclick: () => closeWindow(win.id) }],
 		},
 		{
 			label: 'View',
@@ -308,6 +309,20 @@
 		if (imageSrc) printImage(imageSrc, { title: currentName || 'Image' });
 	}
 
+	async function open(): Promise<void> {
+		const result = await showOpenDialog({ title: 'Open Image', path: currentDir });
+		if (!result) return;
+		if (!isImageFile(result.name)) {
+			showDialog({ title: 'Cannot open file', message: `"${result.name}" is not a supported image file.`, type: 'error', buttons: [{ label: 'OK' }] });
+			return;
+		}
+		currentDir = result.path;
+		await loadSiblings();
+		await loadImage(result.path, result.name);
+		await loadThumbnails();
+		thumbnailsEl?.scrollToActive();
+	}
+
 	const KEY_MAP: Record<string, () => void> = {
 		ArrowLeft: navigatePrev,
 		ArrowRight: navigateNext,
@@ -338,6 +353,11 @@
 				cropping = false;
 				return;
 			}
+		}
+		if (e.ctrlKey && e.key.toLowerCase() === 'o') {
+			e.preventDefault();
+			open();
+			return;
 		}
 		if (e.ctrlKey && e.key.toLowerCase() === 'p') {
 			e.preventDefault();
@@ -426,7 +446,7 @@
 
 <div class="image-viewer" role="application" use:keyboardAction>
 	<MenuBar {menus} />
-	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} hasImage={!!imageSrc} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={doDelete} onprint={printCurrentImage} />
+	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} hasImage={!!imageSrc} onopen={open} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={doDelete} onprint={printCurrentImage} />
 	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onapplycrop={applyCrop} oncancelcrop={cancelCrop} onfitrequest={fitToWindow} />
 	{#if siblings.length > 1}
 		<Thumbnails bind:this={thumbnailsEl} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />

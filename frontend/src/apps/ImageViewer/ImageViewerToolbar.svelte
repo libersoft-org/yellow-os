@@ -24,8 +24,9 @@
 		onsave: () => void;
 		ondelete: (permanent: boolean) => void;
 		onprint: () => void;
+		onopen: () => void;
 	}
-	const { canNavigate, zoomMode, flipH, flipV, cropping, modified, hasImage, onnavprev, onnavnext, onzoomin, onzoomout, onzoomfit, onzoomactual, onrotateleft, onrotateright, onfliph, onflipv, oncrop, onsave, ondelete, onprint }: Props = $props();
+	const { canNavigate, zoomMode, flipH, flipV, cropping, modified, hasImage, onnavprev, onnavnext, onzoomin, onzoomout, onzoomfit, onzoomactual, onrotateleft, onrotateright, onfliph, onflipv, oncrop, onsave, ondelete, onprint, onopen }: Props = $props();
 
 	function handleDelete(e: MouseEvent): void {
 		ondelete(e.shiftKey);
@@ -47,6 +48,7 @@
 	<ToolbarButton onclick={onflipv} title="Flip vertical (V)" img="/img/apps/ImageViewer/flip-v.svg" alt="Flip V" active={flipV} />
 	<ToolbarButton onclick={oncrop} title="Crop (C)" img="/img/apps/ImageViewer/crop.svg" alt="Crop" active={cropping} />
 	<ToolbarSeparator />
+	<ToolbarButton onclick={onopen} title="Open (Ctrl+O)" img="/img/apps/ImageViewer/open.svg" alt="Open" />
 	<ToolbarButton enabled={modified} onclick={onsave} title="Save (Ctrl+S)" img="/img/apps/ImageViewer/save.svg" alt="Save" />
 	<ToolbarButton enabled={hasImage} onclick={onprint} title="Print (Ctrl+P)" img="/img/print.svg" alt="Print" />
 	<ToolbarButton onclick={handleDelete} title="Delete (Del / Shift+Del)" img="/img/trash-full.svg" alt="Delete" />
