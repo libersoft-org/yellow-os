@@ -423,11 +423,11 @@
 	{/if}
 	<Statusbar>
 		{#snippet left()}
-			<StatusbarItem>{currentName}</StatusbarItem>
+			<StatusbarItem>{currentName || 'No file loaded'}</StatusbarItem>
 		{/snippet}
 		{#snippet right()}
 			{#if dimensionsLabel}<StatusbarItem>{dimensionsLabel}</StatusbarItem>{/if}
-			<StatusbarItem>{zoomLabel}</StatusbarItem>
+			{#if currentName}<StatusbarItem>{zoomLabel}</StatusbarItem>{/if}
 			{#if sizeLabel}<StatusbarItem>{sizeLabel}</StatusbarItem>{/if}
 		{/snippet}
 	</Statusbar>

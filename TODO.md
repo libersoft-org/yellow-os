@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Image Viewer - Status bar - when no file is loaded, show "No file" in status bar
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
