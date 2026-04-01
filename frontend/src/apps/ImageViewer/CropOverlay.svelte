@@ -11,6 +11,10 @@
 		oncancel: () => void;
 	}
 	const { cropRect, zoom, imageWidth, imageHeight, onrectchange, onapply, oncancel }: Props = $props();
+	const zx = $derived(cropRect.x * zoom);
+	const zy = $derived(cropRect.y * zoom);
+	const zw = $derived(cropRect.w * zoom);
+	const zh = $derived(cropRect.h * zoom);
 	let dragging = $state(false);
 	let dragType = $state('');
 	let dragStart = $state({ mx: 0, my: 0, x: 0, y: 0, w: 0, h: 0 });
@@ -87,14 +91,6 @@
 	function handlePointerUp(): void {
 		dragging = false;
 	}
-
-	function handleApply(): void {
-		onapply();
-	}
-
-	function handleCancel(): void {
-		oncancel();
-	}
 </script>
 
 <style>
@@ -163,24 +159,24 @@
 	<defs>
 		<mask id="crop-mask">
 			<rect width="100%" height="100%" fill="white" />
-			<rect x={cropRect.x * zoom} y={cropRect.y * zoom} width={cropRect.w * zoom} height={cropRect.h * zoom} fill="black" />
+			<rect x={zx} y={zy} width={zw} height={zh} fill="black" />
 		</mask>
 	</defs>
 	<rect width="100%" height="100%" class="crop-dim" mask="url(#crop-mask)" />
-	<rect data-crop-handle="move" class="crop-move-area" x={cropRect.x * zoom} y={cropRect.y * zoom} width={cropRect.w * zoom} height={cropRect.h * zoom} />
-	<rect class="crop-border" x={cropRect.x * zoom} y={cropRect.y * zoom} width={cropRect.w * zoom} height={cropRect.h * zoom} />
-	<rect data-crop-handle="nw" class="crop-handle nw" x={cropRect.x * zoom - 6} y={cropRect.y * zoom - 6} width={12} height={12} />
-	<rect data-crop-handle="ne" class="crop-handle ne" x={cropRect.x * zoom + cropRect.w * zoom - 6} y={cropRect.y * zoom - 6} width={12} height={12} />
-	<rect data-crop-handle="sw" class="crop-handle sw" x={cropRect.x * zoom - 6} y={cropRect.y * zoom + cropRect.h * zoom - 6} width={12} height={12} />
-	<rect data-crop-handle="se" class="crop-handle se" x={cropRect.x * zoom + cropRect.w * zoom - 6} y={cropRect.y * zoom + cropRect.h * zoom - 6} width={12} height={12} />
-	<rect data-crop-handle="n" class="crop-handle n" x={cropRect.x * zoom + (cropRect.w * zoom) / 2 - 6} y={cropRect.y * zoom - 6} width={12} height={12} />
-	<rect data-crop-handle="s" class="crop-handle s" x={cropRect.x * zoom + (cropRect.w * zoom) / 2 - 6} y={cropRect.y * zoom + cropRect.h * zoom - 6} width={12} height={12} />
-	<rect data-crop-handle="w" class="crop-handle w" x={cropRect.x * zoom - 6} y={cropRect.y * zoom + (cropRect.h * zoom) / 2 - 6} width={12} height={12} />
-	<rect data-crop-handle="e" class="crop-handle e" x={cropRect.x * zoom + cropRect.w * zoom - 6} y={cropRect.y * zoom + (cropRect.h * zoom) / 2 - 6} width={12} height={12} />
-	<foreignObject x={(cropRect.x + cropRect.w) * zoom - 80} y={cropRect.y * zoom} width={80} height={40} style="overflow: visible">
+	<rect data-crop-handle="move" class="crop-move-area" x={zx} y={zy} width={zw} height={zh} />
+	<rect class="crop-border" x={zx} y={zy} width={zw} height={zh} />
+	<rect data-crop-handle="nw" class="crop-handle nw" x={zx - 6} y={zy - 6} width={12} height={12} />
+	<rect data-crop-handle="ne" class="crop-handle ne" x={zx + zw - 6} y={zy - 6} width={12} height={12} />
+	<rect data-crop-handle="sw" class="crop-handle sw" x={zx - 6} y={zy + zh - 6} width={12} height={12} />
+	<rect data-crop-handle="se" class="crop-handle se" x={zx + zw - 6} y={zy + zh - 6} width={12} height={12} />
+	<rect data-crop-handle="n" class="crop-handle n" x={zx + zw / 2 - 6} y={zy - 6} width={12} height={12} />
+	<rect data-crop-handle="s" class="crop-handle s" x={zx + zw / 2 - 6} y={zy + zh - 6} width={12} height={12} />
+	<rect data-crop-handle="w" class="crop-handle w" x={zx - 6} y={zy + zh / 2 - 6} width={12} height={12} />
+	<rect data-crop-handle="e" class="crop-handle e" x={zx + zw - 6} y={zy + zh / 2 - 6} width={12} height={12} />
+	<foreignObject x={zx + zw - 80} y={zy} width={80} height={40} style="overflow: visible">
 		<div class="crop-buttons">
-			<Button onclick={handleApply} backgroundColorVariable="--color-success" colorVariable="--color-accent-fg"><img src="/img/check.svg" alt="Apply" width="16" height="16" /></Button>
-			<Button onclick={handleCancel} backgroundColorVariable="--color-danger" colorVariable="--color-accent-fg"><img src="/img/cross.svg" alt="Cancel" width="16" height="16" /></Button>
+			<Button onclick={onapply} backgroundColorVariable="--color-success" colorVariable="--color-accent-fg"><img src="/img/check.svg" alt="Apply" width="16" height="16" /></Button>
+			<Button onclick={oncancel} backgroundColorVariable="--color-danger" colorVariable="--color-accent-fg"><img src="/img/cross.svg" alt="Cancel" width="16" height="16" /></Button>
 		</div>
 	</foreignObject>
 </svg>

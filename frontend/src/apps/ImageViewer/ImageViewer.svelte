@@ -57,7 +57,7 @@
 	const menus = $derived<MenuBarMenu[]>([
 		{
 			label: 'File',
-			items: [{ label: 'Save', shortcut: 'Ctrl+S', disabled: !modified, onclick: saveImage }, { separator: true }, { label: 'Delete', shortcut: 'Del', disabled: !currentName, onclick: handleDelete }, { label: 'Permanently Delete', shortcut: 'Shift+Del', disabled: !currentName, onclick: handlePermanentDelete }, { separator: true }, { label: 'Exit', onclick: handleExit }],
+			items: [{ label: 'Save', shortcut: 'Ctrl+S', disabled: !modified, onclick: saveImage }, { separator: true }, { label: 'Delete', shortcut: 'Del', disabled: !currentName, onclick: () => doDelete(false) }, { label: 'Permanently Delete', shortcut: 'Shift+Del', disabled: !currentName, onclick: () => doDelete(true) }, { separator: true }, { label: 'Exit', onclick: () => closeWindow(win.id) }],
 		},
 		{
 			label: 'View',
@@ -127,6 +127,26 @@
 		thumbStrip?.scrollToActive();
 	}
 
+	function revokeAllThumbnails(): void {
+		for (const [, url] of thumbnails) URL.revokeObjectURL(url);
+	}
+
+	function setThumbnail(name: string, blob: Blob): void {
+		const old = thumbnails.get(name);
+		if (old) URL.revokeObjectURL(old);
+		const thumbMap = new Map(thumbnails);
+		thumbMap.set(name, URL.createObjectURL(blob));
+		thumbnails = thumbMap;
+	}
+
+	function removeThumbnail(name: string): void {
+		const old = thumbnails.get(name);
+		if (old) URL.revokeObjectURL(old);
+		const thumbMap = new Map(thumbnails);
+		thumbMap.delete(name);
+		thumbnails = thumbMap;
+	}
+
 	async function loadThumbnails(): Promise<void> {
 		const newThumbs = new Map<string, string>();
 		for (const name of siblings) {
@@ -137,7 +157,7 @@
 				/* skip */
 			}
 		}
-		for (const [, url] of thumbnails) URL.revokeObjectURL(url);
+		revokeAllThumbnails();
 		thumbnails = newThumbs;
 	}
 
@@ -230,13 +250,7 @@
 		imageSrc = URL.createObjectURL(blob);
 		imageWidth = outW;
 		imageHeight = outH;
-		if (thumbnails.has(currentName)) {
-			const old = thumbnails.get(currentName);
-			if (old) URL.revokeObjectURL(old);
-			const thumbMap = new Map(thumbnails);
-			thumbMap.set(currentName, URL.createObjectURL(blob));
-			thumbnails = thumbMap;
-		}
+		if (thumbnails.has(currentName)) setThumbnail(currentName, blob);
 	}
 
 	function navigatePrev(): void {
@@ -273,13 +287,7 @@
 							notifyDirectoryChange(currentDir);
 							if (!permanent) notifyDirectoryChange('/Trash');
 							siblings = siblings.filter(s => s !== name);
-							if (thumbnails.has(name)) {
-								const old = thumbnails.get(name);
-								if (old) URL.revokeObjectURL(old);
-								const thumbMap = new Map(thumbnails);
-								thumbMap.delete(name);
-								thumbnails = thumbMap;
-							}
+							if (thumbnails.has(name)) removeThumbnail(name);
 							if (nextName && siblings.includes(nextName)) loadImage(currentDir, nextName);
 							else if (siblings.length > 0) loadImage(currentDir, siblings[0]!);
 							else closeWindow(win.id);
@@ -293,16 +301,34 @@
 		});
 	}
 
+	const KEY_MAP: Record<string, () => void> = {
+		ArrowLeft: navigatePrev,
+		ArrowRight: navigateNext,
+		'+': zoomIn,
+		'=': zoomIn,
+		'-': zoomOut,
+		'0': fitToWindow,
+		'1': zoomActual,
+		',': rotateLeft,
+		'.': rotateRight,
+		h: toggleFlipH,
+		H: toggleFlipH,
+		v: toggleFlipV,
+		V: toggleFlipV,
+		c: startCrop,
+		C: startCrop,
+	};
+
 	function handleKeydown(e: KeyboardEvent): void {
 		if (cropping) {
 			if (e.key === 'Enter') {
-				applyCrop();
 				e.preventDefault();
+				applyCrop();
 				return;
 			}
 			if (e.key === 'Escape') {
-				cropping = false;
 				e.preventDefault();
+				cropping = false;
 				return;
 			}
 		}
@@ -311,72 +337,16 @@
 			saveImage();
 			return;
 		}
-		switch (e.key) {
-			case 'ArrowLeft':
-				e.preventDefault();
-				navigatePrev();
-				break;
-			case 'ArrowRight':
-				e.preventDefault();
-				navigateNext();
-				break;
-			case '+':
-			case '=':
-				e.preventDefault();
-				zoomIn();
-				break;
-			case '-':
-				e.preventDefault();
-				zoomOut();
-				break;
-			case '0':
-				e.preventDefault();
-				fitToWindow();
-				break;
-			case '1':
-				e.preventDefault();
-				zoomActual();
-				break;
-			case ',':
-				e.preventDefault();
-				rotateLeft();
-				break;
-			case '.':
-				e.preventDefault();
-				rotateRight();
-				break;
-			case 'h':
-			case 'H':
-				e.preventDefault();
-				toggleFlipH();
-				break;
-			case 'v':
-			case 'V':
-				e.preventDefault();
-				toggleFlipV();
-				break;
-			case 'c':
-			case 'C':
-				e.preventDefault();
-				startCrop();
-				break;
-			case 'Delete':
-				e.preventDefault();
-				doDelete(e.shiftKey);
-				break;
+		if (e.key === 'Delete') {
+			e.preventDefault();
+			doDelete(e.shiftKey);
+			return;
 		}
-	}
-
-	function handleDelete(): void {
-		doDelete(false);
-	}
-
-	function handlePermanentDelete(): void {
-		doDelete(true);
-	}
-
-	function handleExit(): void {
-		closeWindow(win.id);
+		const action = KEY_MAP[e.key];
+		if (action) {
+			e.preventDefault();
+			action();
+		}
 	}
 
 	function handleZoomChange(z: number, m: 'fit' | 'actual' | 'custom'): void {
@@ -417,7 +387,7 @@
 
 	onDestroy(() => {
 		if (imageSrc) URL.revokeObjectURL(imageSrc);
-		for (const [, url] of thumbnails) URL.revokeObjectURL(url);
+		revokeAllThumbnails();
 	});
 
 	function keyboardAction(node: HTMLDivElement): { destroy: () => void } {
@@ -452,7 +422,7 @@
 
 <div class="image-viewer" role="application" use:keyboardAction>
 	<MenuBar {menus} />
-	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={handleDelete} />
+	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={() => doDelete(false)} />
 	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onapplycrop={applyCrop} oncancelcrop={cancelCrop} onfitrequest={fitToWindow} />
 	{#if siblings.length > 1}
 		<ThumbStrip bind:this={thumbStrip} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />
