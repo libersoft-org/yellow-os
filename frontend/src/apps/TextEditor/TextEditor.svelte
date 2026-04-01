@@ -196,46 +196,10 @@
 		closeWindow(win.id);
 	}
 
-	function askSaveBeforeClose(): void {
-		showDialog({
-			title: 'Text Editor',
-			message: `Do you want to save changes to "${currentFileName || 'Untitled'}"?`,
-			type: 'question',
-			buttons: [
-				{
-					label: 'Yes',
-					backgroundColorVariable: '--color-accent',
-					colorVariable: '--color-accent-fg',
-					onclick: () => {
-						if (currentFilePath && currentFileName) {
-							writeFile(currentFilePath, currentFileName, content).then(() => {
-								savedContent = content;
-								confirmClose();
-							});
-						} else {
-							showSaveDialog({ title: 'Save as ...', path: currentFileDir, fileName: currentFileName }).then(result => {
-								if (!result) return;
-								writeFile(result.path, result.name, content).then(() => {
-									savedContent = content;
-									confirmClose();
-								});
-							});
-						}
-					},
-				},
-				{
-					label: 'No',
-					onclick: confirmClose,
-				},
-				{ label: 'Cancel' },
-			],
-		});
-	}
-
 	onBeforeClose(win.id, (): boolean => {
 		if (forceClose) return true;
 		if (!hasChanges) return true;
-		askSaveBeforeClose();
+		askSaveBeforeAction(confirmClose);
 		return false;
 	});
 
