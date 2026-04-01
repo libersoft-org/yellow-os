@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Image Viewer - when zooming, zoom to a place where image is moved to (not to the center)
 - Image Viewer - crop doesn't work properly, it appears on a wrong place, cannot extend it over the whole image
 - Image Viewer - optimize code and abstract whatever can be abstracted
 - Write list of features in README

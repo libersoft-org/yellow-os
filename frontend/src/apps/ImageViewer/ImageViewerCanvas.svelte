@@ -38,8 +38,16 @@
 
 	function handleWheel(e: WheelEvent): void {
 		e.preventDefault();
+		if (!containerEl) return;
 		const factor = 1 + Math.min(Math.abs(e.deltaY) / 300, 0.3);
 		const newZoom = e.deltaY < 0 ? Math.min(zoom * factor, 20) : Math.max(zoom / factor, 0.05);
+		const rect = containerEl.getBoundingClientRect();
+		const cx = e.clientX - rect.left - rect.width / 2;
+		const cy = e.clientY - rect.top - rect.height / 2;
+		const scale = newZoom / zoom;
+		const newPanX = cx - scale * (cx - panX);
+		const newPanY = cy - scale * (cy - panY);
+		onpanchange(newPanX, newPanY);
 		onzoomchange(newZoom, 'custom');
 	}
 
