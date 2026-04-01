@@ -20,6 +20,8 @@ Run backend and frontend:
 
 ### Backend:
 
+**SKIP THIS AS THERE IS NO BACKEND YET**
+
 ```sh
 cd backend
 ./start.sh
@@ -59,6 +61,6 @@ cd ../frontend
 ./start-dev.sh wss://localhost:1158/ --privkey /etc/letsencrypt/live/example.com/privkey.pem --pubkey /etc/letsencrypt/live/example.com/fullchain.pem
 ```
 
-Open your browser and navigate to: https://127.0.0.1:6003/
+Open your browser and navigate to: https://127.0.0.1:6004/
 
 Browser will show the certificate error if you have self-signed certificate, just skip it.

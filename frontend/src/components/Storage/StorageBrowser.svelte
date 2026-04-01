@@ -182,6 +182,7 @@
 		checkTrashEmpty();
 		unsubscribeTrash = onDirectoryChange('/Trash', () => checkTrashEmpty());
 		document.addEventListener('pointermove', onGlobalPointerMove);
+		requestAnimationFrame(() => focusGrid());
 	});
 
 	onDestroy(() => {
