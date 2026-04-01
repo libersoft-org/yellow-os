@@ -2,14 +2,11 @@
 
 ## Bugs / changes
 
-- PanelSeparator component should be horizontal too
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
 ## New features
 
-- Text Editor - If file was not saved yet (new unsaved file with some text in editor), show file save dialog, if file was saved before changes, just save it and exit
-- Use open / save as ... file dialog in Text Editor for opening and saving file as ...
 - App Player - Add open dialog when clicking on drag area
 - Image Viewer - Add open dialog for opening the image file
 - Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
