@@ -12,6 +12,7 @@
 	import { showDialog } from '../../scripts/ui/dialog.ts';
 	import { printText } from '../../scripts/system/print.ts';
 	import { showOpenDialog, showSaveDialog } from '../../components/Storage/storage.svelte.ts';
+	import { untrack } from 'svelte';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -20,7 +21,7 @@
 	const SIZE_LIMIT = 1024 * 1024;
 	const win = getWindow();
 
-	let currentFilePath = $state(props.filePath ?? '');
+	let currentFilePath = $state(untrack(() => props.filePath ?? ''));
 	let currentFileDir = $derived(currentFilePath ? currentFilePath : '/');
 	win.icon = '/img/apps/text-editor.svg';
 	win.width = 640;

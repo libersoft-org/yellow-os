@@ -14,6 +14,7 @@
 	import Breadcrumb from '../Breadcrumb/Breadcrumb.svelte';
 	import Input from '../Input/Input.svelte';
 	import Button from '../Button/Button.svelte';
+	import { untrack } from 'svelte';
 	interface Props {
 		mode: 'open' | 'save';
 		startPath?: string;
@@ -26,7 +27,7 @@
 	const isSave = $derived(props.mode === 'save');
 	let sidebarWidth = $state(160);
 	let disks = $state<DiskInfo[]>([]);
-	let fileName = $state(props.defaultFileName ?? '');
+	let fileName = $state(untrack(() => props.defaultFileName ?? ''));
 	let entries = $state<FileEntry[]>([]);
 	const canConfirm = $derived(fileName.trim() !== '');
 
