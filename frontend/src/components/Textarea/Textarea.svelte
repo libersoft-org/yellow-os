@@ -14,19 +14,20 @@
 	}
 	let { value = $bindable(), placeholder = '', lineNumbers = false, wordWrap = false, oninput, onkeydown, onselect, onpointerup, onkeyup, onmount }: Props = $props();
 	let gutterEl: HTMLDivElement | undefined = $state();
-	let textareaEl: HTMLTextAreaElement | undefined = $state();
 	let scrollTop = $state(0);
-	let resizeTick = $state(0);
+	let mirrorWidth = $state(0);
 	const mount: Action<HTMLTextAreaElement> = node => {
-		textareaEl = node;
 		onmount?.(node);
-		const resizeObserver = new ResizeObserver(() => {
-			resizeTick++;
-		});
-		resizeObserver.observe(node);
+		function updateWidth(): void {
+			const cs = getComputedStyle(node);
+			mirrorWidth = node.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+		}
+		updateWidth();
+		const ro = new ResizeObserver(updateWidth);
+		ro.observe(node);
 		return {
 			destroy(): void {
-				resizeObserver.disconnect();
+				ro.disconnect();
 			},
 		};
 	};
@@ -36,55 +37,8 @@
 		if (gutterEl) gutterEl.scrollTop = scrollTop;
 	}
 
-	function countLines(text: string): number {
-		let count = 1;
-		let pos = 0;
-		while ((pos = text.indexOf('\n', pos)) !== -1) {
-			count++;
-			pos++;
-		}
-		return count;
-	}
-
-	const lineCount = $derived(countLines(value));
-
-	const lineHeights: number[] = $derived.by((): number[] => {
-		void resizeTick;
-		if (!textareaEl || !wordWrap || !lineNumbers) return [];
-
-		const style = getComputedStyle(textareaEl);
-		const pl = parseFloat(style.paddingLeft);
-		const pr = parseFloat(style.paddingRight);
-		const contentWidth = textareaEl.clientWidth - pl - pr;
-		const mirror = document.createElement('div');
-		mirror.style.position = 'absolute';
-		mirror.style.visibility = 'hidden';
-		mirror.style.whiteSpace = 'pre-wrap';
-		mirror.style.wordBreak = 'break-all';
-		mirror.style.overflowWrap = 'break-word';
-		mirror.style.boxSizing = 'content-box';
-		mirror.style.width = contentWidth + 'px';
-		mirror.style.paddingLeft = style.paddingLeft;
-		mirror.style.paddingRight = style.paddingRight;
-		mirror.style.paddingTop = '0';
-		mirror.style.paddingBottom = '0';
-		mirror.style.border = 'none';
-		mirror.style.fontFamily = style.fontFamily;
-		mirror.style.fontSize = style.fontSize;
-		mirror.style.lineHeight = style.lineHeight;
-		mirror.style.tabSize = style.tabSize;
-		mirror.style.letterSpacing = style.letterSpacing;
-		document.body.appendChild(mirror);
-
-		const lines = value.split('\n');
-		const heights: number[] = [];
-		for (const line of lines) {
-			mirror.textContent = line || '\n';
-			heights.push(mirror.offsetHeight);
-		}
-		document.body.removeChild(mirror);
-		return heights;
-	});
+	const lines = $derived(value.split('\n'));
+	const gutterWidth = $derived('calc(' + String(lines.length).length + 'ch + 16px)');
 </script>
 
 <style>
@@ -110,6 +64,25 @@
 
 	.line-number {
 		padding: 0 8px;
+	}
+
+	.line-row {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.line-row .line-number {
+		position: absolute;
+		right: 0;
+		top: 0;
+	}
+
+	.mirror {
+		visibility: hidden;
+		white-space: pre-wrap;
+		word-break: break-all;
+		overflow-wrap: break-word;
+		tab-size: 4;
 	}
 
 	.textarea {
@@ -142,9 +115,16 @@
 
 <div class="textarea-wrapper">
 	{#if lineNumbers}
-		<div class="gutter" bind:this={gutterEl}>
-			{#each { length: lineCount } as _, i}
-				<div class="line-number" style:height={lineHeights[i] ? lineHeights[i] + 'px' : undefined}>{i + 1}</div>
+		<div class="gutter" bind:this={gutterEl} style:width={wordWrap ? gutterWidth : undefined}>
+			{#each lines as line, i}
+				{#if wordWrap && mirrorWidth > 0}
+					<div class="line-row">
+						<span class="line-number">{i + 1}</span>
+						<div class="mirror" style:width={mirrorWidth + 'px'}>{line || ' '}</div>
+					</div>
+				{:else}
+					<div class="line-number">{i + 1}</div>
+				{/if}
 			{/each}
 		</div>
 	{/if}
