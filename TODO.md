@@ -14,7 +14,8 @@
 - Add system open / save as ... file dialog
 - Text Editor - if user clicks on File -> Exit, if file has unsaved changes, throw Dialog.svelte with question if they want to save it. If file was not saved yet, show file save dialog, if file was saved before changes, just save it and exit
 - Use open / save as ... file dialog in Text Editor for opening and saving file as ...
-- Use open dialog in app player when clicking on drag area
+- Use open dialog in App Player when clicking on drag area
+- Use open dialog in Image Viewer for opening the file
 - Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
 - Image editor (like MS Paint)
 - Terminal (for interacting with file system)
