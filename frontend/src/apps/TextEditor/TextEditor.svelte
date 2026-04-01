@@ -20,7 +20,6 @@
 	const props: Props = $props();
 	const SIZE_LIMIT = 1024 * 1024;
 	const win = getWindow();
-
 	let currentFilePath = $state(untrack(() => props.filePath ?? ''));
 	let currentFileDir = $derived(currentFilePath ? currentFilePath : '/');
 	win.icon = '/img/apps/text-editor.svg';

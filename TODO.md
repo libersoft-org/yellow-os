@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Text Editor - when word wrapping is on, multiline counter is not showing the row number properly (it should skip multiline rows)
 - If user tries to open a file that is not associated with any app (in file-types.json), throw a dialog error with OK only and text that there is no app associated with this file type
 - PanelSeparator component should be horizontal too
 - Replace hardcoded colours in all components to theme variables

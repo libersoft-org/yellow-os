@@ -14,9 +14,21 @@
 	}
 	let { value = $bindable(), placeholder = '', lineNumbers = false, wordWrap = false, oninput, onkeydown, onselect, onpointerup, onkeyup, onmount }: Props = $props();
 	let gutterEl: HTMLDivElement | undefined = $state();
+	let textareaEl: HTMLTextAreaElement | undefined = $state();
 	let scrollTop = $state(0);
+	let resizeTick = $state(0);
 	const mount: Action<HTMLTextAreaElement> = node => {
+		textareaEl = node;
 		onmount?.(node);
+		const resizeObserver = new ResizeObserver(() => {
+			resizeTick++;
+		});
+		resizeObserver.observe(node);
+		return {
+			destroy(): void {
+				resizeObserver.disconnect();
+			},
+		};
 	};
 
 	function handleScroll(e: Event): void {
@@ -35,6 +47,44 @@
 	}
 
 	const lineCount = $derived(countLines(value));
+
+	const lineHeights: number[] = $derived.by((): number[] => {
+		void resizeTick;
+		if (!textareaEl || !wordWrap || !lineNumbers) return [];
+
+		const style = getComputedStyle(textareaEl);
+		const pl = parseFloat(style.paddingLeft);
+		const pr = parseFloat(style.paddingRight);
+		const contentWidth = textareaEl.clientWidth - pl - pr;
+		const mirror = document.createElement('div');
+		mirror.style.position = 'absolute';
+		mirror.style.visibility = 'hidden';
+		mirror.style.whiteSpace = 'pre-wrap';
+		mirror.style.wordBreak = 'break-all';
+		mirror.style.overflowWrap = 'break-word';
+		mirror.style.boxSizing = 'content-box';
+		mirror.style.width = contentWidth + 'px';
+		mirror.style.paddingLeft = style.paddingLeft;
+		mirror.style.paddingRight = style.paddingRight;
+		mirror.style.paddingTop = '0';
+		mirror.style.paddingBottom = '0';
+		mirror.style.border = 'none';
+		mirror.style.fontFamily = style.fontFamily;
+		mirror.style.fontSize = style.fontSize;
+		mirror.style.lineHeight = style.lineHeight;
+		mirror.style.tabSize = style.tabSize;
+		mirror.style.letterSpacing = style.letterSpacing;
+		document.body.appendChild(mirror);
+
+		const lines = value.split('\n');
+		const heights: number[] = [];
+		for (const line of lines) {
+			mirror.textContent = line || '\n';
+			heights.push(mirror.offsetHeight);
+		}
+		document.body.removeChild(mirror);
+		return heights;
+	});
 </script>
 
 <style>
@@ -94,7 +144,7 @@
 	{#if lineNumbers}
 		<div class="gutter" bind:this={gutterEl}>
 			{#each { length: lineCount } as _, i}
-				<div class="line-number">{i + 1}</div>
+				<div class="line-number" style:height={lineHeights[i] ? lineHeights[i] + 'px' : undefined}>{i + 1}</div>
 			{/each}
 		</div>
 	{/if}
