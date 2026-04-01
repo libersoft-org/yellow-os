@@ -56,6 +56,7 @@ export const snapAnimatingIds: Record<string, boolean> = $state({});
 const _focusCallbacks = new Map<string, () => void>();
 const _closeCallbacks = new Map<string, () => void>();
 const _beforeCloseCallbacks = new Map<string, () => boolean>();
+let _justOpenedId: string | null = null;
 
 export function registerFocusCallback(id: string, callback: () => void): void {
 	_focusCallbacks.set(id, callback);
@@ -172,7 +173,9 @@ export function openWindow(component: Component, props: Record<string, unknown> 
 	const ref = _windows[_windows.length - 1]!;
 	_windowMap.set(id, ref);
 	focus.id = id;
+	_justOpenedId = id;
 	requestAnimationFrame(() => {
+		_justOpenedId = null;
 		requestAnimationFrame(() => (ref.opening = false));
 	});
 	return id;
@@ -209,6 +212,7 @@ export function finishClose(id: string): void {
 }
 
 export function focusWindow(id: string): void {
+	if (_justOpenedId && _justOpenedId !== id) return;
 	const win = _windowMap.get(id);
 	if (!win) return;
 	assignZIndex(win);

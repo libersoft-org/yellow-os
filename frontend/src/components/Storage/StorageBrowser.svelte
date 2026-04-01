@@ -31,11 +31,12 @@
 		hideEmptyLabel?: boolean;
 		extraEmptySpaceMenuItems?: ContextMenuItem[];
 		onnavigate?: (path: string) => void;
+		onfileopen?: (path: string, name: string) => void;
 		onselectionchange?: (entries: FileEntry[]) => void;
 		onitemsmove?: (moves: { id: string; gridX: number; gridY: number }[]) => void;
 		onentrieschange?: (entries: FileEntry[]) => void;
 	}
-	let { path, viewMode = 'grid', columnFirst, hideLinkExtension, hideEmptyLabel, extraEmptySpaceMenuItems, onnavigate, onselectionchange, onitemsmove, onentrieschange }: Props = $props();
+	let { path, viewMode = 'grid', columnFirst, hideLinkExtension, hideEmptyLabel, extraEmptySpaceMenuItems, onnavigate, onfileopen, onselectionchange, onitemsmove, onentrieschange }: Props = $props();
 	let entries = $state<FileEntry[]>([]);
 	let contextMenu = $state<{ x: number; y: number; items: ContextMenuItem[] } | null>(null);
 	let _selectedIds = $state(new Set<string>());
@@ -222,7 +223,8 @@
 				const FileBrowser = getAppComponent('file-browser');
 				if (FileBrowser) openWindow(FileBrowser, { path: fullPath });
 			}
-		} else if (isLinkFile(entry.name)) {
+		} else if (onfileopen) onfileopen(path, entry.name);
+		else if (isLinkFile(entry.name)) {
 			const linkData = await readLink(path, entry.name);
 			if (!linkData) {
 				showDialog({ title: 'Invalid shortcut', message: `"${entry.name}" is not a valid shortcut file.`, type: 'warning', buttons: [{ label: 'OK' }] });

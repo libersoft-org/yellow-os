@@ -11,13 +11,17 @@
 	import { setClipboardOwner, hasClipboard } from '../../scripts/fs/clipboard.svelte.ts';
 	import { showDialog } from '../../scripts/ui/dialog.ts';
 	import { printText } from '../../scripts/system/print.ts';
+	import { showOpenDialog, showSaveDialog } from '../../components/Storage/storage.svelte.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
 	}
-	const { filePath, fileName }: Props = $props();
+	const props: Props = $props();
 	const SIZE_LIMIT = 1024 * 1024;
 	const win = getWindow();
+
+	let currentFilePath = $state(props.filePath ?? '');
+	let currentFileDir = $derived(currentFilePath ? currentFilePath : '/');
 	win.icon = '/img/apps/text-editor.svg';
 	win.width = 640;
 	win.height = 480;
@@ -45,17 +49,17 @@
 	}
 
 	function loadFile(): void {
-		readFileText(filePath!, fileName!).then(text => {
+		readFileText(props.filePath!, props.fileName!).then(text => {
 			content = text;
 			savedContent = text;
 		});
 	}
 
 	function init(): void {
-		currentFileName = fileName ?? '';
+		currentFileName = props.fileName ?? '';
 		updateTitle();
-		if (browser && filePath && fileName) {
-			readFileBlob(filePath, fileName).then(file => {
+		if (browser && props.filePath && props.fileName) {
+			readFileBlob(props.filePath, props.fileName).then(file => {
 				if (file.size > SIZE_LIMIT) {
 					showDialog({
 						title: 'Large file',
@@ -84,29 +88,101 @@
 		hasSelection = editorEl ? editorEl.selectionStart !== editorEl.selectionEnd : false;
 	}
 
-	function newFile(): void {
+	function askSaveBeforeAction(action: () => void): void {
+		if (!hasChanges) {
+			action();
+			return;
+		}
+		showDialog({
+			title: 'Text Editor',
+			message: `Do you want to save changes to "${currentFileName || 'Untitled'}"?`,
+			type: 'question',
+			buttons: [
+				{
+					label: 'Yes',
+					backgroundColorVariable: '--color-accent',
+					colorVariable: '--color-accent-fg',
+					onclick: () => {
+						if (currentFilePath && currentFileName) {
+							writeFile(currentFilePath, currentFileName, content).then(() => {
+								savedContent = content;
+								action();
+							});
+						} else {
+							showSaveDialog({ title: 'Save as ...', path: currentFileDir, fileName: currentFileName }).then(result => {
+								if (!result) return;
+								writeFile(result.path, result.name, content).then(() => {
+									savedContent = content;
+									action();
+								});
+							});
+						}
+					},
+				},
+				{
+					label: 'No',
+					onclick: action,
+				},
+				{ label: 'Cancel' },
+			],
+		});
+	}
+
+	function doNewFile(): void {
 		content = '';
 		savedContent = '';
 		currentFileName = '';
+		currentFilePath = '';
+		undoStack = [];
+		redoStack = [];
+		lastSnapshot = '';
 		updateTitle();
 	}
 
+	function newFile(): void {
+		askSaveBeforeAction(doNewFile);
+	}
+
+	function doOpen(): void {
+		showOpenDialog({ title: 'Open', path: currentFileDir }).then(result => {
+			if (!result) return;
+			readFileText(result.path, result.name).then(text => {
+				content = text;
+				savedContent = text;
+				currentFileName = result.name;
+				currentFilePath = result.path;
+				undoStack = [];
+				redoStack = [];
+				lastSnapshot = text;
+				updateTitle();
+			});
+		});
+	}
+
 	function open(): void {
-		// TODO: open file picker
+		askSaveBeforeAction(doOpen);
 	}
 
 	function save(): void {
 		if (!hasChanges) return;
-		if (filePath && fileName) {
-			writeFile(filePath, fileName, content).then(() => {
+		if (currentFilePath && currentFileName) {
+			writeFile(currentFilePath, currentFileName, content).then(() => {
 				savedContent = content;
 				updateTitle();
 			});
-		}
+		} else saveAs();
 	}
 
 	function saveAs(): void {
-		// TODO: save as dialog
+		showSaveDialog({ title: 'Save as ...', path: currentFileDir, fileName: currentFileName }).then(result => {
+			if (!result) return;
+			writeFile(result.path, result.name, content).then(() => {
+				currentFileName = result.name;
+				currentFilePath = result.path;
+				savedContent = content;
+				updateTitle();
+			});
+		});
 	}
 
 	function printDocument(): void {
@@ -121,36 +197,43 @@
 	}
 
 	function askSaveBeforeClose(): void {
-		requestAnimationFrame(() => {
-			showDialog({
-				title: 'Text Editor',
-				message: `Do you want to save changes to "${currentFileName}"?`,
-				type: 'question',
-				buttons: [
-					{
-						label: 'Yes',
-						backgroundColorVariable: '--color-accent',
-						colorVariable: '--color-accent-fg',
-						onclick: () => {
-							writeFile(filePath!, fileName!, content).then(() => {
+		showDialog({
+			title: 'Text Editor',
+			message: `Do you want to save changes to "${currentFileName || 'Untitled'}"?`,
+			type: 'question',
+			buttons: [
+				{
+					label: 'Yes',
+					backgroundColorVariable: '--color-accent',
+					colorVariable: '--color-accent-fg',
+					onclick: () => {
+						if (currentFilePath && currentFileName) {
+							writeFile(currentFilePath, currentFileName, content).then(() => {
 								savedContent = content;
 								confirmClose();
 							});
-						},
+						} else {
+							showSaveDialog({ title: 'Save as ...', path: currentFileDir, fileName: currentFileName }).then(result => {
+								if (!result) return;
+								writeFile(result.path, result.name, content).then(() => {
+									savedContent = content;
+									confirmClose();
+								});
+							});
+						}
 					},
-					{
-						label: 'No',
-						onclick: confirmClose,
-					},
-					{ label: 'Cancel' },
-				],
-			});
+				},
+				{
+					label: 'No',
+					onclick: confirmClose,
+				},
+				{ label: 'Cancel' },
+			],
 		});
 	}
 
 	onBeforeClose(win.id, (): boolean => {
 		if (forceClose) return true;
-		if (!filePath || !fileName) return true;
 		if (!hasChanges) return true;
 		askSaveBeforeClose();
 		return false;
@@ -294,7 +377,7 @@
 	const menus = $derived<MenuBarMenu[]>([
 		{
 			label: 'File',
-			items: [{ label: 'New', shortcut: 'Ctrl+N', onclick: newFile }, { label: 'Open', shortcut: 'Ctrl+O', onclick: open }, { separator: true }, { label: 'Save', shortcut: 'Ctrl+S', disabled: !hasChanges || !filePath, onclick: save }, { label: 'Save As...', shortcut: 'Ctrl+Shift+S', onclick: saveAs }, { separator: true }, { label: 'Print', shortcut: 'Ctrl+P', onclick: printDocument }, { separator: true }, { label: 'Exit', onclick: exit }],
+			items: [{ label: 'New', shortcut: 'Ctrl+N', onclick: newFile }, { label: 'Open', shortcut: 'Ctrl+O', onclick: open }, { separator: true }, { label: 'Save', shortcut: 'Ctrl+S', disabled: !hasChanges, onclick: save }, { label: 'Save as ...', shortcut: 'Ctrl+Shift+S', onclick: saveAs }, { separator: true }, { label: 'Print', shortcut: 'Ctrl+P', onclick: printDocument }, { separator: true }, { label: 'Exit', onclick: exit }],
 		},
 		{
 			label: 'Edit',

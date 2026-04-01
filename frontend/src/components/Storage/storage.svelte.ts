@@ -1,4 +1,7 @@
 import { getStorageEstimate } from '../../scripts/fs/opfs.ts';
+import { openWindow, findWindow, onWindowClosed } from '../../scripts/window/window-store.svelte.ts';
+import type { Component } from 'svelte';
+import StorageDialog from './StorageDialog.svelte';
 
 export interface DiskInfo {
 	name: string;
@@ -100,4 +103,66 @@ export function createStorageNavigation(getStartPath: () => string = () => '/'):
 export async function loadDisks(): Promise<DiskInfo[]> {
 	const estimate = await getStorageEstimate();
 	return [{ name: 'OPFS drive', path: '/', icon: '/img/apps/file-browser.svg', total: estimate.total, free: estimate.total - estimate.used }];
+}
+
+export interface OpenDialogOptions {
+	title?: string;
+	path?: string;
+}
+
+export interface SaveDialogOptions {
+	title?: string;
+	path?: string;
+	fileName?: string;
+}
+
+export interface DialogResult {
+	path: string;
+	name: string;
+}
+
+function openStorageDialog(title: string, props: Record<string, unknown>): Promise<DialogResult | null> {
+	return new Promise(resolve => {
+		let resolved = false;
+
+		const windowId = openWindow(StorageDialog as Component, {
+			...props,
+			onconfirm: (path: string, name: string) => {
+				resolved = true;
+				resolve({ path, name });
+			},
+		});
+
+		const win = findWindow(windowId);
+		if (win) {
+			win.title = title;
+			win.icon = '/img/apps/file-browser.svg';
+			win.width = 640;
+			win.height = 420;
+			win.minWidth = 480;
+			win.minHeight = 320;
+			win.position = 'center';
+			win.canMinimize = false;
+			win.showInTaskbar = false;
+		}
+
+		onWindowClosed(windowId, () => {
+			if (!resolved) resolve(null);
+		});
+	});
+}
+
+export function showOpenDialog(options: OpenDialogOptions = {}): Promise<DialogResult | null> {
+	return openStorageDialog(options.title ?? 'Open', {
+		mode: 'open',
+		startPath: options.path ?? '/',
+	});
+}
+
+export function showSaveDialog(options: SaveDialogOptions = {}): Promise<DialogResult | null> {
+	return openStorageDialog(options.title ?? 'Save as ...', {
+		mode: 'save',
+		startPath: options.path ?? '/',
+		defaultFileName: options.fileName ?? '',
+	});
 }
