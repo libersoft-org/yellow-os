@@ -70,7 +70,9 @@
 	});
 
 	function findFreePosition(startX: number, startY: number, occupied: Set<string>): { gridX: number; gridY: number } {
-		const isOccupied = (gx: number, gy: number): boolean => occupied.has(gx + ',' + gy);
+		function isOccupied(gx: number, gy: number): boolean {
+			return occupied.has(gx + ',' + gy);
+		}
 		if (!isOccupied(startX, startY)) return { gridX: startX, gridY: startY };
 		for (let radius = 1; radius < 100; radius++) {
 			for (let dy = -radius; dy <= radius; dy++) {

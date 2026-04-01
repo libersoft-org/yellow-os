@@ -160,7 +160,7 @@ async function copyDirectory(source: FileSystemDirectoryHandle, parentDir: FileS
 }
 
 async function findUniqueName(dir: FileSystemDirectoryHandle, name: string): Promise<string> {
-	const hasEntry = async (n: string): Promise<boolean> => {
+	async function hasEntry(n: string): Promise<boolean> {
 		try {
 			await dir.getDirectoryHandle(n);
 			return true;
@@ -172,7 +172,7 @@ async function findUniqueName(dir: FileSystemDirectoryHandle, name: string): Pro
 				return false;
 			}
 		}
-	};
+	}
 	if (!(await hasEntry(name))) return name;
 	let counter = 2;
 	const dot = name.lastIndexOf('.');

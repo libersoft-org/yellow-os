@@ -59,10 +59,13 @@ export async function copyWithConflicts(entries: ConflictEntry[], destPath: stri
 	const bytesTotal = sizes.reduce((sum, s) => sum + s, 0);
 	const { state: progress, close: closeProgress } = showProgressDialog('copy', entries.length);
 	progress.bytesTotal = bytesTotal;
-	const onprogress = (bytes: number): void => {
+
+	function onprogress(bytes: number): void {
 		progress.bytesCopied += bytes;
-	};
-	const cancelled = (): boolean => progress.cancelled;
+	}
+	function cancelled(): boolean {
+		return progress.cancelled;
+	}
 	for (let i = 0; i < entries.length; i++) {
 		if (progress.cancelled) break;
 		const entry = entries[i]!;
@@ -122,9 +125,11 @@ export async function moveWithConflicts(entries: ConflictEntry[], destPath: stri
 	const bytesTotal = sizes.reduce((sum, s) => sum + s, 0);
 	const { state: progress, close: closeProgress } = showProgressDialog('move', entries.length);
 	progress.bytesTotal = bytesTotal;
-	const onprogress = (bytes: number): void => {
+
+	function onprogress(bytes: number): void {
 		progress.bytesCopied += bytes;
-	};
+	}
+
 	for (let i = 0; i < entries.length; i++) {
 		if (progress.cancelled) break;
 		const entry = entries[i]!;
@@ -279,9 +284,9 @@ export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: st
 		const totalFiles = (await Promise.all(fsEntries.map(e => countNativeEntryFiles(e)))).reduce((a, b) => a + b, 0);
 		const { state: progress, close: closeProgress } = showProgressDialog('upload', totalFiles);
 		progress.bytesTotal = totalSize;
-		const onprogress = (bytes: number): void => {
+		function onprogress(bytes: number): void {
 			progress.bytesCopied += bytes;
-		};
+		}
 		for (const entry of fsEntries) {
 			if (progress.cancelled) {
 				cancelled.value = true;
@@ -301,9 +306,11 @@ export async function uploadNativeFiles(dataTransfer: DataTransfer, destPath: st
 		for (let i = 0; i < files.length; i++) totalSize += files[i]!.size;
 		const { state: progress, close: closeProgress } = showProgressDialog('upload', files.length);
 		progress.bytesTotal = totalSize;
-		const onprogress = (bytes: number): void => {
+
+		function onprogress(bytes: number): void {
 			progress.bytesCopied += bytes;
-		};
+		}
+
 		for (let i = 0; i < files.length; i++) {
 			if (progress.cancelled) break;
 			const file = files[i]!;

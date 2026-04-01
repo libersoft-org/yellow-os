@@ -398,11 +398,11 @@
 		} else {
 			const clickX = e.clientX;
 			const clickY = e.clientY;
-			const placeAtClick = (finalName: string): void => {
+			function placeAtClick(finalName: string): void {
 				if (!iconGrid) return;
 				const gridPos = iconGrid.screenToGrid(clickX, clickY);
 				iconGrid.schedulePositions(new Map([[finalName, gridPos]]));
-			};
+			}
 			contextMenu = {
 				x: e.clientX,
 				y: e.clientY,
@@ -568,10 +568,10 @@
 				}
 			}
 		}
-		const schedule = (nameMap: Map<string, string>): void => {
+		function schedule(nameMap: Map<string, string>): void {
 			if (!dropPos || !iconGrid) return;
 			iconGrid.schedulePositions(computeDropPositions(dropPos, relOffsets, nameMap));
-		};
+		}
 		const dest = destPath ?? path;
 		if (e.button === 0) {
 			if (destPath) await executeDrop('move', path, draggedIds, dest, schedule);
@@ -598,10 +598,12 @@
 		const targetEntry = hitItem?.droppable ? sortedEntries.find(e => e.name === hitItem.id && e.type === 'directory') : null;
 		const destPath = targetEntry ? entryFullPath(targetEntry) : path;
 		const dropBasePos = !targetEntry && iconGrid ? iconGrid.screenToGrid(x, y) : null;
-		const schedule = (nameMap: Map<string, string>): void => {
+
+		function schedule(nameMap: Map<string, string>): void {
 			if (!dropBasePos || !iconGrid) return;
 			iconGrid.schedulePositions(computeDropPositions(dropBasePos, offsets, nameMap));
-		};
+		}
+
 		if (button === 0) executeDrop('move', sourcePath, fileNames, destPath, schedule);
 		else if (button === 2) {
 			contextMenu = {
