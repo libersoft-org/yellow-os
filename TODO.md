@@ -7,7 +7,6 @@
 
 ## New features
 
-- Text Editor - add document print on printer
 - Image Viewer - add image print on printer
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Add system open / save as ... file dialog

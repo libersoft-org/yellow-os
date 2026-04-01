@@ -10,6 +10,7 @@
 	import Textarea from '../../components/Textarea/Textarea.svelte';
 	import { setClipboardOwner, hasClipboard } from '../../scripts/fs/clipboard.svelte.ts';
 	import { showDialog } from '../../scripts/ui/dialog.ts';
+	import { printText } from '../../scripts/system/print.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -106,6 +107,10 @@
 
 	function saveAs(): void {
 		// TODO: save as dialog
+	}
+
+	function printDocument(): void {
+		printText(content, { title: currentFileName || 'Untitled' });
 	}
 
 	function exit(): void {
@@ -228,6 +233,10 @@
 				e.preventDefault();
 				open();
 				break;
+			case 'p':
+				e.preventDefault();
+				printDocument();
+				break;
 			case 'l':
 				e.preventDefault();
 				toggleLineNumbers();
@@ -242,7 +251,7 @@
 	const menus = $derived<MenuBarMenu[]>([
 		{
 			label: 'File',
-			items: [{ label: 'New', shortcut: 'Ctrl+N', onclick: newFile }, { label: 'Open', shortcut: 'Ctrl+O', onclick: open }, { separator: true }, { label: 'Save', shortcut: 'Ctrl+S', disabled: !hasChanges || !filePath, onclick: save }, { label: 'Save As...', shortcut: 'Ctrl+Shift+S', onclick: saveAs }, { separator: true }, { label: 'Exit', onclick: exit }],
+			items: [{ label: 'New', shortcut: 'Ctrl+N', onclick: newFile }, { label: 'Open', shortcut: 'Ctrl+O', onclick: open }, { separator: true }, { label: 'Save', shortcut: 'Ctrl+S', disabled: !hasChanges || !filePath, onclick: save }, { label: 'Save As...', shortcut: 'Ctrl+Shift+S', onclick: saveAs }, { separator: true }, { label: 'Print', shortcut: 'Ctrl+P', onclick: printDocument }, { separator: true }, { label: 'Exit', onclick: exit }],
 		},
 		{
 			label: 'Edit',
