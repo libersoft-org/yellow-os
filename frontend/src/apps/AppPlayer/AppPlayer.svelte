@@ -6,6 +6,7 @@
 	import { focusWindow } from '../../scripts/window/window-store.svelte.ts';
 	import Spinner from '../../components/Spinner/Spinner.svelte';
 	import Icon from '../../components/Icon/Icon.svelte';
+	import { showOpenDialog } from '../../components/Storage/storage.svelte.ts';
 	interface Props {
 		filePath?: string;
 		fileName?: string;
@@ -122,6 +123,16 @@
 		focusWindow(win.id);
 		loadYapp(sourcePath, name);
 	}
+
+	async function open(): Promise<void> {
+		const result = await showOpenDialog({ title: 'Open .yapp file' });
+		if (!result) return;
+		if (!isYappFile(result.name)) {
+			error = 'Please select a .yapp file.';
+			return;
+		}
+		loadYapp(result.path, result.name);
+	}
 </script>
 
 <style>
@@ -187,9 +198,22 @@
 {:else if iframeSrc}
 	<iframe src={iframeSrc} title={win.title} sandbox="allow-scripts" class="app-frame"></iframe>
 {:else}
-	<div class="center drop-zone" class:dragging role="button" tabindex="0" ondragover={handleDragOver} ondragleave={handleDragLeave} ondrop={handleDrop} use:appPlayerDropZone>
+	<div
+		class="center drop-zone"
+		class:dragging
+		role="button"
+		tabindex="0"
+		onclick={open}
+		onkeydown={e => {
+			if (e.key === 'Enter') open();
+		}}
+		ondragover={handleDragOver}
+		ondragleave={handleDragLeave}
+		ondrop={handleDrop}
+		use:appPlayerDropZone
+	>
 		<Icon img="/img/apps/app-player.svg" size="48px" padding="0" colorVariable="--color-text" />
 		<p>Open a <strong>.yapp</strong> file</p>
-		<p class="hint">Double-click a .yapp file in File Browser<br />or drag & drop it here</p>
+		<p class="hint">Click here to browse, double-click a .yapp in File Browser<br />or drag & drop it here</p>
 	</div>
 {/if}

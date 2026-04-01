@@ -7,8 +7,7 @@
 
 ## New features
 
-- App Player - Add open dialog when clicking on drag area
-- Image Viewer - Add open dialog for opening the image file
+- Image Viewer - Add "Open" icon - add open dialog for opening the image file
 - Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Image editor (like MS Paint)
