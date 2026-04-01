@@ -7,17 +7,17 @@
 	import { showDialog } from '../../scripts/ui/dialog.ts';
 	import { formatBytes } from '../../scripts/system/format.ts';
 	import StatusBar from '../../components/StatusBar/StatusBar.svelte';
+	import MenuBar from '../../components/MenuBar/MenuBar.svelte';
+	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
 	import ImageViewerToolbar from './ImageViewerToolbar.svelte';
 	import ImageViewerCanvas from './ImageViewerCanvas.svelte';
 	import ThumbStrip from './ThumbStrip.svelte';
 	import { isImageFile, getMimeType, renderCroppedImage, renderTransformedImage, type CropRect } from './image-viewer.ts';
 	import { WALLPAPERS_PATH } from '../../scripts/fs/opfs-init.ts';
-
 	interface Props {
 		filePath?: string;
 		fileName?: string;
 	}
-
 	const { filePath: initDir, fileName: initName }: Props = $props();
 	const win = getWindow();
 	win.icon = '/img/apps/image-viewer.svg';
@@ -26,7 +26,6 @@
 	win.minWidth = 400;
 	win.minHeight = 300;
 	win.position = 'center';
-
 	let currentDir = $state('/');
 	let currentName = $state('');
 	let imageSrc = $state('');
@@ -47,7 +46,6 @@
 	let cropRect = $state<CropRect>({ x: 0, y: 0, w: 0, h: 0 });
 	let thumbStrip = $state<ThumbStrip>();
 	let canvas = $state<ImageViewerCanvas>();
-
 	const currentIndex = $derived(siblings.indexOf(currentName));
 	const canNavigate = $derived(siblings.length > 1);
 	const isSwapped = $derived(rotation === 90 || rotation === 270);
@@ -56,6 +54,32 @@
 	const zoomLabel = $derived(Math.round(zoom * 100) + '%');
 	const dimensionsLabel = $derived(imageWidth > 0 ? `${imageWidth} × ${imageHeight}` : '');
 	const sizeLabel = $derived(fileSize > 0 ? formatBytes(fileSize) : '');
+	const menus = $derived<MenuBarMenu[]>([
+		{
+			label: 'File',
+			items: [{ label: 'Save', shortcut: 'Ctrl+S', disabled: !modified, onclick: saveImage }, { separator: true }, { label: 'Delete', shortcut: 'Del', disabled: !currentName, onclick: handleDelete }, { label: 'Permanently Delete', shortcut: 'Shift+Del', disabled: !currentName, onclick: handlePermanentDelete }, { separator: true }, { label: 'Exit', onclick: handleExit }],
+		},
+		{
+			label: 'View',
+			items: [
+				{ label: 'Zoom In', shortcut: '+', onclick: zoomIn },
+				{ label: 'Zoom Out', shortcut: '−', onclick: zoomOut },
+				{ label: 'Fit to Window', shortcut: '0', checked: zoomMode === 'fit', onclick: fitToWindow },
+				{ label: 'Actual Size', shortcut: '1', checked: zoomMode === 'actual', onclick: zoomActual },
+			],
+		},
+		{
+			label: 'Image',
+			items: [{ label: 'Rotate Left', shortcut: ',', onclick: rotateLeft }, { label: 'Rotate Right', shortcut: '.', onclick: rotateRight }, { label: 'Flip Horizontal', shortcut: 'H', checked: flipH, onclick: toggleFlipH }, { label: 'Flip Vertical', shortcut: 'V', checked: flipV, onclick: toggleFlipV }, { separator: true }, { label: 'Crop', shortcut: 'C', checked: cropping, onclick: startCrop }, { label: 'Apply Crop', shortcut: 'Enter', disabled: !cropping, onclick: applyCrop }],
+		},
+		{
+			label: 'Navigate',
+			items: [
+				{ label: 'Previous Image', shortcut: '←', disabled: !canNavigate, onclick: navigatePrev },
+				{ label: 'Next Image', shortcut: '→', disabled: !canNavigate, onclick: navigateNext },
+			],
+		},
+	]);
 
 	async function loadSiblings(): Promise<void> {
 		try {
@@ -347,6 +371,14 @@
 		doDelete(false);
 	}
 
+	function handlePermanentDelete(): void {
+		doDelete(true);
+	}
+
+	function handleExit(): void {
+		closeWindow(win.id);
+	}
+
 	function handleZoomChange(z: number, m: 'fit' | 'actual' | 'custom'): void {
 		zoom = z;
 		zoomMode = m;
@@ -415,6 +447,7 @@
 </style>
 
 <div class="image-viewer" role="application" use:keyboardAction>
+	<MenuBar {menus} />
 	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={handleDelete} />
 	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onfitrequest={fitToWindow} />
 	{#if siblings.length > 1}

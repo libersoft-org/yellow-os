@@ -32,7 +32,10 @@
 		else contentEl?.focus();
 	}
 
-	onMount(() => registerFocusCallback(win.id, focusContent));
+	onMount(() => {
+		registerFocusCallback(win.id, focusContent);
+		if (focus.id === win.id) requestAnimationFrame(() => focusContent());
+	});
 	onDestroy(() => unregisterFocusCallback(win.id));
 
 	function onWindowTransitionEnd(e: TransitionEvent): void {

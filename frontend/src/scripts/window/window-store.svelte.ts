@@ -210,6 +210,8 @@ export function focusWindow(id: string): void {
 		requestAnimationFrame(() => requestAnimationFrame(() => (win.restoring = false)));
 	}
 	focus.id = id;
+	const cb = _focusCallbacks.get(id);
+	if (cb) requestAnimationFrame(() => cb());
 }
 
 export function minimizeWindow(id: string): void {
