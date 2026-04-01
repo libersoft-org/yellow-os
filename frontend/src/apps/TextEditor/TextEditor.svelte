@@ -5,7 +5,8 @@
 	import { browser } from '$app/environment';
 	import MenuBar from '../../components/MenuBar/MenuBar.svelte';
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
-	import StatusBar from '../../components/StatusBar/StatusBar.svelte';
+	import Statusbar from '../../components/Statusbar/Statusbar.svelte';
+	import StatusbarItem from '../../components/Statusbar/StatusbarItem.svelte';
 	import Textarea from '../../components/Textarea/Textarea.svelte';
 	import { setClipboardOwner, hasClipboard } from '../../scripts/fs/clipboard.svelte.ts';
 	import { showDialog } from '../../scripts/ui/dialog.ts';
@@ -276,23 +277,15 @@
 		flex-direction: column;
 		height: 100%;
 	}
-
-	.statusbar-content {
-		display: flex;
-		justify-content: flex-end;
-		gap: 16px;
-		padding: 4px 12px;
-		width: 100%;
-	}
 </style>
 
 <div class="text-editor">
 	<MenuBar {menus} />
 	<Textarea bind:value={content} lineNumbers={showLineNumbers} {wordWrap} onmount={handleEditorMount} oninput={handleInput} onkeydown={handleKeydown} onselect={updateSelection} onpointerup={updateSelection} onkeyup={updateSelection} placeholder="Start typing..." />
-	<StatusBar>
-		<div class="statusbar-content">
-			<span>Lines: {lineCount}</span>
-			<span>Characters: {charCount}</span>
-		</div>
-	</StatusBar>
+	<Statusbar>
+		{#snippet right()}
+			<StatusbarItem>Lines: {lineCount}</StatusbarItem>
+			<StatusbarItem>Characters: {charCount}</StatusbarItem>
+		{/snippet}
+	</Statusbar>
 </div>

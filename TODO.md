@@ -2,8 +2,7 @@
 
 ## Bugs / changes
 
-- Image Viewer - Footer - change font to white and make font bigger
-- Image Viewer - Footer - when no file is loaded, show "No file" in footer
+- Image Viewer - Status bar - when no file is loaded, show "No file" in status bar
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
@@ -26,6 +25,7 @@
 - Desktop widgets (weather, news etc.)
 - Taskbar position in settings + add more panels
 - System sounds (welcome, dialog error etc.)
+- File Browser - Add StatusBar component to the bottom with basic info (useful when right info panel is not opened)
 - File Browser - Search files / directories
 - File Browser - Add Pack / unpack / browse files and directories into ZIP / other compression formats within OPFS
 - Settings - Add File system settings - File types (list, add, delete, modify)

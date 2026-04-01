@@ -6,7 +6,8 @@
 	import { notifyDirectoryChange } from '../../scripts/fs/opfs-notify.ts';
 	import { showDialog } from '../../scripts/ui/dialog.ts';
 	import { formatBytes } from '../../scripts/system/format.ts';
-	import StatusBar from '../../components/StatusBar/StatusBar.svelte';
+	import Statusbar from '../../components/Statusbar/Statusbar.svelte';
+	import StatusbarItem from '../../components/Statusbar/StatusbarItem.svelte';
 	import MenuBar from '../../components/MenuBar/MenuBar.svelte';
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
 	import ImageViewerToolbar from './ImageViewerToolbar.svelte';
@@ -411,16 +412,6 @@
 		height: 100%;
 		outline: none;
 	}
-
-	.status-item {
-		padding: 2px 10px;
-		border-right: 1px solid var(--color-border);
-		white-space: nowrap;
-	}
-
-	.status-item:last-child {
-		border-right: none;
-	}
 </style>
 
 <div class="image-viewer" role="application" use:keyboardAction>
@@ -430,10 +421,14 @@
 	{#if siblings.length > 1}
 		<Thumbnails bind:this={thumbnailsEl} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />
 	{/if}
-	<StatusBar>
-		<span class="status-item">{currentName}</span>
-		{#if dimensionsLabel}<span class="status-item">{dimensionsLabel}</span>{/if}
-		<span class="status-item">{zoomLabel}</span>
-		{#if sizeLabel}<span class="status-item">{sizeLabel}</span>{/if}
-	</StatusBar>
+	<Statusbar>
+		{#snippet left()}
+			<StatusbarItem>{currentName}</StatusbarItem>
+		{/snippet}
+		{#snippet right()}
+			{#if dimensionsLabel}<StatusbarItem>{dimensionsLabel}</StatusbarItem>{/if}
+			<StatusbarItem>{zoomLabel}</StatusbarItem>
+			{#if sizeLabel}<StatusbarItem>{sizeLabel}</StatusbarItem>{/if}
+		{/snippet}
+	</Statusbar>
 </div>
