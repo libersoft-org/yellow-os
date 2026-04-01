@@ -31,16 +31,16 @@ Official website: **https://yellow-os.com**
 
 ### Applications
 
-- **File Browser**
-- **Image Viewer**
-- **Text Editor**
-- **Calculator**
-- **App Player**
+- **App Player** - run your own custom apps inside the web OS
+- **Calculator** - for your very own calculations
+- **File Browser** - browse, manage and organize files and folders
+- **Image Viewer** - view and edit images
+- **Text Editor** - edit your text files
 
 ### Games
 
-- **Pong**
-- **Snake**
+- **Pong** - 2 player table tennis
+- **Snake** - eat, grow and don't hit the wall
 
 ## Screenshots
 
