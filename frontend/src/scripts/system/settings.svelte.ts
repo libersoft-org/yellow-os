@@ -7,6 +7,7 @@ export type NotificationAnimation = 'slide' | 'fade' | 'none';
 
 export interface SystemSettings {
 	wallpaper: string;
+	wallpaperPath: string;
 	wallpaperMode: WallpaperMode;
 	wallpaperColor: string;
 	desktopCount: number;
@@ -19,6 +20,7 @@ export interface SystemSettings {
 const SETTINGS_FILE = 'settings.json';
 const defaults: SystemSettings = {
 	wallpaper: 'waves-dark.webp',
+	wallpaperPath: '',
 	wallpaperMode: 'image',
 	wallpaperColor: '#1a1a2e',
 	desktopCount: 4,
@@ -38,7 +40,8 @@ let currentBlobUrl: string | null = null;
 async function updateWallpaperUrl(): Promise<void> {
 	if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
 	try {
-		const file = await readFileBlob(WALLPAPERS_PATH, settings.wallpaper);
+		const dir = settings.wallpaperPath || WALLPAPERS_PATH;
+		const file = await readFileBlob(dir, settings.wallpaper);
 		currentBlobUrl = URL.createObjectURL(file);
 		_wallpaperUrl.value = currentBlobUrl;
 	} catch {
@@ -55,6 +58,7 @@ export async function loadSettings(): Promise<void> {
 			const text = await readFileText(OS_PATH, SETTINGS_FILE);
 			const parsed = JSON.parse(text) as Partial<SystemSettings>;
 			if (parsed.wallpaper !== undefined) settings.wallpaper = parsed.wallpaper;
+			if (parsed.wallpaperPath !== undefined) settings.wallpaperPath = parsed.wallpaperPath;
 			if (parsed.wallpaperMode !== undefined) settings.wallpaperMode = parsed.wallpaperMode;
 			if (parsed.wallpaperColor !== undefined) settings.wallpaperColor = parsed.wallpaperColor;
 			if (parsed.desktopCount !== undefined) settings.desktopCount = parsed.desktopCount;
@@ -73,7 +77,7 @@ export async function loadSettings(): Promise<void> {
 
 export async function saveSetting<K extends keyof SystemSettings>(key: K, value: SystemSettings[K]): Promise<void> {
 	settings[key] = value;
-	if (key === 'wallpaper' || key === 'wallpaperMode') await updateWallpaperUrl();
+	if (key === 'wallpaper' || key === 'wallpaperPath' || key === 'wallpaperMode') await updateWallpaperUrl();
 	await writeFile(OS_PATH, SETTINGS_FILE, JSON.stringify(settings, null, '\t'));
 }
 

@@ -7,7 +7,6 @@
 
 ## New features
 
-- Wallpaper - Allow find the wallpaper file in file structure using open file dialog (when available)
 - Taskbar position in settings + add more panels
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Image editor (like MS Paint)
