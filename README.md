@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [**About**](#about)
+- [**Features**](#features)
 - [**Screenshots**](#screenshots)
 - [**Usage**](#usage)
 - [**Installation**](#installation)
@@ -19,6 +20,27 @@ Official website: **https://yellow-os.com**
 
 - **Backend:** Bun
 - **Frontend:** Svelte
+
+## Features
+
+### System
+
+- **Desktop environment** - window manager with drag, resize and snap zones, taskbar with start menu, virtual desktops, app switcher, context menus, toast notifications, etc.
+- **File system** - built on browser's Origin Private File System (OPFS) with file operations, drag & drop upload/download, trash, clipboard, file type associations and conflict resolution
+- **UI** - Many reusable UI components
+
+### Applications
+
+- **File Browser**
+- **Image Viewer**
+- **Text Editor**
+- **Calculator**
+- **App Player**
+
+### Games
+
+- **Pong**
+- **Snake**
 
 ## Screenshots
 

@@ -3,7 +3,6 @@
 ## Bugs / changes
 
 - Image Viewer - optimize code and abstract whatever can be abstracted
-- Write list of features in README
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
