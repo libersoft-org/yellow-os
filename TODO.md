@@ -2,7 +2,6 @@
 
 ## Bugs / changes
 
-- Image Viewer - Rename ThumbStrip to Thumbnails and abstract ThumbnailItem to a separate component
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 

@@ -11,7 +11,7 @@
 	import type { MenuBarMenu } from '../../components/MenuBar/menu-bar.ts';
 	import ImageViewerToolbar from './ImageViewerToolbar.svelte';
 	import ImageViewerCanvas from './ImageViewerCanvas.svelte';
-	import ThumbStrip from './ThumbStrip.svelte';
+	import Thumbnails from './Thumbnails.svelte';
 	import { isImageFile, getMimeType, renderCroppedImage, renderTransformedImage, type CropRect } from './image-viewer.ts';
 	import { WALLPAPERS_PATH } from '../../scripts/fs/opfs-init.ts';
 	interface Props {
@@ -44,7 +44,7 @@
 	let panY = $state(0);
 	let cropping = $state(false);
 	let cropRect = $state<CropRect>({ x: 0, y: 0, w: 0, h: 0 });
-	let thumbStrip = $state<ThumbStrip>();
+	let thumbnailsEl = $state<Thumbnails>();
 	let canvas = $state<ImageViewerCanvas>();
 	const currentIndex = $derived(siblings.indexOf(currentName));
 	const canNavigate = $derived(siblings.length > 1);
@@ -124,7 +124,7 @@
 		} catch {
 			imageSrc = '';
 		}
-		thumbStrip?.scrollToActive();
+		thumbnailsEl?.scrollToActive();
 	}
 
 	function revokeAllThumbnails(): void {
@@ -376,7 +376,7 @@
 			loadImage(initDir, initName);
 			loadSiblings()
 				.then(() => loadThumbnails())
-				.then(() => thumbStrip?.scrollToActive());
+				.then(() => thumbnailsEl?.scrollToActive());
 		} else {
 			currentDir = WALLPAPERS_PATH;
 			loadSiblings().then(async () => {
@@ -427,7 +427,7 @@
 	<ImageViewerToolbar {canNavigate} {zoomMode} {flipH} {flipV} {cropping} {modified} onnavprev={navigatePrev} onnavnext={navigateNext} onzoomin={zoomIn} onzoomout={zoomOut} onzoomfit={fitToWindow} onzoomactual={zoomActual} onrotateleft={rotateLeft} onrotateright={rotateRight} onfliph={toggleFlipH} onflipv={toggleFlipV} oncrop={startCrop} onsave={saveImage} ondelete={() => doDelete(false)} />
 	<ImageViewerCanvas bind:this={canvas} {imageSrc} {imageWidth} {imageHeight} {displayWidth} {displayHeight} {zoom} {zoomMode} {rotation} {flipH} {flipV} {panX} {panY} {cropping} {cropRect} {currentName} onzoomchange={handleZoomChange} onpanchange={handlePanChange} onrectchange={handleRectChange} onapplycrop={applyCrop} oncancelcrop={cancelCrop} onfitrequest={fitToWindow} />
 	{#if siblings.length > 1}
-		<ThumbStrip bind:this={thumbStrip} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />
+		<Thumbnails bind:this={thumbnailsEl} {siblings} {thumbnails} {currentName} onselect={handleThumbSelect} />
 	{/if}
 	<StatusBar>
 		<span class="status-item">{currentName}</span>
