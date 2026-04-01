@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { DiskInfo } from './storage.ts';
+	import type { DiskInfo } from './storage.svelte.ts';
 	import { formatBytes } from '../../scripts/system/format.ts';
 	import IconGridItem from '../IconGrid/IconGridItem.svelte';
 	import ListItem from '../List/ListItem.svelte';

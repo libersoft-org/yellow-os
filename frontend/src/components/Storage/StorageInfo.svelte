@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
-	import type { DiskInfo } from './storage.ts';
+	import type { DiskInfo } from './storage.svelte.ts';
 	import Icon from '../Icon/Icon.svelte';
 	import StorageEntryInfo from './StorageEntryInfo.svelte';
 	import PieChart from '../PieChart/PieChart.svelte';

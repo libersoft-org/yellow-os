@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { getWindow } from '../../scripts/window/window-context.ts';
 	import type { FileEntry } from '../../scripts/fs/file-entry.ts';
-	import type { DiskInfo } from '../../components/Storage/storage.ts';
-	import { getStorageEstimate } from '../../scripts/fs/opfs.ts';
+	import { createStorageNavigation, loadDisks } from '../../components/Storage/storage.svelte.ts';
+	import type { DiskInfo } from '../../components/Storage/storage.svelte.ts';
 	import StorageToolbar from '../../components/Storage/StorageToolbar.svelte';
 	import StorageDrives from '../../components/Storage/StorageDrives.svelte';
 	import PanelSeparator from '../../components/PanelSeparator/PanelSeparator.svelte';
@@ -19,39 +19,19 @@
 	interface Props {
 		path?: string;
 	}
-	const { path }: Props = $props();
-	let currentPath = $state('/');
-	let history = $state<string[]>(['/']);
-	let historyIndex = $state(0);
+	const props: Props = $props();
+	const nav = createStorageNavigation(() => props.path ?? '/');
 	let sidebarWidth = $state(180);
 	let viewMode = $state<'grid' | 'list'>('grid');
 	let showInfo = $state(true);
 	let selectedEntries = $state<FileEntry[]>([]);
 	let entries = $state<FileEntry[]>([]);
 	let disks = $state<DiskInfo[]>([]);
-	const canGoBack = $derived(historyIndex > 0);
-	const canGoForward = $derived(historyIndex < history.length - 1);
-	const canGoUp = $derived(currentPath !== '/');
-	async function loadDiskInfo(): Promise<void> {
-		const estimate = await getStorageEstimate();
-		disks = [{ name: 'OPFS drive', path: '/', icon: '/img/apps/file-browser.svg', total: estimate.total, free: estimate.total - estimate.used }];
-	}
 
 	function init(): void {
-		const startPath = path ?? '/';
-		currentPath = startPath;
-		history = [startPath];
-		if (browser) loadDiskInfo();
+		if (browser) loadDisks().then(d => (disks = d));
 	}
 	init();
-
-	const breadcrumbSegments = $derived.by(() => {
-		if (currentPath === '/') return [{ name: 'Root', path: '/' }];
-		const parts = currentPath.split('/').filter(Boolean);
-		const segments = [{ name: 'Root', path: '/' }];
-		for (let i = 0; i < parts.length; i++) segments.push({ name: parts[i]!, path: '/' + parts.slice(0, i + 1).join('/') });
-		return segments;
-	});
 
 	function onSeparatorResize(dx: number): void {
 		sidebarWidth = Math.max(120, Math.min(400, sidebarWidth + dx));
@@ -64,37 +44,15 @@
 	}
 
 	function navigateTo(navPath: string): void {
-		if (navPath === currentPath) return;
-		history = history.slice(0, historyIndex + 1);
-		history.push(navPath);
-		historyIndex = history.length - 1;
-		currentPath = navPath;
+		nav.navigateTo(navPath);
 		selectedEntries = [];
 	}
 
-	function goBack(): void {
-		if (!canGoBack) return;
-		historyIndex--;
-		currentPath = history[historyIndex]!;
-	}
-
-	function goForward(): void {
-		if (!canGoForward) return;
-		historyIndex++;
-		currentPath = history[historyIndex]!;
-	}
-
-	function goUp(): void {
-		if (!canGoUp) return;
-		const parent = currentPath.substring(0, currentPath.lastIndexOf('/')) || '/';
-		navigateTo(parent);
-	}
-
-	function onDirectoryViewSelectionChange(selected: FileEntry[]): void {
+	function onSelectionChange(selected: FileEntry[]): void {
 		selectedEntries = selected;
 	}
 
-	function onDirectoryViewEntriesChange(newEntries: FileEntry[]): void {
+	function onEntriesChange(newEntries: FileEntry[]): void {
 		entries = newEntries;
 	}
 
@@ -129,18 +87,18 @@
 </style>
 
 <div class="file-browser" role="group" tabindex="-1">
-	<StorageToolbar {canGoBack} {canGoForward} {canGoUp} {breadcrumbSegments} {viewMode} {showInfo} onback={goBack} onforward={goForward} onup={goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
+	<StorageToolbar canGoBack={nav.canGoBack} canGoForward={nav.canGoForward} canGoUp={nav.canGoUp} breadcrumbSegments={nav.breadcrumbSegments} {viewMode} {showInfo} onback={nav.goBack} onforward={nav.goForward} onup={nav.goUp} onnavigate={navigateTo} onviewmode={onViewModeChange} ontoggleinfo={onToggleInfo} />
 	<div class="body">
-		<StorageDrives {disks} {currentPath} onnavigate={navigateTo} width={sidebarWidth} />
+		<StorageDrives {disks} currentPath={nav.currentPath} onnavigate={navigateTo} width={sidebarWidth} />
 		<PanelSeparator onresize={onSeparatorResize} />
 		<div class="grid-area">
-			{#key currentPath}
-				<StorageBrowser path={currentPath} {viewMode} onnavigate={navigateTo} onselectionchange={onDirectoryViewSelectionChange} onentrieschange={onDirectoryViewEntriesChange} />
+			{#key nav.currentPath}
+				<StorageBrowser path={nav.currentPath} {viewMode} onnavigate={navigateTo} onselectionchange={onSelectionChange} onentrieschange={onEntriesChange} />
 			{/key}
 		</div>
 		{#if showInfo}
 			<PanelSeparator onresize={onInfoSeparatorResize} />
-			<StorageInfo selected={selectedEntries} {currentPath} {entries} {disks} width={infoWidth} />
+			<StorageInfo selected={selectedEntries} currentPath={nav.currentPath} {entries} {disks} width={infoWidth} />
 		{/if}
 	</div>
 </div>
