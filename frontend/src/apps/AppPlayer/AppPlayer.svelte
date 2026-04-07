@@ -2,6 +2,7 @@
 	import { getWindow } from '../../scripts/window/window-context.ts';
 	import { readYappManifest, buildBlobUrl, isYappFile, resolveYappIcon } from './app-player.ts';
 	import type { YappManifest } from './app-player.ts';
+	import { setupYappBridge } from './app-player-api.ts';
 	import { registerDropZone } from '../../scripts/ui/drag-state.svelte.ts';
 	import { focusWindow } from '../../scripts/window/window-store.svelte.ts';
 	import Spinner from '../../components/Spinner/Spinner.svelte';
@@ -22,12 +23,18 @@
 	let loading = $state(true);
 	let error = $state('');
 	let dragging = $state(false);
+	let iframeEl: HTMLIFrameElement | undefined = $state();
+	let cleanupBridge: (() => void) | undefined;
 	const hasFile = $derived(!!filePath && !!fileName);
 
 	async function loadYapp(dir: string, name: string): Promise<void> {
 		loading = true;
 		error = '';
 		iframeSrc = '';
+		if (cleanupBridge) {
+			cleanupBridge();
+			cleanupBridge = undefined;
+		}
 		try {
 			const manifest = await readYappManifest(dir, name);
 			if (!manifest) {
@@ -133,6 +140,14 @@
 		}
 		loadYapp(result.path, result.name);
 	}
+
+	function handleIframeLoad(): void {
+		if (cleanupBridge) {
+			cleanupBridge();
+			cleanupBridge = undefined;
+		}
+		if (iframeEl) cleanupBridge = setupYappBridge(iframeEl);
+	}
 </script>
 
 <style>
@@ -196,7 +211,7 @@
 		<p class="error">{error}</p>
 	</div>
 {:else if iframeSrc}
-	<iframe src={iframeSrc} title={win.title} sandbox="allow-scripts" class="app-frame"></iframe>
+	<iframe bind:this={iframeEl} src={iframeSrc} title={win.title} sandbox="allow-scripts allow-pointer-lock" class="app-frame" onload={handleIframeLoad}></iframe>
 {:else}
 	<div
 		class="center drop-zone"

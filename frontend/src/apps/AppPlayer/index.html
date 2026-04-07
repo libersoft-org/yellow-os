@@ -1,0 +1,153 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Doom</title>
+		<style>
+			body {
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+				background: #000;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				width: 100vw;
+				height: 100vh;
+			}
+			canvas {
+				display: block;
+				width: min(100vw, calc(100vh * 16 / 10));
+				height: min(100vh, calc(100vw * 10 / 16));
+				image-rendering: pixelated;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="doom" tabindex="0"></canvas>
+		<script>
+			(function () {
+				var canvas = document.getElementById('doom');
+				var ctx = canvas.getContext('2d');
+				var mem = null;
+				var imgData = null;
+
+				function onGameInit(w, h) {
+					canvas.width = w;
+					canvas.height = h;
+					imgData = ctx.createImageData(w, h);
+				}
+
+				function drawFrame(ptr) {
+					var buf = new Uint8Array(mem.buffer, ptr, canvas.width * canvas.height * 4);
+					var d = imgData.data;
+					for (var i = 0, len = d.length / 4; i < len; i++) {
+						d[4 * i] = buf[4 * i + 2];
+						d[4 * i + 1] = buf[4 * i + 1];
+						d[4 * i + 2] = buf[4 * i];
+						d[4 * i + 3] = 255;
+					}
+					ctx.putImageData(imgData, 0, 0);
+				}
+
+				function timeMs() {
+					return BigInt(Math.trunc(performance.now()));
+				}
+
+				function readStr(p, len) {
+					return new TextDecoder().decode(new Uint8Array(mem.buffer, p, len));
+				}
+
+				var imports = {
+					loading: {
+						onGameInit: onGameInit,
+						wadSizes: function () {},
+						readWads: function () {},
+					},
+					ui: { drawFrame: drawFrame },
+					runtimeControl: { timeInMilliseconds: timeMs },
+					console: {
+						onInfoMessage: function (p, l) {
+							console.log('[Doom] ' + readStr(p, l));
+						},
+						onErrorMessage: function (p, l) {
+							console.error('[Doom] ' + readStr(p, l));
+						},
+					},
+					gameSaving: {
+						sizeOfSaveGame: function () {
+							return 0;
+						},
+						readSaveGame: function () {
+							return 0;
+						},
+						writeSaveGame: function () {
+							return 0;
+						},
+					},
+				};
+
+				fetch('doom-v0.1.0.wasm')
+					.then(function (r) {
+						return WebAssembly.instantiateStreaming(r, imports);
+					})
+					.then(function (result) {
+						var ex = result.instance.exports;
+						mem = ex.memory;
+
+						var keyMap = new Map([
+							['ArrowLeft', ex.KEY_LEFTARROW],
+							['ArrowRight', ex.KEY_RIGHTARROW],
+							['ArrowUp', ex.KEY_UPARROW],
+							['ArrowDown', ex.KEY_DOWNARROW],
+							[',', ex.KEY_STRAFE_L],
+							['.', ex.KEY_STRAFE_R],
+							['Control', ex.KEY_FIRE],
+							[' ', ex.KEY_USE],
+							['Shift', ex.KEY_SHIFT],
+							['Tab', ex.KEY_TAB],
+							['Escape', ex.KEY_ESCAPE],
+							['Enter', ex.KEY_ENTER],
+							['Backspace', ex.KEY_BACKSPACE],
+							['Alt', ex.KEY_ALT],
+						]);
+
+						function toDoomKey(e) {
+							if (keyMap.has(e.key)) {
+								e.preventDefault();
+								e.stopPropagation();
+								return keyMap.get(e.key);
+							}
+							if (e.key.length === 1) {
+								e.preventDefault();
+								e.stopPropagation();
+								return e.key.charCodeAt(0);
+							}
+							return null;
+						}
+
+						canvas.addEventListener('keydown', function (e) {
+							if (e.key === 'Escape') {
+								os.cursor.unlock();
+								os.cursor.show();
+							}
+							var k = toDoomKey(e);
+							if (k !== null) ex.reportKeyDown(k);
+						});
+						canvas.addEventListener('keyup', function (e) {
+							var k = toDoomKey(e);
+							if (k !== null) ex.reportKeyUp(k);
+						});
+
+						canvas.addEventListener('click', function () {
+							os.cursor.lock();
+							os.cursor.hide();
+						});
+
+						ex.initGame();
+						setInterval(ex.tickGame, 1000 / 35);
+						canvas.focus();
+					});
+			})();
+		</script>
+	</body>
+</html>

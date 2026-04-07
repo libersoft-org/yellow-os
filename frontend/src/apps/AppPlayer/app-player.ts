@@ -1,4 +1,5 @@
 import { readFileText, readFileBlob, readDirectory } from '../../scripts/fs/opfs.ts';
+import { buildClientApiScript } from './app-player-api.ts';
 export interface YappManifest {
 	name?: string;
 	entry: string;
@@ -47,8 +48,9 @@ export async function buildBlobUrl(yappDir: string, entryPath: string): Promise<
 	const baseDir = resolveBaseDir(yappDir, entryPath);
 	const assetMap = await buildAssetBase64Map(baseDir, name);
 	const fetchInterceptScript = buildFetchInterceptScript(assetMap);
+	const clientApiScript = buildClientApiScript();
 	const rewritten = await rewriteReferences(text, yappDir, entryPath);
-	const injected = injectScriptAfterHead(rewritten, fetchInterceptScript);
+	const injected = injectScriptAfterHead(rewritten, fetchInterceptScript + clientApiScript);
 	const blob = new Blob([injected], { type: 'text/html' });
 	return URL.createObjectURL(blob);
 }
