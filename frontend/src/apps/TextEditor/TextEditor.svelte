@@ -282,6 +282,18 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent): void {
+		if (e.key === 'Tab') {
+			e.preventDefault();
+			if (!editorEl) return;
+			const start = editorEl.selectionStart;
+			const end = editorEl.selectionEnd;
+			content = content.substring(0, start) + '\t' + content.substring(end);
+			requestAnimationFrame(() => {
+				editorEl!.selectionStart = start + 1;
+				editorEl!.selectionEnd = start + 1;
+			});
+			return;
+		}
 		const isCopy = (e.ctrlKey && (e.key === 'c' || e.key === 'C')) || (e.ctrlKey && e.key === 'Insert');
 		const isCut = e.ctrlKey && (e.key === 'x' || e.key === 'X');
 		const isPaste = (e.ctrlKey && (e.key === 'v' || e.key === 'V')) || (e.shiftKey && e.key === 'Insert');
