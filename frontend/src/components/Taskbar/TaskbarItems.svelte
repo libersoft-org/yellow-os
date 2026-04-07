@@ -8,7 +8,9 @@
 	const { desktopId }: { desktopId?: number | undefined } = $props();
 	const activeId = $derived(desktopId ?? desktop.active);
 	const desktopWindows = $derived(getWindows().filter(w => w.desktopId === activeId && w.showInTaskbar));
-	const SCROLL_STEP = 150;
+	const BUTTON_WIDTH = 180;
+	const BUTTON_GAP = 4;
+	const SCROLL_STEP = BUTTON_WIDTH + BUTTON_GAP;
 	let dragging = $state(false);
 	let dragId = $state<string | null>(null);
 	let dragStartX = 0;
@@ -163,6 +165,7 @@
 	}
 
 	.window-buttons {
+		--taskbar-btn-width: 180px;
 		--fade: 20px;
 		display: flex;
 		gap: 4px;

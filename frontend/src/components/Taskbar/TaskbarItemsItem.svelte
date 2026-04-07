@@ -24,7 +24,8 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
-		max-width: 180px;
+		width: var(--taskbar-btn-width, 180px);
+		flex-shrink: 0;
 		display: flex;
 		align-items: center;
 		gap: 6px;
