@@ -15,7 +15,7 @@
 - Sticky notes
 - Desktop widgets (weather, news etc.)
 - System sounds (welcome, dialog error etc.)
-- FileBrowser (Storage) - for unknown file types show app selection instead of error + 2 buttons - run just this time / run always
+- File Browser (Storage) - for unknown file types show app selection instead of error + 2 buttons - run just this time / run always
 - File Browser - Add StatusBar component to the bottom with basic info (useful when right info panel is not opened)
 - File Browser - Search files / directories
 - File Browser - Add Pack / unpack / browse files and directories into ZIP / other compression formats within OPFS
