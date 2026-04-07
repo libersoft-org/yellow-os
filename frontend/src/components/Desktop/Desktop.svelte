@@ -2,7 +2,7 @@
 	import WindowManager from '../WindowManager/WindowManager.svelte';
 	import Taskbar from '../Taskbar/Taskbar.svelte';
 	import DesktopIcons from './DesktopIcons.svelte';
-	import { defocusAll } from '../../scripts/window/window-store.svelte.ts';
+	import { defocusAll, getWindows } from '../../scripts/window/window-store.svelte.ts';
 	import { handleKeyboardShortcut, handleKeyUp } from '../../scripts/window/window-shortcuts.ts';
 	import { desktop, switchDesktop, clearSlide } from '../../scripts/system/desktop.svelte.ts';
 	import { settings, settingsReady, wallpaperUrl } from '../../scripts/system/settings.svelte.ts';
@@ -11,6 +11,7 @@
 	const desktopCount = $derived(settingsReady.value ? settings.desktopCount : 1);
 	import AppSwitcher from '../AppSwitcher/AppSwitcher.svelte';
 	import NotificationContainer from '../Notification/NotificationContainer.svelte';
+	const hasFullscreen = $derived(getWindows().some(w => w.fullscreen));
 	const sliding = $derived(desktop.slideDirection !== null && desktop.previous !== null);
 	const NUMPAD_DESKTOP: Record<string, number> = {
 		Numpad1: 0,
@@ -93,6 +94,11 @@
 		overflow: hidden;
 	}
 
+	.window-area.has-fullscreen {
+		z-index: 999;
+		overflow: visible;
+	}
+
 	@keyframes enter-right {
 		from {
 			transform: translateX(100%);
@@ -145,7 +151,7 @@
 		{/if}
 	{/key}
 	<div class="desktop {sliding ? (desktop.slideDirection === 'left' ? 'enter-from-right' : 'enter-from-left') : ''}" style:background-image={wallpaperCss} style:background-color={wallpaperBg} onanimationend={onAnimationEnd}>
-		<div class="window-area" role="presentation" onpointerdown={onDesktopPointerDown}>
+		<div class="window-area" class:has-fullscreen={hasFullscreen} role="presentation" onpointerdown={onDesktopPointerDown}>
 			<DesktopIcons />
 			<WindowManager />
 		</div>

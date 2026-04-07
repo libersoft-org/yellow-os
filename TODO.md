@@ -2,11 +2,13 @@
 
 ## Bugs / changes
 
+- TAB key doesn't work in Text Editor
 - Replace hardcoded colours in all components to theme variables
 - Rename colours in theme
 
 ## New features
 
+- Window buttons in taskbar have different width each, it should be one fixed width - if title is too long, there will be dots
 - Taskbar position in settings + add more panels
 - Trash - it's files should be restored if the original directory still exists, if not, throw an error dialog
 - Image editor (like MS Paint)

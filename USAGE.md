@@ -127,8 +127,9 @@ A `.yapp` file is a JSON manifest that defines a custom application running insi
 | `canMinimize`   | boolean | true        | Whether minimize button is shown            |
 | `canMaximize`   | boolean | true        | Whether maximize button is shown            |
 | `showInTaskbar` | boolean | true        | Whether the window appears in taskbar       |
+| `frameless`     | boolean | false       | Hide titlebar and window frame              |
 | `position`      | string  | `"default"` | `"default"` (cascade) or `"center"`         |
-| `state`         | string  | `"normal"`  | `"normal"`, `"maximized"`, or `"minimized"` |
+| `state`         | string  | `"normal"`  | `"normal"`, `"maximized"`, `"minimized"`, or `"fullscreen"` |
 
 #### Example directory structure
 
@@ -141,3 +142,62 @@ A `.yapp` file is a JSON manifest that defines a custom application running insi
 ```
 
 The entry HTML file can reference other files (CSS, JS, images) using relative paths. All `src` and `href` attributes are automatically resolved from OPFS and converted to blob URLs at runtime.
+
+#### App Player API
+
+Yapp applications running inside the App Player have access to a system API via the global `os` object. All methods return a `Promise`.
+
+##### `os.cursor`
+
+| Method              | Returns              | Description                |
+| ------------------- | -------------------- | -------------------------- |
+| `os.cursor.lock()`  | `Promise<true>`      | Lock the mouse cursor (pointer lock) |
+| `os.cursor.unlock()`| `Promise<true>`      | Unlock the mouse cursor    |
+| `os.cursor.hide()`  | `Promise<true>`      | Hide the mouse cursor      |
+| `os.cursor.show()`  | `Promise<true>`      | Show the mouse cursor      |
+
+##### `os.window`
+
+| Method                                    | Returns                                      | Description                          |
+| ----------------------------------------- | -------------------------------------------- | ------------------------------------ |
+| `os.window.maximize()`                    | `Promise<true>`                              | Maximize the window                  |
+| `os.window.minimize()`                    | `Promise<true>`                              | Minimize the window                  |
+| `os.window.restore()`                     | `Promise<true>`                              | Restore from maximized/minimized     |
+| `os.window.setFrameless(value: boolean)`  | `Promise<true>`                              | Toggle frameless mode                |
+| `os.window.setTitle(title: string)`       | `Promise<true>`                              | Change the window title              |
+| `os.window.setIcon(url: string)`          | `Promise<true>`                              | Change the window icon               |
+| `os.window.setSize(width, height)`        | `Promise<true>`                              | Resize the window                    |
+| `os.window.getSize()`                     | `Promise<{ width: number, height: number }>` | Get current window size              |
+| `os.window.getState()`                    | `Promise<'normal' \| 'maximized' \| 'minimized' \| 'fullscreen'>` | Get current window state |
+| `os.window.close()`                       | `Promise<true>`                              | Close the window                     |
+| `os.window.focus()`                       | `Promise<true>`                              | Focus the window                     |
+| `os.window.fullscreen()`                  | `Promise<true>`                              | Enter fullscreen (frameless, covers taskbar) |
+
+##### `os.notification`
+
+| Method                                     | Returns         | Description                  |
+| ------------------------------------------ | --------------- | ---------------------------- |
+| `os.notification.show(title, body?)`       | `Promise<true>` | Show a system notification   |
+
+##### Example
+
+```html
+<script>
+  // Enter fullscreen on click
+  document.addEventListener('click', async () => {
+    await os.window.fullscreen();
+    await os.cursor.hide();
+  });
+
+  // Exit fullscreen on Escape
+  document.addEventListener('keydown', async (e) => {
+    if (e.key === 'Escape') {
+      await os.window.restore();
+      await os.cursor.show();
+    }
+  });
+
+  // Show a notification
+  os.notification.show('Hello', 'App started successfully');
+</script>
+```

@@ -14,8 +14,8 @@
 	const focused = $derived(focus.id === win.id);
 	const snapAnimating = $derived(!!snapAnimatingIds[win.id]);
 	const chrome = getChrome();
-	const outerWidth = $derived(win.width + chrome.width);
-	const outerHeight = $derived(win.height + chrome.height);
+	const outerWidth = $derived(win.frameless ? win.width : win.width + chrome.width);
+	const outerHeight = $derived(win.frameless ? win.height : win.height + chrome.height);
 	const winId = $derived(win.id);
 	const resize = createResizeHandler(() => winId);
 	let contentEl: HTMLDivElement | undefined = $state();
@@ -128,14 +128,38 @@
 	.maximized .content {
 		border-radius: 0;
 	}
+
+	.frameless {
+		box-shadow: none;
+		border-radius: 0;
+		background: transparent;
+	}
+
+	.frameless .content {
+		border: none;
+		border-radius: 0;
+	}
+
+	.fullscreen {
+		box-shadow: none;
+		border-radius: 0;
+		background: transparent;
+	}
+
+	.fullscreen .content {
+		border: none;
+		border-radius: 0;
+	}
 </style>
 
-<div class="window" role="application" class:focused class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:opening={win.opening} class:closing={win.closing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{outerWidth}px" style:height="{outerHeight}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
-	<WindowTitlebar {win} onfocuscontent={focusContent} />
+<div class="window" role="application" class:focused class:frameless={win.frameless} class:fullscreen={win.fullscreen} class:maximized={win.maximized} class:minimized={win.minimized} class:minimizing={win.minimizing} class:opening={win.opening} class:closing={win.closing} class:snap-animating={snapAnimating} class:restoring={win.restoring} style:left="{win.x}px" style:top="{win.y}px" style:width="{outerWidth}px" style:height="{outerHeight}px" style:z-index={win.zIndex} onpointerdown={onWindowPointerDown} ontransitionend={onWindowTransitionEnd}>
+	{#if !win.frameless}
+		<WindowTitlebar {win} onfocuscontent={focusContent} />
+	{/if}
 	<div class="content" bind:this={contentEl} tabindex="-1">
 		<WindowContent {...win.props} />
 	</div>
-	{#if !win.maximized && win.resizable}
+	{#if !win.maximized && win.resizable && !win.frameless}
 		{#each RESIZE_DIRS as dir}
 			<div role="separator" style={getHandleStyle(dir)} onpointerdown={e => resize.start(e, dir)} onpointermove={resize.move} onpointerup={resize.up}></div>
 		{/each}

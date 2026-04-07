@@ -1,0 +1,14 @@
+{
+	"name": "Doom",
+	"entry": "index.html",
+	"icon": "Doom.png",
+	"window": {
+		"width": 640,
+		"height": 400,
+		"minWidth": 320,
+		"minHeight": 200,
+		"resizable": true,
+		"frameless": true,
+		"position": "center"
+	}
+}

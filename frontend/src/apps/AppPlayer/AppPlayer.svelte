@@ -71,6 +71,7 @@
 		if (w.canMinimize !== undefined) win.canMinimize = w.canMinimize;
 		if (w.canMaximize !== undefined) win.canMaximize = w.canMaximize;
 		if (w.showInTaskbar !== undefined) win.showInTaskbar = w.showInTaskbar;
+		if (w.frameless !== undefined) win.frameless = w.frameless;
 		if (w.position !== undefined) win.position = w.position;
 		if (w.state !== undefined) win.state = w.state;
 	}
@@ -146,7 +147,7 @@
 			cleanupBridge();
 			cleanupBridge = undefined;
 		}
-		if (iframeEl) cleanupBridge = setupYappBridge(iframeEl);
+		if (iframeEl) cleanupBridge = setupYappBridge(iframeEl, win);
 	}
 </script>
 

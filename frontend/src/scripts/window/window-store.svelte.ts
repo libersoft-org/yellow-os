@@ -31,8 +31,11 @@ export interface WindowState {
 	props: Record<string, unknown>;
 	desktopId: number;
 	showInTaskbar: boolean;
+	frameless: boolean;
+	fullscreen: boolean;
+	preFullscreen: { x: number; y: number; width: number; height: number; frameless: boolean } | null;
 	set position(value: 'default' | 'center');
-	set state(value: 'normal' | 'maximized' | 'minimized');
+	set state(value: 'normal' | 'maximized' | 'minimized' | 'fullscreen');
 }
 const Z_INDEX_COMPACT_THRESHOLD = 1000;
 const CASCADE_OFFSET = 30;
@@ -133,6 +136,9 @@ export function openWindow(component: Component, props: Record<string, unknown> 
 		props,
 		desktopId: desktop.active,
 		showInTaskbar: true,
+		frameless: false,
+		fullscreen: false,
+		preFullscreen: null,
 		set position(value: 'default' | 'center') {
 			if (value === 'center') {
 				const chrome = getChrome();
@@ -140,8 +146,20 @@ export function openWindow(component: Component, props: Record<string, unknown> 
 				this.y = Math.round((globalThis.innerHeight - (this.height + chrome.height)) / 2);
 			}
 		},
-		set state(value: 'normal' | 'maximized' | 'minimized') {
-			if (value === 'maximized') {
+		set state(value: 'normal' | 'maximized' | 'minimized' | 'fullscreen') {
+			if (value === 'fullscreen') {
+				if (this.fullscreen) return;
+				this.preFullscreen = { x: this.x, y: this.y, width: this.width, height: this.height, frameless: this.frameless };
+				this.x = 0;
+				this.y = 0;
+				this.width = globalThis.innerWidth;
+				this.height = globalThis.innerHeight;
+				this.frameless = true;
+				this.fullscreen = true;
+				this.maximized = false;
+				this.preMaximize = null;
+				this.snappedZone = null;
+			} else if (value === 'maximized') {
 				const bounds = getSnapBounds('top');
 				const chrome = getChrome();
 				this.preMaximize = { x: this.x, y: this.y, width: this.width, height: this.height };
@@ -154,6 +172,15 @@ export function openWindow(component: Component, props: Record<string, unknown> 
 			} else if (value === 'minimized') {
 				this.minimized = true;
 			} else if (value === 'normal') {
+				if (this.fullscreen && this.preFullscreen) {
+					this.x = this.preFullscreen.x;
+					this.y = this.preFullscreen.y;
+					this.width = this.preFullscreen.width;
+					this.height = this.preFullscreen.height;
+					this.frameless = this.preFullscreen.frameless;
+					this.fullscreen = false;
+					this.preFullscreen = null;
+				}
 				if (this.maximized && this.preMaximize) {
 					this.x = this.preMaximize.x;
 					this.y = this.preMaximize.y;

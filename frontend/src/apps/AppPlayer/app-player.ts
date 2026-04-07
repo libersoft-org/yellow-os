@@ -15,8 +15,9 @@ export interface YappManifest {
 		canMinimize?: boolean;
 		canMaximize?: boolean;
 		showInTaskbar?: boolean;
+		frameless?: boolean;
 		position?: 'default' | 'center';
-		state?: 'normal' | 'maximized' | 'minimized';
+		state?: 'normal' | 'maximized' | 'minimized' | 'fullscreen';
 	};
 }
 
